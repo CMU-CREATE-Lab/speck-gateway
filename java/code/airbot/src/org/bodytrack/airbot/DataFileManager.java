@@ -137,7 +137,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
                {
                uploadExistingDownloadedFiles();
                }
-            
+
             return true;
             }
          }
