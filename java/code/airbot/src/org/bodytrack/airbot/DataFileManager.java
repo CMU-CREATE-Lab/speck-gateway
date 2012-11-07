@@ -131,26 +131,13 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
             // register self as a listener to the uploader so we can get notified when uploads are complete
             this.dataFileUploader.addEventListener(this);
 
-            // Run through all existing downloaded files and kick off an upload job for each one.  To do so, start by
-            // getting the list of all downloaded files
-            final File[] filesReadyForUpload = dataFileDirectory.listFiles(new DataFileStatusFilenameFilter(DataFileStatus.DOWNLOADED));
-
-            if (filesReadyForUpload != null && filesReadyForUpload.length > 0)
+            // make sure any existing downloaded files are scheduled for upload, but only if we're already running.  If
+            // we're not, then don't worry about it since startup() will handle this itself.
+            if (isRunning)
                {
-               final String msg = "Found " + filesReadyForUpload.length + " local file(s) to upload.";
-               LOG.info("DataFileManager.setDataFileUploader(): " + msg);
-               CONSOLE_LOG.info(msg);
-               for (final File file : filesReadyForUpload)
-                  {
-                  submitUploadFileTask(file);
-                  }
+               uploadExistingDownloadedFiles();
                }
-            else
-               {
-               final String msg = "No local file(s) found which need to be uploaded.";
-               LOG.info("DataFileManager.setDataFileUploader(): " + msg);
-               CONSOLE_LOG.info(msg);
-               }
+            
             return true;
             }
          }
@@ -187,6 +174,9 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
                   }
                }
 
+            // make sure any existing downloaded files are scheduled for upload
+            uploadExistingDownloadedFiles();
+
             // schedule the command to get the list of files from the device, which will reschedule itself upon completion
             scheduleNextFileListDownload(0, TimeUnit.SECONDS);
             }
@@ -198,6 +188,33 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
       finally
          {
          lock.unlock();
+         }
+      }
+
+   private void uploadExistingDownloadedFiles()
+      {
+      // If the uploader is defined, then run through all existing downloaded files and kick off an upload job for
+      // each one.  To do so, start by getting the list of all downloaded files
+      if (isDataFileUploaderDefined())
+         {
+         final File[] filesReadyForUpload = dataFileDirectory.listFiles(new DataFileStatusFilenameFilter(DataFileStatus.DOWNLOADED));
+
+         if (filesReadyForUpload != null && filesReadyForUpload.length > 0)
+            {
+            final String msg = "Found " + filesReadyForUpload.length + " local file(s) to upload.";
+            LOG.info("DataFileManager.setDataFileUploader(): " + msg);
+            CONSOLE_LOG.info(msg);
+            for (final File file : filesReadyForUpload)
+               {
+               submitUploadFileTask(file);
+               }
+            }
+         else
+            {
+            final String msg = "No local file(s) found which need to be uploaded.";
+            LOG.info("DataFileManager.setDataFileUploader(): " + msg);
+            CONSOLE_LOG.info(msg);
+            }
          }
       }
 
