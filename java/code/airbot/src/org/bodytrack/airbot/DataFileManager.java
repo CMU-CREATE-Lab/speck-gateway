@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,6 +31,31 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class DataFileManager implements DataFileUploader.EventListener, DataFileDownloader.EventListener
    {
+   public interface Statistics
+      {
+      enum Category
+         {
+            UPLOADS_REQUESTED,
+            UPLOADS_SUCCESSFUL,
+            UPLOADS_FAILED,
+            DOWNLOADS_REQUESTED,
+            DOWNLOADS_SUCCESSFUL,
+            DOWNLOADS_FAILED,
+            DELETES_REQUESTED,
+            DELETES_SUCCESSFUL,
+            DELETES_FAILED
+         }
+
+      interface Listener
+         {
+         void handleValueChange(@NotNull Category category, final int newValue);
+         }
+
+      /** Renders the statistics in an ASCII table */
+      @Override
+      String toString();
+      }
+
    private static final Logger LOG = Logger.getLogger(DataFileManager.class);
    private static final Logger CONSOLE_LOG = Logger.getLogger("ConsoleLog");
 
@@ -65,20 +92,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
             }
          };
 
-   private static enum StatsCategory
-      {
-         UPLOADS_REQUESTED,
-         UPLOADS_SUCCESSFUL,
-         UPLOADS_FAILED,
-         DOWNLOADS_REQUESTED,
-         DOWNLOADS_SUCCESSFUL,
-         DOWNLOADS_FAILED,
-         DELETES_REQUESTED,
-         DELETES_SUCCESSFUL,
-         DELETES_FAILED
-      }
-
-   private final Map<StatsCategory, AtomicInteger> statistics = new HashMap<StatsCategory, AtomicInteger>(StatsCategory.values().length);
+   private final StatisticsImpl statistics = new StatisticsImpl();
 
    public DataFileManager(@NotNull final AirBotConfig airBotConfig)
       {
@@ -102,11 +116,6 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
       if (dataFileDownloader != null)
          {
          dataFileDownloader.addEventListener(this);
-         }
-
-      for (final StatsCategory category : StatsCategory.values())
-         {
-         statistics.put(category, new AtomicInteger(0));
          }
       }
 
@@ -188,6 +197,14 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
       finally
          {
          lock.unlock();
+         }
+      }
+
+   public void addStatisticsListener(@Nullable final Statistics.Listener listener)
+      {
+      if (listener != null)
+         {
+         statistics.addListener(listener);
          }
       }
 
@@ -279,7 +296,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
             dataFileUploader.submitUploadFileTask(fileToUpload, file.getName());
 
             // update statistics
-            statistics.get(StatsCategory.UPLOADS_REQUESTED).incrementAndGet();
+            statistics.incrementUploadsRequested();
             }
          else
             {
@@ -295,7 +312,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
          dataFileDownloader.submitDownloadDataFileTask(filename);
 
          // update statistics
-         statistics.get(StatsCategory.DOWNLOADS_REQUESTED).incrementAndGet();
+         statistics.incrementDownloadsRequested();
          }
       }
 
@@ -306,7 +323,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
          dataFileDownloader.submitDeleteDataFileFromDeviceTask(filename);
 
          // update statistics
-         statistics.get(StatsCategory.DELETES_REQUESTED).incrementAndGet();
+         statistics.incrementDeletesRequested();
          }
       }
 
@@ -328,7 +345,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
          if (uploadResponse == null)
             {
             // update statistics
-            statistics.get(StatsCategory.UPLOADS_FAILED).incrementAndGet();
+            statistics.incrementUploadsFailed();
 
             // If the response was null, then a problem occurred during upload, so just rename the file and return it
             // back to the pool of uploadable files.  Also submit a new upload job for it.
@@ -377,7 +394,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
             if (uploadResponse.wasSuccessful())
                {
                // update statistics
-               statistics.get(StatsCategory.UPLOADS_SUCCESSFUL).incrementAndGet();
+               statistics.incrementUploadsSuccessful();
 
                // no failures!  rename the file to signify that the upload was successful...
                lock.lock();  // block until condition holds
@@ -412,7 +429,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
             else
                {
                // update statistics
-               statistics.get(StatsCategory.UPLOADS_FAILED).incrementAndGet();
+               statistics.incrementUploadsFailed();
 
                final String failureMessage = uploadResponse.getMessage();
                final DataFileUploadResponse.Payload payload = uploadResponse.getPayload();
@@ -594,7 +611,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
 
       if (LOG.isInfoEnabled() || CONSOLE_LOG.isInfoEnabled())
          {
-         final String stats = getStatistics();
+         final String stats = getStatisticsAsString();
          LOG.info(stats);
          CONSOLE_LOG.info(stats);
          }
@@ -612,7 +629,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
       if (dataFile != null)
          {
          // update statistics
-         statistics.get(StatsCategory.DOWNLOADS_SUCCESSFUL).incrementAndGet();
+         statistics.incrementDownloadsSuccessful();
 
          if (LOG.isDebugEnabled())
             {
@@ -633,7 +650,7 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
    public void handleFailedDataFileDownloadEvent(@NotNull final String filename, @NotNull final DataFileDownloader.FailedDataFileDownloadCause cause)
       {
       // update statistics
-      statistics.get(StatsCategory.DOWNLOADS_FAILED).incrementAndGet();
+      statistics.incrementDownloadsFailed();
 
       if (LOG.isDebugEnabled())
          {
@@ -652,14 +669,14 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
       if (wasDeleteSuccessful)
          {
          // update statistics
-         statistics.get(StatsCategory.DELETES_SUCCESSFUL).incrementAndGet();
+         statistics.incrementDeletesSuccessful();
 
          CONSOLE_LOG.info("File " + filename + " was successfully deleted from the device.");
          }
       else
          {
          // update statistics
-         statistics.get(StatsCategory.DELETES_FAILED).incrementAndGet();
+         statistics.incrementDeletesFailed();
 
          CONSOLE_LOG.error("File " + filename + " could not be deleted from the device.");
          }
@@ -675,25 +692,12 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
          }
       }
 
-   public String getStatistics()
+   public String getStatisticsAsString()
       {
       lock.lock();  // block until condition holds
       try
          {
-         final StringWriter stringWriter = new StringWriter();
-         final PrintWriter printWriter = new PrintWriter(stringWriter);
-
-         printWriter.printf("\n");
-         printWriter.printf(" _________________________________________________________ \n");
-         printWriter.printf("|                                                         |\n");
-         printWriter.printf("|                         Requested   Successful   Failed |\n");
-         printWriter.printf("|                         ---------   ----------   ------ |\n");
-         printWriter.printf("| Downloads from Device      %6d       %6d   %6d |\n", statistics.get(StatsCategory.DOWNLOADS_REQUESTED).get(), statistics.get(StatsCategory.DOWNLOADS_SUCCESSFUL).get(), statistics.get(StatsCategory.DOWNLOADS_FAILED).get());
-         printWriter.printf("| Uploads to Server          %6d       %6d   %6d |\n", statistics.get(StatsCategory.UPLOADS_REQUESTED).get(), statistics.get(StatsCategory.UPLOADS_SUCCESSFUL).get(), statistics.get(StatsCategory.UPLOADS_FAILED).get());
-         printWriter.printf("| Deletes from Device        %6d       %6d   %6d |\n", statistics.get(StatsCategory.DELETES_REQUESTED).get(), statistics.get(StatsCategory.DELETES_SUCCESSFUL).get(), statistics.get(StatsCategory.DELETES_FAILED).get());
-         printWriter.printf("|_________________________________________________________|\n");
-
-         return stringWriter.toString();
+         return statistics.toString();
          }
       finally
          {
@@ -976,6 +980,103 @@ public final class DataFileManager implements DataFileUploader.EventListener, Da
       public boolean accept(final File file, final String filename)
          {
          return file != null && filename != null && filename.toUpperCase().endsWith(dataFileStatus.getFilenameExtension());
+         }
+      }
+
+   private static final class StatisticsImpl implements Statistics
+      {
+      private final Map<Category, AtomicInteger> statisticsMap;
+      private final Set<Listener> listeners = new HashSet<Listener>();
+
+      private StatisticsImpl()
+         {
+         statisticsMap = new HashMap<Category, AtomicInteger>(Category.values().length);
+         for (final Category category : Category.values())
+            {
+            statisticsMap.put(category, new AtomicInteger(0));
+            }
+         }
+
+      public void addListener(@Nullable final Listener listener)
+         {
+         if (listener != null)
+            {
+            listeners.add(listener);
+            }
+         }
+
+      private int incrementUploadsRequested()
+         {
+         return incrementValueAndPublishToListeners(Category.UPLOADS_REQUESTED);
+         }
+
+      private int incrementUploadsSuccessful()
+         {
+         return incrementValueAndPublishToListeners(Category.UPLOADS_SUCCESSFUL);
+         }
+
+      private int incrementUploadsFailed()
+         {
+         return incrementValueAndPublishToListeners(Category.UPLOADS_FAILED);
+         }
+
+      private int incrementDownloadsRequested()
+         {
+         return incrementValueAndPublishToListeners(Category.DOWNLOADS_REQUESTED);
+         }
+
+      private int incrementDownloadsSuccessful()
+         {
+         return incrementValueAndPublishToListeners(Category.DOWNLOADS_SUCCESSFUL);
+         }
+
+      private int incrementDownloadsFailed()
+         {
+         return incrementValueAndPublishToListeners(Category.DOWNLOADS_FAILED);
+         }
+
+      private int incrementDeletesRequested()
+         {
+         return incrementValueAndPublishToListeners(Category.DELETES_REQUESTED);
+         }
+
+      private int incrementDeletesSuccessful()
+         {
+         return incrementValueAndPublishToListeners(Category.DELETES_SUCCESSFUL);
+         }
+
+      private int incrementDeletesFailed()
+         {
+         return incrementValueAndPublishToListeners(Category.DELETES_FAILED);
+         }
+
+      private int incrementValueAndPublishToListeners(final Category category)
+         {
+         final int newValue = statisticsMap.get(category).incrementAndGet();
+         for (final Listener listener : listeners)
+            {
+            listener.handleValueChange(category, newValue);
+            }
+         return newValue;
+         }
+
+      @Override
+      public String toString()
+         {
+         final StringWriter stringWriter = new StringWriter();
+         final PrintWriter printWriter = new PrintWriter(stringWriter);
+
+         printWriter.printf("\n");
+         printWriter.printf(" _________________________________________________________ \n");
+         printWriter.printf("|                                                         |\n");
+         printWriter.printf("|                         Requested   Successful   Failed |\n");
+         printWriter.printf("|                         ---------   ----------   ------ |\n");
+         printWriter.printf("| Downloads from Device      %6d       %6d   %6d |\n", statisticsMap.get(Category.DOWNLOADS_REQUESTED).get(), statisticsMap.get(Category.DOWNLOADS_SUCCESSFUL).get(), statisticsMap.get(Category.DOWNLOADS_FAILED).get());
+         printWriter.printf("| Uploads to Server          %6d       %6d   %6d |\n", statisticsMap.get(Category.UPLOADS_REQUESTED).get(), statisticsMap.get(Category.UPLOADS_SUCCESSFUL).get(), statisticsMap.get(Category.UPLOADS_FAILED).get());
+         printWriter.printf("| Deletes from Device        %6d       %6d   %6d |\n", statisticsMap.get(Category.DELETES_REQUESTED).get(), statisticsMap.get(Category.DELETES_SUCCESSFUL).get(), statisticsMap.get(Category.DELETES_FAILED).get());
+         printWriter.printf("|_________________________________________________________|\n");
+
+         return stringWriter.toString();
          }
       }
    }

@@ -3,10 +3,8 @@ package org.bodytrack.applications.airbot;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.PropertyResourceBundle;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import edu.cmu.ri.createlab.device.CreateLabDevicePingFailureEventListener;
@@ -34,10 +32,6 @@ final class AirBotUploaderHelper
 
    interface EventListener
       {
-      void handleInfoMessageEvent(@NotNull final String message);
-
-      void handleErrorMessageEvent(@NotNull final String message);
-
       void handleConnectionEvent(@NotNull final AirBotConfig airBotConfig, @NotNull final String portName);
 
       void handlePingFailureEvent();
@@ -84,7 +78,7 @@ final class AirBotUploaderHelper
             {
             LOG.debug("AirBotUploaderHelper.handlePingFailureEvent(): ping failure detected, cleaning up...");
 
-            publishErrorMessage("Connection failure detected.  Cleaning up...");
+            logError("Connection failure detected.  Cleaning up...");
             disconnect(false);
 
             LOG.debug("AirBotUploaderHelper.handlePingFailureEvent(): ping failure detected, attempting reconnect...");
@@ -92,7 +86,7 @@ final class AirBotUploaderHelper
             // notify listener of the ping failure
             eventListener.handlePingFailureEvent();
 
-            publishInfoMessage("Now attempting to reconnect to the device...");
+            logInfo("Now attempting to reconnect to the device...");
             scanAndConnect();
             }
          };
@@ -117,24 +111,24 @@ final class AirBotUploaderHelper
       {
       if (isConnected())
          {
-         publishInfoMessage("You are already connected to an AirBot.");
+         logInfo("You are already connected to an AirBot.");
          }
       else
          {
          if (isDownloadDisabled())
             {
-            publishInfoMessage("Loading config file...");
+            logInfo("Loading config file...");
             device = createFakeAirBot();
             }
          else
             {
-            publishInfoMessage("Scanning for an AirBot...");
+            logInfo("Scanning for an AirBot...");
             device = AirBotFactory.create();
             }
 
          if (device == null)
             {
-            publishErrorMessage("Connection failed.");
+            logError("Connection failed.");
             }
          else
             {
@@ -144,12 +138,12 @@ final class AirBotUploaderHelper
             final DataFileDownloader dataFileDownloader;
             if (isDownloadDisabled())
                {
-               publishInfoMessage("Data files will not be downloaded from an AirBot since you specified a config file for AirBot [" + airBotConfig.getId() + "]");
+               logInfo("Data files will not be downloaded from an AirBot since you specified a config file for AirBot [" + airBotConfig.getId() + "]");
                dataFileDownloader = null;
                }
             else
                {
-               publishInfoMessage("Connection successful to AirBot [" + airBotConfig.getId() + "] on serial port [" + device.getPortName() + "].");
+               logInfo("Connection successful to AirBot [" + airBotConfig.getId() + "] on serial port [" + device.getPortName() + "].");
                dataFileDownloader = new DataFileDownloader(device);
                }
 
@@ -183,10 +177,10 @@ final class AirBotUploaderHelper
       if (!areDataStorageCredentialsSet())
          {
          // now test the credentials
-         publishInfoMessage("Validating host and login credentials...");
+         logInfo("Validating host and login credentials...");
          if (DataStorageCredentialsValidator.isValid(dataStorageCredentials))
             {
-            publishInfoMessage("Host and login credentials validated successfully!!");
+            logInfo("Host and login credentials validated successfully!!");
 
             this.dataStorageCredentials = dataStorageCredentials;
             if (dataFileManager != null && !dataFileManager.setDataFileUploader(new DataFileUploader(dataStorageCredentials)))
@@ -198,7 +192,7 @@ final class AirBotUploaderHelper
             }
          else
             {
-            publishInfoMessage("Invalid host and/or login credentials.");
+            logInfo("Invalid host and/or login credentials.");
             }
          }
 
@@ -206,13 +200,21 @@ final class AirBotUploaderHelper
       }
 
    @Nullable
-   public String getStatisticsStr()
+   public String getStatistics()
       {
-      if (isConnected())
+      if (isConnected() && dataFileManager != null)
          {
-         return dataFileManager.getStatistics();
+         return dataFileManager.getStatisticsAsString();
          }
       return null;
+      }
+
+   public void addStatisticsListener(@Nullable final DataFileManager.Statistics.Listener listener)
+      {
+      if (dataFileManager != null)
+         {
+         dataFileManager.addStatisticsListener(listener);
+         }
       }
 
    public void disconnect()
@@ -243,24 +245,12 @@ final class AirBotUploaderHelper
       dataStorageCredentials = null;
       }
 
-   private void publishInfoMessage(@NotNull final String message)
-      {
-      eventListener.handleInfoMessageEvent(message);
-      LOG.info(message);
-      }
-
-   private void publishErrorMessage(@NotNull final String message)
-      {
-      eventListener.handleErrorMessageEvent(message);
-      LOG.error(message);
-      }
-
    @Nullable
    private AirBot createFakeAirBot()
       {
       if (pathToConfigFile == null || pathToConfigFile.length() < 1)
          {
-         publishErrorMessage("The specified config file path must not be empty.");
+         logError("The specified config file path must not be empty.");
          }
       else
          {
@@ -287,12 +277,12 @@ final class AirBotUploaderHelper
             catch (Exception e)
                {
                LOG.error("AirBotUploaderCommandLine.createFakeAirBot(): Exception while trying to read the config file [" + pathToConfigFile + "]", e);
-               publishErrorMessage("Failed to read the config file '" + pathToConfigFile + "'");
+               logError("Failed to read the config file '" + pathToConfigFile + "'");
                }
             }
          else
             {
-            publishErrorMessage("The specified config file path '" + pathToConfigFile + "' does not denote a valid config file.");
+            logError("The specified config file path '" + pathToConfigFile + "' does not denote a valid config file.");
             }
          }
       return null;

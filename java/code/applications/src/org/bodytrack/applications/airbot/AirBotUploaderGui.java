@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.PropertyResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -13,14 +15,15 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import edu.cmu.ri.createlab.userinterface.GUIConstants;
 import edu.cmu.ri.createlab.userinterface.component.Spinner;
 import edu.cmu.ri.createlab.userinterface.util.AbstractTimeConsumingAction;
 import edu.cmu.ri.createlab.userinterface.util.SwingUtils;
 import edu.cmu.ri.createlab.util.net.HostAndPort;
-import org.apache.log4j.Logger;
 import org.bodytrack.airbot.AirBotConfig;
+import org.bodytrack.airbot.DataFileManager;
 import org.bodytrack.airbot.DataStorageCredentialsImpl;
 import org.bodytrack.airbot.DataStorageCredentialsValidator;
 import org.jetbrains.annotations.NotNull;
@@ -32,18 +35,22 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("CloneableClassWithoutClone")
 final class AirBotUploaderGui
    {
-   private static final Logger LOG = Logger.getLogger(AirBotUploaderGui.class);
    private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(AirBotUploaderGui.class.getName());
 
-   private final Spinner airBotConnectionSpinner = new Spinner(RESOURCES.getString("label.spinner"));
+   private static final int DEFAULT_PORT = 80;
+   private static final int GAP_SIZE = 10;
+   private static final String STATISTICS_VALUE_ZERO = "0";
+   private static final String EMPTY_LABEL_TEXT = " ";
+
+   private final Spinner airBotConnectionSpinner = new Spinner(RESOURCES.getString("label.spinner"), GUIConstants.FONT_NORMAL);
    private final JPanel airBotConnectionStatusPanel = new JPanel();
 
    @NotNull
    private final AirBotUploaderHelper helper;
 
    private final Font FONT_NORMAL_BOLD = new Font(GUIConstants.FONT_NAME, Font.BOLD, GUIConstants.FONT_NORMAL.getSize());
-   private final JLabel airBotConnectionStatusLabelAirBotId = SwingUtils.createLabel("", FONT_NORMAL_BOLD);
-   private final JLabel airBotConnectionStatusLabelPortName = SwingUtils.createLabel("", FONT_NORMAL_BOLD);
+   private final JLabel airBotConnectionStatusLabelAirBotId = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
+   private final JLabel airBotConnectionStatusLabelPortName = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
 
    private final JTextField hostAndPortTextField = new JTextField(30);
    private final JTextField usernameTextField = new JTextField(30);
@@ -51,49 +58,77 @@ final class AirBotUploaderGui
    private final JTextField deviceNameTextField = new JTextField(30);
 
    private final JButton fluxtreamButton = SwingUtils.createButton(RESOURCES.getString("label.begin-uploading"));
-   private final JLabel fluxtreamConnectionStatus = SwingUtils.createLabel("");
+   private final JLabel fluxtreamConnectionStatus = SwingUtils.createLabel(EMPTY_LABEL_TEXT);
+
+   private final JLabel statsDownloadsRequested = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsDownloadsSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsDownloadsFailed = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsUploadsRequested = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsUploadsSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsUploadsFailed = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+
+   private final Map<DataFileManager.Statistics.Category, JLabel> statsCategoryToLabelMap = new HashMap<DataFileManager.Statistics.Category, JLabel>(6);
 
    @NotNull
    private final JFrame jFrame;
 
+   private StatisticsListener statisticsListener = new StatisticsListener();
+
    AirBotUploaderGui(@NotNull final JFrame jFrame)
       {
+      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.DOWNLOADS_REQUESTED, statsDownloadsRequested);
+      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.DOWNLOADS_SUCCESSFUL, statsDownloadsSuccessful);
+      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.DOWNLOADS_FAILED, statsDownloadsFailed);
+      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.UPLOADS_REQUESTED, statsUploadsRequested);
+      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.UPLOADS_SUCCESSFUL, statsUploadsSuccessful);
+      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.UPLOADS_FAILED, statsUploadsFailed);
+
       this.jFrame = jFrame;
       helper = new AirBotUploaderHelper(
             new AirBotUploaderHelper.EventListener()
             {
             @Override
-            public void handleInfoMessageEvent(@NotNull final String message)
-               {
-               // TODO: append to GUI console
-               LOG.info(message);
-               }
-
-            @Override
-            public void handleErrorMessageEvent(@NotNull final String message)
-               {
-               // TODO: append to GUI console
-               LOG.error(message);
-               }
-
-            @Override
             public void handleConnectionEvent(@NotNull final AirBotConfig airBotConfig, @NotNull final String portName)
                {
-               airBotConnectionSpinner.setVisible(false);
-               airBotConnectionStatusPanel.setVisible(true);
-               airBotConnectionStatusLabelAirBotId.setText(airBotConfig.getId());
-               airBotConnectionStatusLabelPortName.setText(portName);
+               SwingUtilities.invokeLater(
+                     new Runnable()
+                     {
+                     @Override
+                     public void run()
+                        {
+                        airBotConnectionSpinner.setVisible(false);
+                        airBotConnectionStatusPanel.setVisible(true);
+                        airBotConnectionStatusLabelAirBotId.setText(airBotConfig.getId());
+                        airBotConnectionStatusLabelPortName.setText(portName);
+                        helper.addStatisticsListener(statisticsListener);
+                        jFrame.pack();
+                        jFrame.repaint();
+                        jFrame.setLocationRelativeTo(null);    // center the window on the screen
+                        }
+                     });
                }
 
             @Override
             public void handlePingFailureEvent()
                {
-               airBotConnectionSpinner.setVisible(true);
-               airBotConnectionStatusPanel.setVisible(false);
-               fluxtreamButton.setVisible(true);
-               fluxtreamConnectionStatus.setText("");
-               setFluxtreamTextFieldsEnabled(true);
-               validateFluxtreamForm();
+               SwingUtilities.invokeLater(
+                     new Runnable()
+                     {
+                     @Override
+                     public void run()
+                        {
+                        airBotConnectionSpinner.setVisible(true);
+                        airBotConnectionStatusPanel.setVisible(false);
+                        fluxtreamButton.setVisible(true);
+                        fluxtreamConnectionStatus.setText(EMPTY_LABEL_TEXT);
+                        setFluxtreamTextFieldsEnabled(true);
+                        validateFluxtreamForm();
+                        resetStatisticsTable();
+                        jFrame.pack();
+                        jFrame.repaint();
+                        jFrame.setLocationRelativeTo(null);    // center the window on the screen
+                        }
+                     });
                }
             });
 
@@ -104,7 +139,7 @@ final class AirBotUploaderGui
 
       final JPanel airBotPanel = createAirBotPanel();
       final JPanel fluxtreamPanel = createFluxtreamPanel();
-      final JPanel statusPanel = createStatusPanel();
+      final JPanel statisticsPanel = createStatisticsPanel();
 
       final JPanel verticalDivider = new JPanel();
       verticalDivider.setBackground(Color.GRAY);
@@ -119,18 +154,18 @@ final class AirBotUploaderGui
       // layout the various panels
       final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
       mainPanel.setLayout(mainPanelLayout);
-      mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+      mainPanel.setBorder(BorderFactory.createEmptyBorder(GAP_SIZE, GAP_SIZE, GAP_SIZE, GAP_SIZE));
 
       mainPanelLayout.setHorizontalGroup(
-            mainPanelLayout.createParallelGroup()
+            mainPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                   .addGroup(mainPanelLayout.createSequentialGroup()
                                   .addComponent(airBotPanel)
-                                  .addGap(5)
+                                  .addGap(GAP_SIZE)
                                   .addComponent(verticalDivider)
-                                  .addGap(5)
+                                  .addGap(GAP_SIZE)
                                   .addComponent(fluxtreamPanel))
                   .addComponent(horizontalDivider)
-                  .addComponent(statusPanel));
+                  .addComponent(statisticsPanel));
 
       mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createSequentialGroup()
@@ -138,10 +173,9 @@ final class AirBotUploaderGui
                                   .addComponent(airBotPanel)
                                   .addComponent(verticalDivider)
                                   .addComponent(fluxtreamPanel))
-                  .addGap(5)
                   .addComponent(horizontalDivider)
-                  .addGap(5)
-                  .addComponent(statusPanel));
+                  .addGap(GAP_SIZE)
+                  .addComponent(statisticsPanel));
 
       // add the main panel to the frame, pack, paint, center on the screen, and make it visible
       jFrame.add(mainPanel);
@@ -152,11 +186,6 @@ final class AirBotUploaderGui
 
       airBotConnectionSpinner.setVisible(true);
       airBotConnectionStatusPanel.setVisible(false);
-
-      // TODO: would be nice if this could work...
-      //airBotConnectionStatusPanel.setMinimumSize(airBotConnectionSpinner.getSize());
-      //airBotConnectionStatusPanel.setPreferredSize(airBotConnectionSpinner.getSize());
-      //airBotConnectionStatusPanel.setMaximumSize(airBotConnectionSpinner.getSize());
 
       // Kick off a connection attempt to the AirBot
       final SwingWorker sw =
@@ -187,8 +216,8 @@ final class AirBotUploaderGui
       airBotConnectionStatusPanel.setLayout(airBotConnectionStatusPanelLayout);
       airBotConnectionStatusPanel.setBackground(Color.WHITE);
 
-      final JLabel airBotConnectionStatusLabel1 = SwingUtils.createLabel("Connected to AirBot");
-      final JLabel airBotConnectionStatusLabel3 = SwingUtils.createLabel("on port");
+      final JLabel airBotConnectionStatusLabel1 = SwingUtils.createLabel(RESOURCES.getString("label.connected-to-airbot"));//"Connected to AirBot"
+      final JLabel airBotConnectionStatusLabel3 = SwingUtils.createLabel(RESOURCES.getString("label.on-port"));// on port
 
       airBotConnectionStatusPanelLayout.setHorizontalGroup(
             airBotConnectionStatusPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
@@ -200,11 +229,11 @@ final class AirBotUploaderGui
       airBotConnectionStatusPanelLayout.setVerticalGroup(
             airBotConnectionStatusPanelLayout.createSequentialGroup()
                   .addComponent(airBotConnectionStatusLabel1)
-                  .addGap(10)
+                  .addGap(GAP_SIZE)
                   .addComponent(airBotConnectionStatusLabelAirBotId)
-                  .addGap(10)
+                  .addGap(GAP_SIZE)
                   .addComponent(airBotConnectionStatusLabel3)
-                  .addGap(10)
+                  .addGap(GAP_SIZE)
                   .addComponent(airBotConnectionStatusLabelPortName)
       );
 
@@ -222,9 +251,10 @@ final class AirBotUploaderGui
       panelLayout.setVerticalGroup(
             panelLayout.createSequentialGroup()
                   .addComponent(titleLabel)
-                  .addGap(5)
+                  .addGap(GAP_SIZE)
                   .addComponent(airBotConnectionSpinner)
                   .addComponent(airBotConnectionStatusPanel)
+                  .addGap(GAP_SIZE)
       );
 
       return panel;
@@ -249,12 +279,10 @@ final class AirBotUploaderGui
       final JLabel usernameLabel = SwingUtils.createLabel(RESOURCES.getString("label.username"));
       final JLabel passwordLabel = SwingUtils.createLabel(RESOURCES.getString("label.password"));
       final JLabel deviceNameLabel = SwingUtils.createLabel(RESOURCES.getString("label.device-name"));
-      final JLabel emptyLabel = SwingUtils.createLabel("");
+      final JLabel emptyLabel = SwingUtils.createLabel(EMPTY_LABEL_TEXT);
 
       fluxtreamConnectionStatus.setBackground(Color.WHITE);
 
-      // Horizontally, we want to align the labels and the text fields
-      // along the left (LEADING) edge
       formPanelLayout.setHorizontalGroup(formPanelLayout.createSequentialGroup()
                                                .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                                .addComponent(hostAndPortLabel)
@@ -270,8 +298,6 @@ final class AirBotUploaderGui
                                                                .addComponent(fluxtreamButton))
       );
 
-      // Vertically, we want to align each label with his textfield
-      // on the baseline of the components
       formPanelLayout.setVerticalGroup(formPanelLayout.createSequentialGroup()
                                              .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                              .addComponent(hostAndPortLabel)
@@ -299,13 +325,22 @@ final class AirBotUploaderGui
       panelLayout.setVerticalGroup(
             panelLayout.createSequentialGroup()
                   .addComponent(titleLabel)
-                  .addGap(5)
+                  .addGap(GAP_SIZE)
                   .addComponent(formPanel)
                   .addGap(20)
                   .addComponent(fluxtreamConnectionStatus)
+                  .addGap(20)
       );
 
-      final FluxtreamFormValidator fluxtreamFormValidator = new FluxtreamFormValidator();
+      final KeyAdapter fluxtreamFormValidator =
+            new KeyAdapter()
+            {
+            @Override
+            public void keyReleased(final KeyEvent keyEvent)
+               {
+               validateFluxtreamForm();
+               }
+            };
       hostAndPortTextField.addKeyListener(fluxtreamFormValidator);
       usernameTextField.addKeyListener(fluxtreamFormValidator);
       passwordTextField.addKeyListener(fluxtreamFormValidator);
@@ -333,8 +368,9 @@ final class AirBotUploaderGui
                final HostAndPort hostAndPort = DataStorageCredentialsValidator.extractHostAndPort(hostAndPortTextField.getText());
                if (hostAndPort != null)
                   {
+                  final String portStr = hostAndPort.getPort();
                   final DataStorageCredentialsImpl dataStorageCredentials = new DataStorageCredentialsImpl(hostAndPort.getHost(),
-                                                                                                           Integer.parseInt(hostAndPort.getPort()),
+                                                                                                           (portStr == null) ? DEFAULT_PORT : Integer.parseInt(portStr),
                                                                                                            usernameTextField.getText(),
                                                                                                            passwordTextField.getText(),
                                                                                                            deviceNameTextField.getText());
@@ -351,13 +387,13 @@ final class AirBotUploaderGui
                if (success != null && (Boolean)success)
                   {
                   fluxtreamButton.setVisible(false);
-                  fluxtreamConnectionStatus.setText("Uploading AirBot data files...");
+                  fluxtreamConnectionStatus.setText(RESOURCES.getString("label.uploading-airbot-data-files"));
                   }
                else
                   {
                   setFluxtreamTextFieldsEnabled(true);
                   fluxtreamButton.setEnabled(true);
-                  fluxtreamConnectionStatus.setText("Connection failed.");
+                  fluxtreamConnectionStatus.setText(RESOURCES.getString("label.connection-failed"));
                   }
                }
             }
@@ -365,10 +401,69 @@ final class AirBotUploaderGui
       return panel;
       }
 
-   private JPanel createStatusPanel()
+   private JPanel createStatisticsPanel()
       {
       final JPanel panel = new JPanel();
       panel.setBackground(Color.WHITE);
+      final GroupLayout panelLayout = new GroupLayout(panel);
+      panel.setLayout(panelLayout);
+
+      final JLabel emptyLabel = SwingUtils.createLabel(EMPTY_LABEL_TEXT);
+
+      final JLabel requestedLabel = SwingUtils.createLabel(RESOURCES.getString("label.requested"), FONT_NORMAL_BOLD);
+      final JLabel successfulLabel = SwingUtils.createLabel(RESOURCES.getString("label.successful"), FONT_NORMAL_BOLD);
+      final JLabel failedLabel = SwingUtils.createLabel(RESOURCES.getString("label.failed"), FONT_NORMAL_BOLD);
+      final JLabel downloadsFromDeviceLabel = SwingUtils.createLabel(RESOURCES.getString("label.downloads-from-device"), FONT_NORMAL_BOLD);
+      final JLabel uploadsToServerLabel = SwingUtils.createLabel(RESOURCES.getString("label.uploads-to-server"), FONT_NORMAL_BOLD);
+
+      panelLayout.setHorizontalGroup(panelLayout.createSequentialGroup()
+                                           .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                                           .addComponent(emptyLabel)
+                                                           .addComponent(downloadsFromDeviceLabel)
+                                                           .addComponent(uploadsToServerLabel)
+                                           )
+                                           .addGap(GAP_SIZE)
+                                           .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                                           .addComponent(requestedLabel)
+                                                           .addComponent(statsDownloadsRequested)
+                                                           .addComponent(statsUploadsRequested)
+                                           )
+                                           .addGap(GAP_SIZE)
+                                           .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                                           .addComponent(successfulLabel)
+                                                           .addComponent(statsDownloadsSuccessful)
+                                                           .addComponent(statsUploadsSuccessful)
+                                           )
+                                           .addGap(GAP_SIZE)
+                                           .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                                           .addComponent(failedLabel)
+                                                           .addComponent(statsDownloadsFailed)
+                                                           .addComponent(statsUploadsFailed)
+                                           )
+      );
+
+      panelLayout.setVerticalGroup(panelLayout.createSequentialGroup()
+                                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                                         .addComponent(emptyLabel)
+                                                         .addComponent(requestedLabel)
+                                                         .addComponent(successfulLabel)
+                                                         .addComponent(failedLabel)
+                                         )
+                                         .addGap(GAP_SIZE)
+                                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                         .addComponent(downloadsFromDeviceLabel)
+                                                         .addComponent(statsDownloadsRequested)
+                                                         .addComponent(statsDownloadsSuccessful)
+                                                         .addComponent(statsDownloadsFailed)
+                                         )
+                                         .addGap(GAP_SIZE)
+                                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                         .addComponent(uploadsToServerLabel)
+                                                         .addComponent(statsUploadsRequested)
+                                                         .addComponent(statsUploadsSuccessful)
+                                                         .addComponent(statsUploadsFailed)
+                                         )
+      );
 
       return panel;
       }
@@ -395,16 +490,45 @@ final class AirBotUploaderGui
                                    password.length() > 0 &&
                                    isDeviceNameValid);
 
+      hostAndPortTextField.setBackground(hostAndPortTextField.getText().length() <= 0 || isHostAndPortValid ? Color.WHITE : Color.PINK);
       deviceNameTextField.setBackground(deviceName.length() <= 0 || isDeviceNameValid ? Color.WHITE : Color.PINK);
       fluxtreamButton.setEnabled(isFormValid);
       }
 
-   private class FluxtreamFormValidator extends KeyAdapter
+   private void resetStatisticsTable()
+      {
+      SwingUtils.runInGUIThread(new Runnable()
       {
       @Override
-      public void keyReleased(final KeyEvent keyEvent)
+      public void run()
          {
-         validateFluxtreamForm();
+         for (final JLabel label : statsCategoryToLabelMap.values())
+            {
+            label.setText(STATISTICS_VALUE_ZERO);
+            }
+         }
+      });
+      }
+
+   private final class StatisticsListener implements DataFileManager.Statistics.Listener
+      {
+      @Override
+      public void handleValueChange(@NotNull final DataFileManager.Statistics.Category category, final int newValue)
+         {
+         SwingUtilities.invokeLater(
+               new Runnable()
+               {
+               @Override
+               public void run()
+                  {
+                  final JLabel label = statsCategoryToLabelMap.get(category);
+                  if (label != null)
+                     {
+                     label.setText(String.valueOf(newValue));
+                     }
+                  }
+               }
+         );
          }
       }
    }

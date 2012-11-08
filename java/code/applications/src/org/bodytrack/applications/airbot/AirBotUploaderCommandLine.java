@@ -30,18 +30,6 @@ final class AirBotUploaderCommandLine extends SerialDeviceCommandLineApplication
             new AirBotUploaderHelper.EventListener()
             {
             @Override
-            public void handleInfoMessageEvent(@NotNull final String message)
-               {
-               println(message);
-               }
-
-            @Override
-            public void handleErrorMessageEvent(@NotNull final String message)
-               {
-               println(message);
-               }
-
-            @Override
             public void handleConnectionEvent(@NotNull final AirBotConfig airBotConfig, @NotNull final String portName)
                {
                // nothing to do
@@ -78,7 +66,7 @@ final class AirBotUploaderCommandLine extends SerialDeviceCommandLineApplication
          {
          public void run()
             {
-            final String statistics = helper.getStatisticsStr();
+            final String statistics = helper.getStatistics();
             if (statistics != null)
                {
                println(statistics);
