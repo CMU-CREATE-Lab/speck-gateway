@@ -9,6 +9,7 @@
       <pathelement path="${commons-io.jar}"/>
       <pathelement path="${create-lab-commons-device.jar}"/>
       <pathelement path="${create-lab-commons-serial.jar}"/>
+      <pathelement path="${create-lab-commons-user-interface.jar}"/>
       <pathelement path="${create-lab-commons-util.jar}"/>
       <pathelement path="${httpcomponents-client1.jar}"/>
       <pathelement path="${httpcomponents-client2.jar}"/>
@@ -34,6 +35,7 @@
       <pathelement path="${commons-io.jar}"/>
       <pathelement path="${create-lab-commons-device.jar}"/>
       <pathelement path="${create-lab-commons-serial.jar}"/>
+      <pathelement path="${create-lab-commons-user-interface.jar}"/>
       <pathelement path="${create-lab-commons-util.jar}"/>
       <pathelement path="${httpcomponents-client1.jar}"/>
       <pathelement path="${httpcomponents-client2.jar}"/>
@@ -151,6 +153,7 @@
             <fileset file="${commons-io.jar}"/>
             <fileset file="${create-lab-commons-device.jar}"/>
             <fileset file="${create-lab-commons-serial.jar}"/>
+            <fileset file="${create-lab-commons-user-interface.jar}"/>
             <fileset file="${create-lab-commons-util.jar}"/>
             <fileset file="${httpcomponents-client1.jar}"/>
             <fileset file="${httpcomponents-client2.jar}"/>
@@ -178,13 +181,14 @@
    <target name="dist-airbot-applications" depends="dist-airbot-core, build-airbot-applications" description="builds airbot-applications" unless="dist-airbot-applications-is-complete">
       <create-dist component.name="airbot-applications">
          <jar-manifest-attributes>
-            <attribute name="Main-Class" value="org.bodytrack.applications.AirBotUploader"/>
+            <attribute name="Main-Class" value="org.bodytrack.applications.airbot.AirBotUploader"/>
          </jar-manifest-attributes>
          <additional-files-to-copy>
             <fileset file="${airbot-core.dist.dir}/${airbot-core.jar.filename}"/>
             <fileset file="${commons-io.jar}"/>
             <fileset file="${create-lab-commons-device.jar}"/>
             <fileset file="${create-lab-commons-serial.jar}"/>
+            <fileset file="${create-lab-commons-user-interface.jar}"/>
             <fileset file="${create-lab-commons-util.jar}"/>
             <fileset file="${httpcomponents-client1.jar}"/>
             <fileset file="${httpcomponents-client2.jar}"/>

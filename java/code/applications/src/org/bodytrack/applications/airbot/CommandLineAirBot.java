@@ -1,4 +1,4 @@
-package org.bodytrack.applications;
+package org.bodytrack.applications.airbot;
 
 import java.io.BufferedReader;
 import java.io.File;

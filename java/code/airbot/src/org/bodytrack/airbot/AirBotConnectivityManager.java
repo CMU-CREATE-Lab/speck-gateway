@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-class AirBotConnectivityManager extends BaseCreateLabDeviceConnectivityManager<AirBot>
+public class AirBotConnectivityManager extends BaseCreateLabDeviceConnectivityManager<AirBot>
    {
    private static final Logger LOG = Logger.getLogger(AirBotConnectivityManager.class);
    private static final Logger CONSOLE_LOG = Logger.getLogger("ConsoleLog");

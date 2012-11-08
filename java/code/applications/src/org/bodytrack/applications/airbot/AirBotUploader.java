@@ -1,4 +1,4 @@
-package org.bodytrack.applications;
+package org.bodytrack.applications.airbot;
 
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
@@ -120,8 +120,7 @@ public final class AirBotUploader extends JPanel
                                     @Nullable
                                     protected Object doInBackground() throws Exception
                                        {
-                                       // TODO: do a shutdown here!
-                                       //application.shutdown();
+                                       application.disconnect();
 
                                        return null;
                                        }

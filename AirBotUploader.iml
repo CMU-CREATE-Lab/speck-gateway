@@ -50,6 +50,17 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
+      <library name="CREATE Lab Commons User Interface">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/java/lib/create-lab-commons-user-interface/create-lab-commons-user-interface.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/java/lib/create-lab-commons-user-interface/create-lab-commons-user-interface-src.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library name="CREATE Lab Commons Util">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/java/lib/create-lab-commons-util/create-lab-commons-util.jar!/" />

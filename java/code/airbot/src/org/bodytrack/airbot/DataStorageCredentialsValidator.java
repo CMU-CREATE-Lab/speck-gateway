@@ -2,6 +2,7 @@ package org.bodytrack.airbot;
 
 import java.io.UnsupportedEncodingException;
 import java.util.regex.Pattern;
+import edu.cmu.ri.createlab.util.net.HostAndPort;
 import org.apache.http.entity.StringEntity;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +34,21 @@ public final class DataStorageCredentialsValidator
             }
          }
       return false;
+      }
+
+   @Nullable
+   public static HostAndPort extractHostAndPort(@Nullable final String hostNameAndPortStr)
+      {
+      if (hostNameAndPortStr != null)
+         {
+         return HostAndPort.createHostAndPort(hostNameAndPortStr);
+         }
+      return null;
+      }
+
+   public static boolean isHostAndPortValid(@Nullable final String hostNameAndPortStr)
+      {
+      return hostNameAndPortStr != null && (extractHostAndPort(hostNameAndPortStr) != null);
       }
 
    public static boolean isDeviceNameValid(@Nullable final String deviceName)
