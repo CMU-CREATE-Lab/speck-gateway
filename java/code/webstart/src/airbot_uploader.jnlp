@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN" "http://java.sun.com/dtd/JNLP-6.0.dtd">
+
+<jnlp spec="1.0+"
+      codebase="http://airbot.cmucreatelab.org/"
+      href="airbot_uploader.jnlp">
+   <information>
+      <title>CREATE Lab AirBot Uploader</title>
+      <vendor>CMU CREATE Lab</vendor>
+      <homepage href="http://www.cmucreatelab.org/projects/AirBot"/>
+      <icon kind="default" href="images/airBotIcon512.png" width="512" height="512"/>
+      <icon kind="splash" href="images/airBotSplashScreen.png" width="600" height="400"/>
+      <offline-allowed/>
+      <shortcut online="true">
+         <desktop/>
+         <menu submenu="CREATE Lab"/>
+      </shortcut>
+   </information>
+   <security>
+      <all-permissions/>
+   </security>
+   <update check="background" policy="always"/>
+   <resources>
+      <!-- Application Resources -->
+      <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+
+      <property name="jna.library.path" value="."/>
+
+      <extension name="rxtx" href="rxtx.jnlp"/>
+
+      <jar href="jar/airbot-applications.jar"/>
+      <jar href="jar/airbot-core.jar"/>
+      <jar href="jar/apache-log4j-extras-1.0.jar"/>
+      <jar href="jar/commons-codec-1.6.jar"/>
+      <jar href="jar/commons-io-2.4.jar"/>
+      <jar href="jar/commons-logging-1.1.1.jar"/>
+      <jar href="jar/create-lab-commons-device.jar"/>
+      <jar href="jar/create-lab-commons-serial.jar"/>
+      <jar href="jar/create-lab-commons-user-interface.jar"/>
+      <jar href="jar/create-lab-commons-util.jar"/>
+      <jar href="jar/fluent-hc-4.2.2.jar"/>
+      <jar href="jar/httpclient-4.2.2.jar"/>
+      <jar href="jar/httpclient-cache-4.2.2.jar"/>
+      <jar href="jar/httpcore-4.2.2.jar"/>
+      <jar href="jar/httpmime-4.2.2.jar"/>
+      <jar href="jar/jackson-annotations-2.1.0.jar"/>
+      <jar href="jar/jackson-core-2.1.0.jar"/>
+      <jar href="jar/jackson-databind-2.1.0.jar"/>
+      <jar href="jar/log4j-1.2.17.jar"/>
+   </resources>
+   <application-desc main-class="org.bodytrack.applications.airbot.AirBotUploader"/>
+</jnlp>
+

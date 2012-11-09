@@ -1,0 +1,74 @@
+<html>
+<head>
+   <title>CREATE Lab AirBot Uploader</title>
+   <script src="js/deployJava-minified.js"></script>
+   <style type="text/css">
+      body, p, table, tr, td, ul, li {
+         font-family: Verdana, Arial, Helvetica, sans-serif;
+         font-size: 12pt;
+      }
+
+      body {
+         background-color: white
+      }
+
+      .title {
+         font-size: 30pt;
+         font-weight: bold;
+      }
+
+      .subtitle {
+         font-size: 18pt;
+         font-weight: bold;
+      }
+
+      .buy_one {
+         font-size: 9pt;
+         font-weight: normal;
+      }
+
+      .version {
+         font-size: 12pt;
+      }
+
+      .instructions {
+         font-size: 13pt;
+         width: 600px;
+         max-width: 600px;
+         text-align: center;
+      }
+   </style>
+   <script type="text/javascript">
+     var _gaq = _gaq || [];
+     _gaq.push(['_setAccount', 'UA-10682694-7']);
+     _gaq.push(['_setDomainName', 'cmucreatelab.org']);
+     _gaq.push(['_trackPageview']);
+
+     (function() {
+       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+     })();
+   </script>
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%">
+   <tr>
+      <td align="center">
+         <div class="title">CREATE Lab AirBot Uploader</div>
+         <div class="version">version @version.number@</div>
+         <p><img src="/java/code/webstart/src/images/airBotIcon512.png" border="0" width="256" height="256"/></p>
+         <div class="instructions">
+            To download and run the AirBot Uploader,<br>simply click the Launch button below.
+         </div>
+         <p></p>
+         <script>
+            deployJava.createWebStartLaunchButton("airbot_uploader.jnlp", '1.6.0');
+         </script>
+
+      </td>
+   </tr>
+</table>
+</body>
+</html>
+
