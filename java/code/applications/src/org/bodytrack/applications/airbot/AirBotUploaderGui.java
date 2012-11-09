@@ -38,7 +38,8 @@ final class AirBotUploaderGui
    private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(AirBotUploaderGui.class.getName());
 
    private static final int DEFAULT_PORT = 80;
-   private static final int GAP_SIZE = 10;
+   private static final int SMALL_GAP = 5;
+   private static final int GAP = 10;
    private static final String STATISTICS_VALUE_ZERO = "0";
    private static final String EMPTY_LABEL_TEXT = " ";
 
@@ -154,15 +155,15 @@ final class AirBotUploaderGui
       // layout the various panels
       final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
       mainPanel.setLayout(mainPanelLayout);
-      mainPanel.setBorder(BorderFactory.createEmptyBorder(GAP_SIZE, GAP_SIZE, GAP_SIZE, GAP_SIZE));
+      mainPanel.setBorder(BorderFactory.createEmptyBorder(GAP, GAP, GAP, GAP));
 
       mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                   .addGroup(mainPanelLayout.createSequentialGroup()
                                   .addComponent(airBotPanel)
-                                  .addGap(GAP_SIZE)
+                                  .addGap(GAP)
                                   .addComponent(verticalDivider)
-                                  .addGap(GAP_SIZE)
+                                  .addGap(GAP)
                                   .addComponent(fluxtreamPanel))
                   .addComponent(horizontalDivider)
                   .addComponent(statisticsPanel));
@@ -174,7 +175,7 @@ final class AirBotUploaderGui
                                   .addComponent(verticalDivider)
                                   .addComponent(fluxtreamPanel))
                   .addComponent(horizontalDivider)
-                  .addGap(GAP_SIZE)
+                  .addGap(GAP)
                   .addComponent(statisticsPanel));
 
       // add the main panel to the frame, pack, paint, center on the screen, and make it visible
@@ -229,11 +230,11 @@ final class AirBotUploaderGui
       airBotConnectionStatusPanelLayout.setVerticalGroup(
             airBotConnectionStatusPanelLayout.createSequentialGroup()
                   .addComponent(airBotConnectionStatusLabel1)
-                  .addGap(GAP_SIZE)
+                  .addGap(GAP)
                   .addComponent(airBotConnectionStatusLabelAirBotId)
-                  .addGap(GAP_SIZE)
+                  .addGap(GAP)
                   .addComponent(airBotConnectionStatusLabel3)
-                  .addGap(GAP_SIZE)
+                  .addGap(GAP)
                   .addComponent(airBotConnectionStatusLabelPortName)
       );
 
@@ -251,10 +252,10 @@ final class AirBotUploaderGui
       panelLayout.setVerticalGroup(
             panelLayout.createSequentialGroup()
                   .addComponent(titleLabel)
-                  .addGap(GAP_SIZE)
+                  .addGap(GAP)
                   .addComponent(airBotConnectionSpinner)
                   .addComponent(airBotConnectionStatusPanel)
-                  .addGap(GAP_SIZE)
+                  .addGap(GAP)
       );
 
       return panel;
@@ -290,6 +291,7 @@ final class AirBotUploaderGui
                                                                .addComponent(passwordLabel)
                                                                .addComponent(deviceNameLabel)
                                                                .addComponent(emptyLabel))
+                                               .addGap(SMALL_GAP)
                                                .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                                .addComponent(hostAndPortTextField)
                                                                .addComponent(usernameTextField)
@@ -302,15 +304,19 @@ final class AirBotUploaderGui
                                              .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                              .addComponent(hostAndPortLabel)
                                                              .addComponent(hostAndPortTextField))
+                                             .addGap(SMALL_GAP)
                                              .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                              .addComponent(usernameLabel)
                                                              .addComponent(usernameTextField))
+                                             .addGap(SMALL_GAP)
                                              .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                              .addComponent(passwordLabel)
                                                              .addComponent(passwordTextField))
+                                             .addGap(SMALL_GAP)
                                              .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                              .addComponent(deviceNameLabel)
                                                              .addComponent(deviceNameTextField))
+                                             .addGap(SMALL_GAP)
                                              .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                              .addComponent(emptyLabel)
                                                              .addComponent(fluxtreamButton))
@@ -325,7 +331,7 @@ final class AirBotUploaderGui
       panelLayout.setVerticalGroup(
             panelLayout.createSequentialGroup()
                   .addComponent(titleLabel)
-                  .addGap(GAP_SIZE)
+                  .addGap(GAP)
                   .addComponent(formPanel)
                   .addGap(20)
                   .addComponent(fluxtreamConnectionStatus)
@@ -422,19 +428,19 @@ final class AirBotUploaderGui
                                                            .addComponent(downloadsFromDeviceLabel)
                                                            .addComponent(uploadsToServerLabel)
                                            )
-                                           .addGap(GAP_SIZE)
+                                           .addGap(GAP)
                                            .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                            .addComponent(requestedLabel)
                                                            .addComponent(statsDownloadsRequested)
                                                            .addComponent(statsUploadsRequested)
                                            )
-                                           .addGap(GAP_SIZE)
+                                           .addGap(GAP)
                                            .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                            .addComponent(successfulLabel)
                                                            .addComponent(statsDownloadsSuccessful)
                                                            .addComponent(statsUploadsSuccessful)
                                            )
-                                           .addGap(GAP_SIZE)
+                                           .addGap(GAP)
                                            .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                            .addComponent(failedLabel)
                                                            .addComponent(statsDownloadsFailed)
@@ -449,14 +455,14 @@ final class AirBotUploaderGui
                                                          .addComponent(successfulLabel)
                                                          .addComponent(failedLabel)
                                          )
-                                         .addGap(GAP_SIZE)
+                                         .addGap(GAP)
                                          .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                          .addComponent(downloadsFromDeviceLabel)
                                                          .addComponent(statsDownloadsRequested)
                                                          .addComponent(statsDownloadsSuccessful)
                                                          .addComponent(statsDownloadsFailed)
                                          )
-                                         .addGap(GAP_SIZE)
+                                         .addGap(GAP)
                                          .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                          .addComponent(uploadsToServerLabel)
                                                          .addComponent(statsUploadsRequested)
