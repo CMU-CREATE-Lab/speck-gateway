@@ -12,7 +12,7 @@
 
    <appender name="RollingFileAppender" class="org.apache.log4j.rolling.RollingFileAppender">
       <rollingPolicy class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
-         <param name="FileNamePattern" value="logs/AirBotUploader_%d{yyyyMMdd}.log"/>
+         <param name="FileNamePattern" value="${user.home}/BodyTrack/AirBotData/logs/AirBotUploader_%d{yyyyMMdd}.log"/>
       </rollingPolicy>
 
       <layout class="org.apache.log4j.PatternLayout">
