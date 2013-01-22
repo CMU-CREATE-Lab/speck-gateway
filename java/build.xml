@@ -99,7 +99,7 @@
    </tstamp>
 
    <!-- get the svn repository url and revision -->
-   <property name="airbot-uploader.version-number" value="${airbot-uploader.version-number.major}.${airbot-uploader.version-number.minor}"/>
+   <property name="airbot-uploader.version-number" value="${airbot-uploader.version-number.major}.${airbot-uploader.version-number.minor}.${airbot-uploader.version-number.revision}"/>
    <echo level="info">Visual Programmer Version Number: ${airbot-uploader.version-number}</echo>
 
    <target name="all" depends="clean, dist" description="clean, then build everything"/>
