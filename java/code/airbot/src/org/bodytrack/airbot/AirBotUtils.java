@@ -18,15 +18,6 @@ public final class AirBotUtils
    private static final Pattern DEFAULT_FILENAME_PATTERN = Pattern.compile("[a-fA-F0-9]+\\.TXT");
 
    /**
-    * Given some number of seconds relative to power-on, this method converts to absolute seconds (the number of seconds
-    * since the epoch).
-    */
-   public static long convertRelativeSecondsToAbsolute(final long secondsRelativeToPowerOn, @NotNull final AirBotConfig airBotConfig)
-      {
-      return secondsRelativeToPowerOn + airBotConfig.getPowerOnTimeInMillis() / 1000;
-      }
-
-   /**
     * Returns <code>true</code> if the filename is valid, <code>false</code> otherwise.
     */
    public static boolean isFilenameValid(@NotNull final String filename, @NotNull final AirBotConfig airBotConfig)
@@ -51,18 +42,7 @@ public final class AirBotUtils
       if (!isFilenameValid(filename, airBotConfig))
          {
          final String message = "Invalid filename: filename [" + filename + "] does not match the expected pattern";
-         LOG.error("GetFileCommandStrategy$DataFileImpl.DataFileImpl(): " + message);
-         }
-      else if (airBotConfig.getProtocolVersion() == 1)
-         {
-         // In version 1 of the protocol, the filename is the timestamp of the first record in the file, where
-         // the timestamp is the number of seconds after power-on that the sample was taken.  The number is in
-         // base 10.
-         final long secondsAfterPowerOn = Integer.parseInt(computeBaseFilename(filename), 10);
-         final long timestampInSeconds = AirBotUtils.convertRelativeSecondsToAbsolute(secondsAfterPowerOn, airBotConfig);
-
-         // return the hex filename
-         return Long.toHexString(timestampInSeconds) + FILENAME_EXTENSION;
+         LOG.error("AirBotUtils.mapFilename(): " + message);
          }
 
       return filename;

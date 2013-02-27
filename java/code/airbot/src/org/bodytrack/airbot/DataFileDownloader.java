@@ -56,7 +56,7 @@ public final class DataFileDownloader
             {
             LOG.debug("DataFileDownloader.dataFileListRequestRunnable.run()");
 
-            final SortedSet<String> availableFilenames = device.getAvailableFilenames();
+            final SortedSet<String> availableFilenames = null; // TODO
             final SortedSet<String> nonNullAvailableFilenames = (availableFilenames == null) ? new TreeSet<String>() : availableFilenames;
             final SortedSet<String> unmodifiableAvailableFilenames = Collections.unmodifiableSortedSet(nonNullAvailableFilenames);
 

@@ -1,6 +1,7 @@
 package org.bodytrack.airbot;
 
 import java.io.File;
+import edu.cmu.ri.createlab.usb.hid.HIDDeviceDescriptor;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -12,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public class AirBotUploaderConstants
    {
+   private static final String DEVICE_COMMON_NAME = "AirBot";
+
    public static final class FilePaths
       {
       public static final File BODYTRACK_HOME_DIRECTORY = new File(System.getProperty("user.home") + File.separator + "BodyTrack" + File.separator);
@@ -41,6 +44,28 @@ public class AirBotUploaderConstants
          }
 
       private FilePaths()
+         {
+         // private to prevent instantiation
+         }
+      }
+
+   public static final class UsbHidConfiguration
+      {
+      public static final short USB_VENDOR_ID = 0x2354;
+      public static final short USB_PRODUCT_ID = 0x3333;
+
+      public static final int REPORT_LENGTH_IN_BYTES = 16;
+
+      private static final int INPUT_REPORT_LENGTH_IN_BYTES = REPORT_LENGTH_IN_BYTES + 1;  // count includes the report ID
+      private static final int OUTPUT_REPORT_LENGTH_IN_BYTES = REPORT_LENGTH_IN_BYTES + 1; // count includes the report ID
+
+      public static final HIDDeviceDescriptor HID_DEVICE_DESCRIPTOR = new HIDDeviceDescriptor(USB_VENDOR_ID,
+                                                                                              USB_PRODUCT_ID,
+                                                                                              INPUT_REPORT_LENGTH_IN_BYTES,
+                                                                                              OUTPUT_REPORT_LENGTH_IN_BYTES,
+                                                                                              DEVICE_COMMON_NAME);
+
+      private UsbHidConfiguration()
          {
          // private to prevent instantiation
          }

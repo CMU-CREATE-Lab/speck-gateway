@@ -26,16 +26,17 @@
 
       <property name="jna.library.path" value="."/>
 
-      <extension name="rxtx" href="rxtx.jnlp"/>
+      <extension name="hidapi" href="hidapi.jnlp"/>
 
       <jar href="jar/airbot-applications.jar"/>
       <jar href="jar/airbot-core.jar"/>
       <jar href="jar/apache-log4j-extras-1.0.jar"/>
       <jar href="jar/commons-codec-1.6.jar"/>
       <jar href="jar/commons-io-2.4.jar"/>
+      <jar href="jar/commons-lang-2.5.jar"/>
       <jar href="jar/commons-logging-1.1.1.jar"/>
       <jar href="jar/create-lab-commons-device.jar"/>
-      <jar href="jar/create-lab-commons-serial.jar"/>
+      <jar href="jar/create-lab-commons-usb-hid.jar"/>
       <jar href="jar/create-lab-commons-user-interface.jar"/>
       <jar href="jar/create-lab-commons-util.jar"/>
       <jar href="jar/fluent-hc-4.2.2.jar"/>
@@ -46,6 +47,8 @@
       <jar href="jar/jackson-annotations-2.1.0.jar"/>
       <jar href="jar/jackson-core-2.1.0.jar"/>
       <jar href="jar/jackson-databind-2.1.0.jar"/>
+      <jar href="jar/jna.jar"/>
+      <jar href="jar/jnaerator-0.9.5.jar"/>
       <jar href="jar/log4j-1.2.17.jar"/>
    </resources>
    <application-desc main-class="org.bodytrack.applications.airbot.AirBotUploader"/>

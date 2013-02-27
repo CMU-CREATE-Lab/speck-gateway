@@ -2,7 +2,7 @@ package org.bodytrack.applications.airbot;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import edu.cmu.ri.createlab.serial.commandline.SerialDeviceCommandLineApplication;
+import edu.cmu.ri.createlab.util.commandline.BaseCommandLineApplication;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-final class AirBotUploaderCommandLine extends SerialDeviceCommandLineApplication
+final class AirBotUploaderCommandLine extends BaseCommandLineApplication
    {
    private static final Logger LOG = Logger.getLogger(AirBotUploaderCommandLine.class);
 
@@ -46,7 +46,7 @@ final class AirBotUploaderCommandLine extends SerialDeviceCommandLineApplication
       registerActions();
       }
 
-   private final Runnable scanAndConnectToDeviceAction =
+   private final Runnable connectToAirBotAction =
          new Runnable()
          {
          public void run()
@@ -244,7 +244,7 @@ final class AirBotUploaderCommandLine extends SerialDeviceCommandLineApplication
 
    private void registerActions()
       {
-      registerAction("c", scanAndConnectToDeviceAction);
+      registerAction("c", connectToAirBotAction);
       registerAction("u", defineDataStorageCredentials);
       registerAction("s", printStatisticsAction);
       registerAction("l", setLoggingLevelAction);
@@ -261,8 +261,7 @@ final class AirBotUploaderCommandLine extends SerialDeviceCommandLineApplication
       println("");
       }
 
-   @Override
-   protected void disconnect()
+   private void disconnect()
       {
       helper.disconnect();
       }
@@ -271,7 +270,7 @@ final class AirBotUploaderCommandLine extends SerialDeviceCommandLineApplication
       {
       println("COMMANDS -----------------------------------");
       println("");
-      println("c         Scan all serial ports and connect to the first device found");
+      println("c         Connect to the AirBot");
       println("u         Specify host and login credentials for uploads");
       println("s         Print statistics for files downloaded, uploaded, and deleted");
       println("l         Set the logging level for the log file (has no effect on console logging)");

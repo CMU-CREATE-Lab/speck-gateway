@@ -7,8 +7,9 @@
    <path id="airbot-core-classpath">
       <!-- third-party jars -->
       <pathelement path="${commons-io.jar}"/>
+      <pathelement path="${commons-lang.jar}"/>
       <pathelement path="${create-lab-commons-device.jar}"/>
-      <pathelement path="${create-lab-commons-serial.jar}"/>
+      <pathelement path="${create-lab-commons-usb-hid.jar}"/>
       <pathelement path="${create-lab-commons-user-interface.jar}"/>
       <pathelement path="${create-lab-commons-util.jar}"/>
       <pathelement path="${httpcomponents-client1.jar}"/>
@@ -22,9 +23,10 @@
       <pathelement path="${jackson2.jar}"/>
       <pathelement path="${jackson3.jar}"/>
       <pathelement path="${jetbrains-annotations.jar}"/>
+      <pathelement path="${jna.jar}"/>
+      <pathelement path="${jnaerator.jar}"/>
       <pathelement path="${log4j.jar}"/>
       <pathelement path="${log4j-extras.jar}"/>
-      <pathelement path="${rxtx.jar}"/>
    </path>
 
    <path id="airbot-applications-classpath">
@@ -33,8 +35,9 @@
 
       <!-- third-party jars -->
       <pathelement path="${commons-io.jar}"/>
+      <pathelement path="${commons-lang.jar}"/>
       <pathelement path="${create-lab-commons-device.jar}"/>
-      <pathelement path="${create-lab-commons-serial.jar}"/>
+      <pathelement path="${create-lab-commons-usb-hid.jar}"/>
       <pathelement path="${create-lab-commons-user-interface.jar}"/>
       <pathelement path="${create-lab-commons-util.jar}"/>
       <pathelement path="${httpcomponents-client1.jar}"/>
@@ -48,9 +51,10 @@
       <pathelement path="${jackson2.jar}"/>
       <pathelement path="${jackson3.jar}"/>
       <pathelement path="${jetbrains-annotations.jar}"/>
+      <pathelement path="${jna.jar}"/>
+      <pathelement path="${jnaerator.jar}"/>
       <pathelement path="${log4j.jar}"/>
       <pathelement path="${log4j-extras.jar}"/>
-      <pathelement path="${rxtx.jar}"/>
    </path>
 
    <!-- Compiler resources -->
@@ -156,10 +160,15 @@
       <create-dist component.name="airbot-core">
          <additional-files-to-copy>
             <fileset file="${commons-io.jar}"/>
+            <fileset file="${commons-lang.jar}"/>
             <fileset file="${create-lab-commons-device.jar}"/>
-            <fileset file="${create-lab-commons-serial.jar}"/>
+            <fileset file="${create-lab-commons-usb-hid.jar}"/>
             <fileset file="${create-lab-commons-user-interface.jar}"/>
             <fileset file="${create-lab-commons-util.jar}"/>
+            <fileset file="${hidapi1.native}"/>
+            <fileset file="${hidapi2.native}"/>
+            <fileset file="${hidapi3.native}"/>
+            <fileset file="${hidapi4.native}"/>
             <fileset file="${httpcomponents-client1.jar}"/>
             <fileset file="${httpcomponents-client2.jar}"/>
             <fileset file="${httpcomponents-client3.jar}"/>
@@ -170,13 +179,8 @@
             <fileset file="${jackson1.jar}"/>
             <fileset file="${jackson2.jar}"/>
             <fileset file="${jackson3.jar}"/>
-            <fileset file="${rxtx.jar}"/>
-            <fileset file="${rxtx-linux.native1}"/>
-            <fileset file="${rxtx-linux.native2}"/>
-            <fileset file="${rxtx-macos.native1}"/>
-            <fileset file="${rxtx-macos.native2}"/>
-            <fileset file="${rxtx-windows.native1}"/>
-            <fileset file="${rxtx-windows.native2}"/>
+            <fileset file="${jna.jar}"/>
+            <fileset file="${jnaerator.jar}"/>
          </additional-files-to-copy>
       </create-dist>
 
@@ -191,10 +195,15 @@
          <additional-files-to-copy>
             <fileset file="${airbot-core.dist.dir}/${airbot-core.jar.filename}"/>
             <fileset file="${commons-io.jar}"/>
+            <fileset file="${commons-lang.jar}"/>
             <fileset file="${create-lab-commons-device.jar}"/>
-            <fileset file="${create-lab-commons-serial.jar}"/>
+            <fileset file="${create-lab-commons-usb-hid.jar}"/>
             <fileset file="${create-lab-commons-user-interface.jar}"/>
             <fileset file="${create-lab-commons-util.jar}"/>
+            <fileset file="${hidapi1.native}"/>
+            <fileset file="${hidapi2.native}"/>
+            <fileset file="${hidapi3.native}"/>
+            <fileset file="${hidapi4.native}"/>
             <fileset file="${httpcomponents-client1.jar}"/>
             <fileset file="${httpcomponents-client2.jar}"/>
             <fileset file="${httpcomponents-client3.jar}"/>
@@ -205,13 +214,8 @@
             <fileset file="${jackson1.jar}"/>
             <fileset file="${jackson2.jar}"/>
             <fileset file="${jackson3.jar}"/>
-            <fileset file="${rxtx.jar}"/>
-            <fileset file="${rxtx-linux.native1}"/>
-            <fileset file="${rxtx-linux.native2}"/>
-            <fileset file="${rxtx-macos.native1}"/>
-            <fileset file="${rxtx-macos.native2}"/>
-            <fileset file="${rxtx-windows.native1}"/>
-            <fileset file="${rxtx-windows.native2}"/>
+            <fileset file="${jna.jar}"/>
+            <fileset file="${jnaerator.jar}"/>
          </additional-files-to-copy>
       </create-dist>
 
@@ -241,9 +245,8 @@
          <fileset dir="${airbot-applications.dist.dir}">
             <include name="**/*.jar"/>
          </fileset>
-         <fileset file="${rxtx-webstart.native1}"/>
-         <fileset file="${rxtx-webstart.native2}"/>
-         <fileset file="${rxtx-webstart.native3}"/>
+         <fileset file="${hidapi-webstart.native1}"/>
+         <fileset file="${hidapi-webstart.native2}"/>
       </copy>
 
       <!-- Sign all the jars -->

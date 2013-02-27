@@ -13,7 +13,4 @@ public interface AirBotConfig
 
    /** Returns the AirBot's protocol version. */
    int getProtocolVersion();
-
-   /** Returns the time at which the AirBot was powered in (in millis since the epoch). */
-   long getPowerOnTimeInMillis();
    }

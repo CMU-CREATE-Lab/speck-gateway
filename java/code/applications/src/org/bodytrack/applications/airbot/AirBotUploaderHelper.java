@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.bodytrack.airbot.AirBot;
 import org.bodytrack.airbot.AirBotConfig;
 import org.bodytrack.airbot.AirBotFactory;
+import org.bodytrack.airbot.CommunicationException;
 import org.bodytrack.airbot.DataFile;
 import org.bodytrack.airbot.DataFileDownloader;
 import org.bodytrack.airbot.DataFileManager;
@@ -312,21 +313,27 @@ final class AirBotUploaderHelper
                   {
                   return Integer.parseInt(properties.getProperty("version", "1"));
                   }
-
-               /** Returns the time at which the AirBot was powered on (in millis since the epoch). */
-               @Override
-               public long getPowerOnTimeInMillis()
-                  {
-                  return Long.parseLong(properties.getProperty("time", String.valueOf(System.currentTimeMillis())));
-                  }
                };
          }
 
+      @Nullable
       @Override
-      @SuppressWarnings("ReturnOfCollectionOrArrayField")
-      public SortedSet<String> getAvailableFilenames()
+      public Sample getSample() throws CommunicationException
          {
-         return emptySetOfAvailableFilenames;
+         throw new CommunicationException("This fake AirBot doesn't support Sample retrieval");
+         }
+
+      @NotNull
+      @Override
+      public Sample getCurrentSample() throws CommunicationException
+         {
+         throw new CommunicationException("This fake AirBot doesn't support Sample retrieval");
+         }
+
+      @Override
+      public boolean deleteSample(final int time)
+         {
+         return false;
          }
 
       @Override

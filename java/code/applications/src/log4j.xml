@@ -20,11 +20,7 @@
       </layout>
    </appender>
 
-   <category name="edu.cmu.ri.createlab.serial.SerialDeviceCommandExecutionQueue">
-      <priority value="debug"/>
-   </category>
-
-   <category name="edu.cmu.ri.createlab.serial.CreateLabSerialDeviceCommandStrategy">
+   <category name="edu.cmu.ri.createlab.usb">
       <priority value="debug"/>
    </category>
 

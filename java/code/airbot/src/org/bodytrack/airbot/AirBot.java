@@ -1,7 +1,5 @@
 package org.bodytrack.airbot;
 
-import java.util.Set;
-import java.util.SortedSet;
 import edu.cmu.ri.createlab.device.CreateLabDeviceProxy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,13 +9,53 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface AirBot extends CreateLabDeviceProxy
    {
+   interface Sample
+      {
+      /** The time the sample was taken, in UTC millis since the epoch. */
+      long getSampleTime();
+
+      /** The particle count in particles/Liter. */
+      int getParticleCount();
+
+      /** The temperature in 1/10 degrees F. */
+      int getTemperature();
+
+      /** The humidity in percent relative humidity. */
+      int getHumidity();
+
+      /**
+       * Returns <code>true</code> if this sample is all zeros, which signifies that there's currently no data
+       * available; returns <code>false</code> otherwise.
+       */
+      boolean isNoDataAvailable();
+      }
+
    /**
-    * Returns the available files as a {@link SortedSet}.  Will return an empty {@link Set} if there are no files
-    * available.  Returns <code>null</code> if the command failed.  Filenames in the {@link Set} are guaranteed to
-    * be non-<code>null</code> and have a non-zero length.
+    * Returns a data sample, perhaps from some time in the past, or returns <code>null</code> if no data is available.
+    * Throws a {@link CommunicationException} if a sample could not be read.
+    *
+    * @throws CommunicationException if a sample could not be read.
     */
    @Nullable
-   SortedSet<String> getAvailableFilenames();
+   Sample getSample() throws CommunicationException;
+
+   /**
+    * Returns the current conditions as a data sample, or throws a {@link CommunicationException} if a sample could not be
+    * read.
+    *
+    * @throws CommunicationException if a sample could not be read.
+    */
+   @NotNull
+   Sample getCurrentSample() throws CommunicationException;
+
+   /**
+    * Requests that the device deletes the sample associated with the given time. Returns <code>true</code> upon
+    * success, <code>false</code> otherwise, or throws a {@link CommunicationException} if a sample could not be
+    * deleted.
+    *
+    * @throws CommunicationException if a sample could not be read.
+    */
+   boolean deleteSample(final int time) throws CommunicationException;
 
    /**
     * Retrieves a {@link DataFile} from the AirBot specified by the given <code>filename</code>.  Returns a
