@@ -3,6 +3,8 @@ package org.bodytrack.airbot.commands;
 import edu.cmu.ri.createlab.usb.hid.CreateLabHIDReturnValueCommandStrategy;
 import edu.cmu.ri.createlab.usb.hid.HIDCommandResponse;
 import org.apache.log4j.Logger;
+import org.bodytrack.airbot.AirBot;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -76,10 +78,3 @@ public final class DeleteSampleCommandStrategy extends CreateLabHIDReturnValueCo
       return null;
       }
    }
-
-/*
-             0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
-Command  = [44,51,2e,60,2b,51,2b,bb,09,00,00,00,00,00,8e,00]
-Response = [44,51,2b,bb,09,00,00,00,00,00,00,00,00,00,84]
-
- */

@@ -23,9 +23,9 @@ import edu.cmu.ri.createlab.userinterface.util.AbstractTimeConsumingAction;
 import edu.cmu.ri.createlab.userinterface.util.SwingUtils;
 import edu.cmu.ri.createlab.util.net.HostAndPort;
 import org.bodytrack.airbot.AirBotConfig;
-import org.bodytrack.airbot.DataFileManager;
-import org.bodytrack.airbot.DataStorageCredentialsImpl;
-import org.bodytrack.airbot.DataStorageCredentialsValidator;
+import org.bodytrack.airbot.DataSampleManager;
+import org.bodytrack.airbot.RemoteStorageCredentialsImpl;
+import org.bodytrack.airbot.RemoteStorageCredentialsValidator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,7 +68,7 @@ final class AirBotUploaderGui
    private final JLabel statsUploadsSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
    private final JLabel statsUploadsFailed = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
 
-   private final Map<DataFileManager.Statistics.Category, JLabel> statsCategoryToLabelMap = new HashMap<DataFileManager.Statistics.Category, JLabel>(6);
+   private final Map<DataSampleManager.Statistics.Category, JLabel> statsCategoryToLabelMap = new HashMap<DataSampleManager.Statistics.Category, JLabel>(6);
 
    @NotNull
    private final JFrame jFrame;
@@ -77,12 +77,12 @@ final class AirBotUploaderGui
 
    AirBotUploaderGui(@NotNull final JFrame jFrame)
       {
-      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.DOWNLOADS_REQUESTED, statsDownloadsRequested);
-      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.DOWNLOADS_SUCCESSFUL, statsDownloadsSuccessful);
-      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.DOWNLOADS_FAILED, statsDownloadsFailed);
-      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.UPLOADS_REQUESTED, statsUploadsRequested);
-      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.UPLOADS_SUCCESSFUL, statsUploadsSuccessful);
-      statsCategoryToLabelMap.put(DataFileManager.Statistics.Category.UPLOADS_FAILED, statsUploadsFailed);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.DOWNLOADS_REQUESTED, statsDownloadsRequested);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.DOWNLOADS_SUCCESSFUL, statsDownloadsSuccessful);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.DOWNLOADS_FAILED, statsDownloadsFailed);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.UPLOADS_REQUESTED, statsUploadsRequested);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.UPLOADS_SUCCESSFUL, statsUploadsSuccessful);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.UPLOADS_FAILED, statsUploadsFailed);
 
       this.jFrame = jFrame;
       helper = new AirBotUploaderHelper(
@@ -371,11 +371,11 @@ final class AirBotUploaderGui
             @Override
             protected Object executeTimeConsumingAction()
                {
-               final HostAndPort hostAndPort = DataStorageCredentialsValidator.extractHostAndPort(hostAndPortTextField.getText());
+               final HostAndPort hostAndPort = RemoteStorageCredentialsValidator.extractHostAndPort(hostAndPortTextField.getText());
                if (hostAndPort != null)
                   {
                   final String portStr = hostAndPort.getPort();
-                  final DataStorageCredentialsImpl dataStorageCredentials = new DataStorageCredentialsImpl(hostAndPort.getHost(),
+                  final RemoteStorageCredentialsImpl dataStorageCredentials = new RemoteStorageCredentialsImpl(hostAndPort.getHost(),
                                                                                                            (portStr == null) ? DEFAULT_PORT : Integer.parseInt(portStr),
                                                                                                            usernameTextField.getText(),
                                                                                                            passwordTextField.getText(),
@@ -489,8 +489,8 @@ final class AirBotUploaderGui
       final String password = passwordTextField.getText();
       final String deviceName = deviceNameTextField.getText();
 
-      final boolean isDeviceNameValid = DataStorageCredentialsValidator.isDeviceNameValid(deviceName);
-      final boolean isHostAndPortValid = DataStorageCredentialsValidator.isHostAndPortValid(hostAndPort);
+      final boolean isDeviceNameValid = RemoteStorageCredentialsValidator.isDeviceNameValid(deviceName);
+      final boolean isHostAndPortValid = RemoteStorageCredentialsValidator.isHostAndPortValid(hostAndPort);
       final boolean isFormValid = (isHostAndPortValid &&
                                    username.length() > 0 &&
                                    password.length() > 0 &&
@@ -516,10 +516,10 @@ final class AirBotUploaderGui
       });
       }
 
-   private final class StatisticsListener implements DataFileManager.Statistics.Listener
+   private final class StatisticsListener implements DataSampleManager.Statistics.Listener
       {
       @Override
-      public void handleValueChange(@NotNull final DataFileManager.Statistics.Category category, final int newValue)
+      public void handleValueChange(@NotNull final DataSampleManager.Statistics.Category category, final int newValue)
          {
          SwingUtilities.invokeLater(
                new Runnable()

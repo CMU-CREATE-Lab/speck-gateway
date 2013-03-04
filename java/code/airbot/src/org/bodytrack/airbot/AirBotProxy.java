@@ -20,7 +20,7 @@ import edu.cmu.ri.createlab.util.thread.DaemonThreadFactory;
 import org.apache.log4j.Logger;
 import org.bodytrack.airbot.commands.DeleteSampleCommandStrategy;
 import org.bodytrack.airbot.commands.GetAirBotConfigCommandStrategy;
-import org.bodytrack.airbot.commands.GetSampleCommandStrategy;
+import org.bodytrack.airbot.commands.GetDataSampleCommandStrategy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,9 +80,9 @@ class AirBotProxy implements AirBot
    private final ScheduledExecutorService pingExecutorService = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory(this.getClass() + ".pingExecutorService"));
    private final ScheduledFuture<?> pingScheduledFuture;
    private final Collection<CreateLabDevicePingFailureEventListener> createLabDevicePingFailureEventListeners = new HashSet<CreateLabDevicePingFailureEventListener>();
-   private final GetSampleCommandStrategy getCurrentSampleCommandStrategy = GetSampleCommandStrategy.createGetCurrentSampleCommandStrategy();
-   private final GetSampleCommandStrategy getHistoricSampleCommandStrategy = GetSampleCommandStrategy.createGetHistoricSampleCommandStrategy();
-   private final HIDDeviceReturnValueCommandExecutor<Sample> getSampleCommandExecutor;
+   private final GetDataSampleCommandStrategy getCurrentSampleCommandStrategy = GetDataSampleCommandStrategy.createGetCurrentSampleCommandStrategy();
+   private final GetDataSampleCommandStrategy getHistoricSampleCommandStrategy = GetDataSampleCommandStrategy.createGetHistoricSampleCommandStrategy();
+   private final HIDDeviceReturnValueCommandExecutor<DataSample> getSampleCommandExecutor;
    private final HIDDeviceReturnValueCommandExecutor<Boolean> deleteSampleCommandExecutor;
 
    @NotNull
@@ -102,7 +102,7 @@ class AirBotProxy implements AirBot
                }
             };
 
-      getSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Sample>(commandQueue, commandExecutionFailureHandler);
+      getSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<DataSample>(commandQueue, commandExecutionFailureHandler);
       deleteSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Boolean>(commandQueue, commandExecutionFailureHandler);
       final HIDDeviceReturnValueCommandExecutor<AirBotConfig> airBotConfigReturnValueCommandExecutor = new HIDDeviceReturnValueCommandExecutor<AirBotConfig>(commandQueue, commandExecutionFailureHandler);
 
@@ -185,26 +185,46 @@ class AirBotProxy implements AirBot
 
    @Nullable
    @Override
-   public Sample getSample() throws CommunicationException
+   public DataSample getSample() throws CommunicationException
       {
-      return getSample(getHistoricSampleCommandStrategy);
+      final DataSample sample = getSample(getHistoricSampleCommandStrategy);
+
+      // if the sample is empty, then no data is available, so return null as specified in the API
+      if (sample.isEmpty())
+         {
+         return null;
+         }
+
+      return sample;
       }
 
    @NotNull
    @Override
-   public Sample getCurrentSample() throws CommunicationException
+   public DataSample getCurrentSample() throws CommunicationException
       {
       return getSample(getCurrentSampleCommandStrategy);
       }
 
-   private Sample getSample(final GetSampleCommandStrategy sampleCommandStrategy) throws CommunicationException
+   @NotNull
+   private DataSample getSample(final GetDataSampleCommandStrategy sampleCommandStrategy) throws CommunicationException
       {
-      final Sample sample = getSampleCommandExecutor.execute(sampleCommandStrategy);
-      if (sample == null)
+      final DataSample dataSample = getSampleCommandExecutor.execute(sampleCommandStrategy);
+      if (dataSample == null)
          {
          throw new CommunicationException("Failed to read a sample from the AirBot");
          }
-      return sample;
+      return dataSample;
+      }
+
+   @Override
+   public boolean deleteSample(@Nullable final AirBot.DataSample dataSample) throws CommunicationException
+      {
+      if (dataSample != null)
+         {
+         return deleteSample(dataSample.getSampleTime());
+         }
+
+      return false;
       }
 
    @Override
@@ -216,21 +236,6 @@ class AirBotProxy implements AirBot
          throw new CommunicationException("Failed to delete a sample [" + sampleTime + "] from the AirBot");
          }
       return success;
-      }
-
-   @Override
-   @Nullable
-   public DataFile getFile(final String filename) throws NoSuchFileException
-      {
-      // TODO
-      throw new NoSuchFileException("File '" + filename + "' not found");
-      }
-
-   @Override
-   public boolean deleteFile(final String filename)
-      {
-      // TODO
-      return false;
       }
 
    @Override
@@ -321,7 +326,7 @@ class AirBotProxy implements AirBot
       protected abstract ReturnType executionWorkhorse(final int attemptNumber, final int maxNumberOfAttempts);
       }
 
-      private class Pinger implements Runnable
+   private class Pinger implements Runnable
       {
       private boolean isPaused = false;
       private final Lock lock = new ReentrantLock();

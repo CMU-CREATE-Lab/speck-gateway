@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * <p>
  * <code>DataFileStatus</code> represents the various states a {@link DataFile} can be in, from the perspective of
- * the {@link DataFileManager}.
+ * the {@link DataSampleManager}.
  * </p>
  *
  * @author Chris Bartley (bartley@cmu.edu)

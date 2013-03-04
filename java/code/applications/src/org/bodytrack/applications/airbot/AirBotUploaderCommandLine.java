@@ -7,8 +7,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.bodytrack.airbot.AirBotConfig;
-import org.bodytrack.airbot.DataStorageCredentials;
-import org.bodytrack.airbot.DataStorageCredentialsImpl;
+import org.bodytrack.airbot.RemoteStorageCredentials;
+import org.bodytrack.airbot.RemoteStorageCredentialsImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -185,8 +185,8 @@ final class AirBotUploaderCommandLine extends BaseCommandLineApplication
                            if (isNotNullAndNotEmpty(deviceNameStr))
                               {
                               final String deviceName = deviceNameStr.trim();
-                              final DataStorageCredentials dataStorageCredentials = new DataStorageCredentialsImpl(hostName, hostPort, username, password, deviceName);
-                              helper.validateAndSetDataStorageCredentials(dataStorageCredentials);
+                              final RemoteStorageCredentials remoteStorageCredentials = new RemoteStorageCredentialsImpl(hostName, hostPort, username, password, deviceName);
+                              helper.validateAndSetDataStorageCredentials(remoteStorageCredentials);
                               }
                            else
                               {

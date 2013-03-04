@@ -2,10 +2,8 @@ package org.bodytrack.applications.airbot;
 
 import java.io.File;
 import java.io.FileReader;
-import java.util.Collections;
 import java.util.Properties;
 import java.util.PropertyResourceBundle;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import edu.cmu.ri.createlab.device.CreateLabDevicePingFailureEventListener;
 import org.apache.log4j.Logger;
@@ -13,13 +11,11 @@ import org.bodytrack.airbot.AirBot;
 import org.bodytrack.airbot.AirBotConfig;
 import org.bodytrack.airbot.AirBotFactory;
 import org.bodytrack.airbot.CommunicationException;
-import org.bodytrack.airbot.DataFile;
-import org.bodytrack.airbot.DataFileDownloader;
-import org.bodytrack.airbot.DataFileManager;
-import org.bodytrack.airbot.DataFileUploader;
-import org.bodytrack.airbot.DataStorageCredentials;
-import org.bodytrack.airbot.DataStorageCredentialsValidator;
-import org.bodytrack.airbot.NoSuchFileException;
+import org.bodytrack.airbot.DataSampleManager;
+import org.bodytrack.airbot.DataSampleUploader;
+import org.bodytrack.airbot.DataSampleDownloader;
+import org.bodytrack.airbot.RemoteStorageCredentials;
+import org.bodytrack.airbot.RemoteStorageCredentialsValidator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,10 +56,10 @@ final class AirBotUploaderHelper
    private AirBot device;
 
    @Nullable
-   private DataFileManager dataFileManager;
+   private DataSampleManager dataSampleManager;
 
    @Nullable
-   private DataStorageCredentials dataStorageCredentials;
+   private RemoteStorageCredentials remoteStorageCredentials;
 
    @NotNull
    private final EventListener eventListener;
@@ -136,28 +132,28 @@ final class AirBotUploaderHelper
             device.addCreateLabDevicePingFailureEventListener(pingFailureEventListener);
             final AirBotConfig airBotConfig = device.getAirBotConfig();
 
-            final DataFileDownloader dataFileDownloader;
+            final DataSampleDownloader dataSampleDownloader;
             if (isDownloadDisabled())
                {
                logInfo("Data files will not be downloaded from an AirBot since you specified a config file for AirBot [" + airBotConfig.getId() + "]");
-               dataFileDownloader = null;
+               dataSampleDownloader = null;
                }
             else
                {
                logInfo("Connection successful to AirBot [" + airBotConfig.getId() + "] on serial port [" + device.getPortName() + "].");
-               dataFileDownloader = new DataFileDownloader(device);
+               dataSampleDownloader = new DataSampleDownloader(device);
                }
 
-            logInfo("Starting up the DataFileManager...");
-            dataFileManager = new DataFileManager(airBotConfig, dataFileDownloader);
-            if (dataStorageCredentials != null)
+            logInfo("Starting up the DataSampleManager...");
+            dataSampleManager = new DataSampleManager(airBotConfig, dataSampleDownloader);
+            if (remoteStorageCredentials != null)
                {
-               if (!dataFileManager.setDataFileUploader(new DataFileUploader(dataStorageCredentials)))
+               if (!dataSampleManager.setDataSampleUploader(new DataSampleUploader(remoteStorageCredentials)))
                   {
-                  logError("Failed to set the DataFileUploader");
+                  logError("Failed to set the DataSampleUploader");
                   }
                }
-            dataFileManager.startup();
+            dataSampleManager.startup();
             eventListener.handleConnectionEvent(airBotConfig, device.getPortName());
             }
          }
@@ -170,23 +166,23 @@ final class AirBotUploaderHelper
 
    public boolean areDataStorageCredentialsSet()
       {
-      return (dataFileManager != null && dataFileManager.isDataFileUploaderDefined());
+      return (dataSampleManager != null && dataSampleManager.isDataSampleUploaderDefined());
       }
 
-   public boolean validateAndSetDataStorageCredentials(@NotNull final DataStorageCredentials dataStorageCredentials)
+   public boolean validateAndSetDataStorageCredentials(@NotNull final RemoteStorageCredentials remoteStorageCredentials)
       {
       if (!areDataStorageCredentialsSet())
          {
          // now test the credentials
          logInfo("Validating host and login credentials...");
-         if (DataStorageCredentialsValidator.isValid(dataStorageCredentials))
+         if (RemoteStorageCredentialsValidator.isValid(remoteStorageCredentials))
             {
             logInfo("Host and login credentials validated successfully!!");
 
-            this.dataStorageCredentials = dataStorageCredentials;
-            if (dataFileManager != null && !dataFileManager.setDataFileUploader(new DataFileUploader(dataStorageCredentials)))
+            this.remoteStorageCredentials = remoteStorageCredentials;
+            if (dataSampleManager != null && !dataSampleManager.setDataSampleUploader(new DataSampleUploader(remoteStorageCredentials)))
                {
-               logError("Failed to set the DataFileUploader");
+               logError("Failed to set the DataSampleUploader");
                return false;
                }
             return true;
@@ -203,18 +199,18 @@ final class AirBotUploaderHelper
    @Nullable
    public String getStatistics()
       {
-      if (isConnected() && dataFileManager != null)
+      if (isConnected() && dataSampleManager != null)
          {
-         return dataFileManager.getStatisticsAsString();
+         return dataSampleManager.getStatisticsAsString();
          }
       return null;
       }
 
-   public void addStatisticsListener(@Nullable final DataFileManager.Statistics.Listener listener)
+   public void addStatisticsListener(@Nullable final DataSampleManager.Statistics.Listener listener)
       {
-      if (dataFileManager != null)
+      if (dataSampleManager != null)
          {
-         dataFileManager.addStatisticsListener(listener);
+         dataSampleManager.addStatisticsListener(listener);
          }
       }
 
@@ -229,9 +225,9 @@ final class AirBotUploaderHelper
    private void disconnect(final boolean willTryToDisconnectFromDevice)
       {
       // shutdown the data file manager
-      if (dataFileManager != null)
+      if (dataSampleManager != null)
          {
-         dataFileManager.shutdown();
+         dataSampleManager.shutdown();
          }
 
       // disconnect from the device
@@ -242,8 +238,8 @@ final class AirBotUploaderHelper
 
       // set to null
       device = null;
-      dataFileManager = null;
-      dataStorageCredentials = null;
+      dataSampleManager = null;
+      remoteStorageCredentials = null;
       }
 
    @Nullable
@@ -289,9 +285,8 @@ final class AirBotUploaderHelper
       return null;
       }
 
-   private class FakeAirBot implements AirBot
+   private static final class FakeAirBot implements AirBot
       {
-      private final SortedSet<String> emptySetOfAvailableFilenames = Collections.unmodifiableSortedSet(new TreeSet<String>());
       private final AirBotConfig airBotConfig;
 
       private FakeAirBot(@NotNull final Properties properties)
@@ -318,32 +313,26 @@ final class AirBotUploaderHelper
 
       @Nullable
       @Override
-      public Sample getSample() throws CommunicationException
+      public DataSample getSample() throws CommunicationException
          {
-         throw new CommunicationException("This fake AirBot doesn't support Sample retrieval");
+         throw new CommunicationException("This fake AirBot doesn't support DataSample retrieval");
          }
 
       @NotNull
       @Override
-      public Sample getCurrentSample() throws CommunicationException
+      public DataSample getCurrentSample() throws CommunicationException
          {
-         throw new CommunicationException("This fake AirBot doesn't support Sample retrieval");
+         throw new CommunicationException("This fake AirBot doesn't support DataSample retrieval");
          }
 
       @Override
-      public boolean deleteSample(final int time)
+      public boolean deleteSample(@Nullable final AirBot.DataSample dataSample)
          {
          return false;
          }
 
       @Override
-      public DataFile getFile(@Nullable final String filename) throws NoSuchFileException
-         {
-         throw new NoSuchFileException("This fake AirBot doesn't support file retrieval");
-         }
-
-      @Override
-      public boolean deleteFile(@Nullable final String filename)
+      public boolean deleteSample(final int sampleTime)
          {
          return false;
          }

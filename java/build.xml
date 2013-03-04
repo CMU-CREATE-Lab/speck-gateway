@@ -6,6 +6,8 @@
    <!-- Paths -->
    <path id="airbot-core-classpath">
       <!-- third-party jars -->
+      <pathelement path="${apache-derby1.jar}"/>
+      <pathelement path="${apache-derby2.jar}"/>
       <pathelement path="${commons-io.jar}"/>
       <pathelement path="${commons-lang.jar}"/>
       <pathelement path="${create-lab-commons-device.jar}"/>
@@ -34,6 +36,8 @@
       <pathelement path="${airbot-core.build.dir}"/>
 
       <!-- third-party jars -->
+      <pathelement path="${apache-derby1.jar}"/>
+      <pathelement path="${apache-derby2.jar}"/>
       <pathelement path="${commons-io.jar}"/>
       <pathelement path="${commons-lang.jar}"/>
       <pathelement path="${create-lab-commons-device.jar}"/>
@@ -159,6 +163,8 @@
    <target name="dist-airbot-core" depends="build-airbot-core" description="builds airbot-core" unless="dist-airbot-core-is-complete">
       <create-dist component.name="airbot-core">
          <additional-files-to-copy>
+            <fileset file="${apache-derby1.jar}"/>
+            <fileset file="${apache-derby2.jar}"/>
             <fileset file="${commons-io.jar}"/>
             <fileset file="${commons-lang.jar}"/>
             <fileset file="${create-lab-commons-device.jar}"/>
@@ -194,6 +200,8 @@
          </jar-manifest-attributes>
          <additional-files-to-copy>
             <fileset file="${airbot-core.dist.dir}/${airbot-core.jar.filename}"/>
+            <fileset file="${apache-derby1.jar}"/>
+            <fileset file="${apache-derby2.jar}"/>
             <fileset file="${commons-io.jar}"/>
             <fileset file="${commons-lang.jar}"/>
             <fileset file="${create-lab-commons-device.jar}"/>

@@ -161,22 +161,170 @@ public class CommandLineAirBot extends BaseCommandLineApplication
             }
          };
 
-   private void printSample(@Nullable final AirBot.Sample sample)
-      {
-      if (sample == null)
+   private final Runnable wipeStorageAction =
+         new Runnable()
          {
-         println("Null sample");
-         }
-      else if (sample.isNoDataAvailable())
+         public void run()
+            {
+            if (isConnected())
+               {
+               println("Wiping all samples from AirBot storage...");
+               print("Deleting");
+               int numSamplesRead = 0;
+               int numSamplesDeleted = 0;
+               int missesDetected = 0;
+
+               AirBot.DataSample previousSample = null;
+               AirBot.DataSample firstNonEmptySample = null;
+               AirBot.DataSample lastNonEmptySample = null;
+               AirBot.DataSample sample = null;
+               do
+                  {
+                  try
+                     {
+                     sample = device.getSample();
+                     if (sample != null && !sample.isEmpty())
+                        {
+                        if (previousSample != null)
+                           {
+                           if (sample.getSampleTime() - previousSample.getSampleTime() > 1)
+                              {
+                              missesDetected++;
+                              }
+                           }
+
+                        if (firstNonEmptySample == null)
+                           {
+                           firstNonEmptySample = sample;
+                           }
+
+                        numSamplesRead++;
+                        lastNonEmptySample = sample;
+
+                        if (device.deleteSample(sample))
+                           {
+                           numSamplesDeleted++;
+                           }
+                        if (numSamplesDeleted % 10 == 0)
+                           {
+                           print(".");
+                           }
+
+                        previousSample = sample;
+                        }
+                     }
+                  catch (CommunicationException e)
+                     {
+                     println("CommunicationException while trying to get a sample: " + e);
+                     }
+                  }
+               while (sample != null && !sample.isEmpty());
+               println("");
+               println("Read " + numSamplesRead + " samples, deleted " + numSamplesDeleted);
+               if (firstNonEmptySample != null)
+                  {
+                  println("First non-empty sample read: " + firstNonEmptySample.getSampleTime());
+                  }
+               if (lastNonEmptySample != null)
+                  {
+                  println("Last non-empty sample read:  " + lastNonEmptySample.getSampleTime());
+                  }
+               println("Misses detected: " + missesDetected);
+               }
+            else
+               {
+               println("You must be connected to the AirBot first.");
+               }
+            }
+         };
+
+   private final Runnable wipeStorageAction2 =
+         new Runnable()
+         {
+         public void run()
+            {
+            if (isConnected())
+               {
+               println("Wiping all samples from AirBot storage...");
+               print("Deleting");
+               int numSamplesRead = 0;
+               int missesDetected = 0;
+
+               AirBot.DataSample previousSample = null;
+               AirBot.DataSample firstNonEmptySample = null;
+               AirBot.DataSample lastNonEmptySample = null;
+               AirBot.DataSample sample = null;
+               do
+                  {
+                  try
+                     {
+                     sample = device.getSample();
+                     if (sample != null && !sample.isEmpty())
+                        {
+                        if (previousSample != null)
+                           {
+                           if (sample.getSampleTime() - previousSample.getSampleTime() > 1)
+                              {
+                              missesDetected++;
+                              }
+                           }
+
+                        if (firstNonEmptySample == null)
+                           {
+                           firstNonEmptySample = sample;
+                           }
+
+                        if (!sample.equals(previousSample))
+                           {
+                           numSamplesRead++;
+
+                           if (numSamplesRead % 10 == 0)
+                              {
+                              print(".");
+                              }
+                           }
+
+                        lastNonEmptySample = sample;
+                        previousSample = sample;
+                        }
+                     }
+                  catch (CommunicationException e)
+                     {
+                     println("CommunicationException while trying to get a sample: " + e);
+                     }
+                  }
+               while (sample != null && !sample.isEmpty());
+               println("");
+               println("Read " + numSamplesRead + " samples");
+               if (firstNonEmptySample != null)
+                  {
+                  println("First non-empty sample read: " + firstNonEmptySample.getSampleTime());
+                  }
+               if (lastNonEmptySample != null)
+                  {
+                  println("Last non-empty sample read:  " + lastNonEmptySample.getSampleTime());
+                  }
+               println("Misses detected: " + missesDetected);
+               }
+            else
+               {
+               println("You must be connected to the AirBot first.");
+               }
+            }
+         };
+
+   private void printSample(@Nullable final AirBot.DataSample dataSample)
+      {
+      if (dataSample == null || dataSample.isEmpty())
          {
          println("No data available.");
          }
       else
          {
-         println("Sample Time:    " + sample.getSampleTime());
-         println("Particle Count: " + sample.getParticleCount());
-         println("Temperature:    " + sample.getTemperature());
-         println("Humidity:       " + sample.getHumidity());
+         println("Sample Time:    " + dataSample.getSampleTime());
+         println("Particle Count: " + dataSample.getParticleCount());
+         println("Temperature:    " + dataSample.getTemperature());
+         println("Humidity:       " + dataSample.getHumidity());
          }
       }
 
@@ -223,6 +371,8 @@ public class CommandLineAirBot extends BaseCommandLineApplication
       registerAction("s", getCurrentStateAction);
       registerAction("g", getDataSampleAction);
       registerAction("x", deleteDataSampleAction);
+      registerAction("w", wipeStorageAction);
+      registerAction("w2", wipeStorageAction2);
 
       registerAction("i",
                      new GetStringAction("AirBot ID")
@@ -258,6 +408,8 @@ public class CommandLineAirBot extends BaseCommandLineApplication
       println("s         Gets the current state");
       println("g         Gets a data sample");
       println("x         Delete a data sample");
+      println("w         Wipe AirBot's storage by getting and deleting all saved samples");
+      println("w2        Wipe AirBot's storage by getting (but not deleting) all saved samples");
       println("");
       println("i         Gets the AirBot's unique ID");
       println("v         Gets the AirBot's protocol version");

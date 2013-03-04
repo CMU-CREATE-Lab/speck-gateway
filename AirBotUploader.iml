@@ -14,6 +14,18 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
+      <library name="Apache Derby">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/java/lib/apache-derby/derby.jar!/" />
+          <root url="jar://$MODULE_DIR$/java/lib/apache-derby/derbytools.jar!/" />
+        </CLASSES>
+        <JAVADOC>
+          <root url="file://$MODULE_DIR$/java/lib/apache-derby/javadoc/jdbc4" />
+        </JAVADOC>
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library name="Commons IO">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/java/lib/commons-io/commons-io-2.4.jar!/" />
@@ -170,18 +182,6 @@
           <root url="file://$MODULE_DIR$/java/lib/log4j-extras/src/main/java" />
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/java/lib/log4j-extras" recursive="false" />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="RxTx">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/java/lib/rxtx/RXTXcomm.jar!/" />
-        </CLASSES>
-        <JAVADOC>
-          <root url="http://users.frii.com/jarvi/rxtx/doc" />
-          <root url="http://java.sun.com/products/javacomm/reference/api" />
-        </JAVADOC>
-        <SOURCES />
       </library>
     </orderEntry>
   </component>
