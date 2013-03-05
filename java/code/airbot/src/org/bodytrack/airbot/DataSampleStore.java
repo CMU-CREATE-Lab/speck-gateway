@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public interface DataSampleStore
+interface DataSampleStore
    {
    /**
     * Saves the given {@link AirBot.DataSample sample} and returns <code>true</code> upon success, <code>false</code>

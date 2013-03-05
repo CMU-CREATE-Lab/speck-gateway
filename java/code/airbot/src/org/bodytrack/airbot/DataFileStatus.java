@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public enum DataFileStatus
+enum DataFileStatus
    {
       WRITING(".WRITING"),
       DOWNLOADED(".TXT"),

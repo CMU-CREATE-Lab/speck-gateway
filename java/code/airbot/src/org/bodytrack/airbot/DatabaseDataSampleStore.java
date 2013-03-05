@@ -31,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
  * @author Apache Derby
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public class DatabaseDataSampleStore implements DataSampleStore
+final class DatabaseDataSampleStore implements DataSampleStore
    {
    private static final Logger LOG = Logger.getLogger(DatabaseDataSampleStore.class);
 
@@ -76,7 +76,7 @@ public class DatabaseDataSampleStore implements DataSampleStore
    private boolean isShutDown = false;
    private final Lock lock = new ReentrantLock();
 
-   public DatabaseDataSampleStore(@NotNull final AirBotConfig airBotConfig) throws InitializationException
+   DatabaseDataSampleStore(@NotNull final AirBotConfig airBotConfig) throws InitializationException
       {
       lock.lock();  // block until condition holds
       try
