@@ -19,4 +19,7 @@ public interface DataSampleStore
 
    /** Finds all samples which are in the uploading state, and resets them so that an upload will be retried. */
    void resetStateOfUploadingSamples();
+
+   /** Perform any required shutdown tasks. */
+   void shutdown();
    }

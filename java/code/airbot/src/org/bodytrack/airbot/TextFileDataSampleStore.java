@@ -66,4 +66,18 @@ public final class TextFileDataSampleStore implements DataSampleStore
       {
       // TODO
       }
+
+   @Override
+   public void shutdown()
+      {
+      try
+         {
+         writer.close();
+         LOG.debug("TextFileDataSampleStore.shutdown(): Successfully shut down the TextFileDataSampleStore");
+         }
+      catch (IOException e)
+         {
+         LOG.error("TextFileDataSampleStore.shutdown(): IOException while trying to close the writer", e);
+         }
+      }
    }

@@ -90,7 +90,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                // try to download a data sample
                final DataSampleDownloader.DownloadResponse downloadResponse = dataSampleDownloader.downloadDataSample();
 
-               int delayInSecondsUntilNextDataSampleRequest;
+               final int delayInSecondsUntilNextDataSampleRequest;
                final DataSampleDownloader.DownloadResponse.Status status = downloadResponse.getStatus();
                switch (status)
                   {
@@ -166,8 +166,16 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
 
                      delayInSecondsUntilNextDataSampleRequest = 60;
 
-                     LOG.info("DataSampleManager.downloadDataSampleRunnable.run(): No data available, wait and try again later");
-                     CONSOLE_LOG.info("No data currently available.  Will try again in " + delayInSecondsUntilNextDataSampleRequest + " seconds.");
+                     if (LOG.isInfoEnabled() || CONSOLE_LOG.isInfoEnabled())
+                        {
+                        final String message = "No data currently available.  Will try again in " + delayInSecondsUntilNextDataSampleRequest + " seconds.";
+                        LOG.info("DataSampleManager.downloadDataSampleRunnable.run(): " + message);
+                        CONSOLE_LOG.info(message);
+
+                        final String stats = getStatisticsAsString();
+                        LOG.info(stats);
+                        CONSOLE_LOG.info(stats);
+                        }
 
                      break;
                   case COMMUNICATION_FAILURE:
@@ -196,10 +204,10 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
          };
 
    public DataSampleManager(@NotNull final AirBotConfig airBotConfig,
-                            @Nullable final DataSampleDownloader dataSampleDownloader)
+                            @Nullable final DataSampleDownloader dataSampleDownloader) throws InitializationException
       {
       this.dataSampleDownloader = dataSampleDownloader;
-      this.dataSampleStore = new TextFileDataSampleStore(airBotConfig);
+      this.dataSampleStore = new DatabaseDataSampleStore(airBotConfig);
 
       // register self as a listener to the uploader so we can get notified when uploads are complete
       if (dataSampleUploader != null)
@@ -357,6 +365,9 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                {
                LOG.error("DataSampleManager.shutdown(): Exception while trying to shut down the executor", e);
                }
+
+            // shut down the data store
+            dataSampleStore.shutdown();
             }
          }
       finally

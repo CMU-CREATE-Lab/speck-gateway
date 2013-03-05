@@ -78,6 +78,7 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
          }
 
       private final int sampleTime;
+      private final long downloadTime = System.currentTimeMillis();
       private final int particleCount;
       private final int temperature;
       private final int humidity;
@@ -94,6 +95,12 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
       public int getSampleTime()
          {
          return sampleTime;
+         }
+
+      @Override
+      public long getDownloadTime()
+         {
+         return downloadTime;
          }
 
       @Override
@@ -134,6 +141,10 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
 
          final AirBotDataSample that = (AirBotDataSample)o;
 
+         if (downloadTime != that.downloadTime)
+            {
+            return false;
+            }
          if (humidity != that.humidity)
             {
             return false;
@@ -157,7 +168,8 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
       @Override
       public int hashCode()
          {
-         int result = (int)(sampleTime ^ (sampleTime >>> 32));
+         int result = sampleTime;
+         result = 31 * result + (int)(downloadTime ^ (downloadTime >>> 32));
          result = 31 * result + particleCount;
          result = 31 * result + temperature;
          result = 31 * result + humidity;
@@ -167,11 +179,11 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
       @Override
       public String toString()
          {
-         final StringBuilder sb = new StringBuilder();
-         sb.append("AirBotDataSample");
-         sb.append("{time=").append(sampleTime);
-         sb.append(", particles=").append(particleCount);
-         sb.append(", temp=").append(temperature);
+         final StringBuilder sb = new StringBuilder("AirBotDataSample{");
+         sb.append("sampleTime=").append(sampleTime);
+         sb.append(", downloadTime=").append(downloadTime);
+         sb.append(", particleCount=").append(particleCount);
+         sb.append(", temperature=").append(temperature);
          sb.append(", humidity=").append(humidity);
          sb.append('}');
          return sb.toString();

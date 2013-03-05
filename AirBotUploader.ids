@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="dataSourceStorage">
+  <data-source source="LOCAL" name="Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="d6359876-f74e-4a5f-b510-0c52fcd8eee7">
+    <identifier-quote-string>&quot;</identifier-quote-string>
+    <synchronize>true</synchronize>
+    <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
+    <jdbc-url>jdbc:derby:jar:(/Users/chris/Documents/Work/Projects/AirBotUploader/AirBot-Uploader/etc/database/sample-db.jar)sample-db</jdbc-url>
+    <schema-pattern>*.AIRBOT</schema-pattern>
+    <default-schemas>*.AIRBOT</default-schemas>
+    <default-dialect>Derby</default-dialect>
+    <libraries>
+      <library>
+        <url>file://$PROJECT_DIR$/java/lib/apache-derby/derby.jar</url>
+      </library>
+    </libraries>
+    <schema name="AIRBOT" catalog=""/>
+    <table name="AIRBOTSAMPLES" schema="AIRBOT" catalog="" type="TABLE">
+      <column name="ID" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4" def="QVVUT0lOQ1JFTUVOVDogc3RhcnQgMSBpbmNyZW1lbnQgMQ==" autoIncrement="true"/>
+      <column name="PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
+      <column name="TEMPERATURE" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
+      <column name="HUMIDITY" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
+      <column name="SAMPLE_TIMESTAMP_UTC_SECS" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
+      <column name="DOWNLOAD_TIMESTAMP_UTC_MILLIS" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5"/>
+      <column name="UPLOAD_TIMESTAMP_UTC_MILLIS" sqlType="BIGINT" length="19" precision="0" nullable="true" jdbcType="-5"/>
+      <column name="UPLOAD_STATUS" sqlType="VARCHAR" length="13" precision="0" nullable="false" jdbcType="12" def="J25vdF9hdHRlbXB0ZWQn"/>
+      <primary-key name="AIRBOTSAMPLES_PRIMARYKEY" columns="ID"/>
+      <index name="AIRBOTSAMPLES_DOWNLOADTIMESTAMP" unique="false" columns="DOWNLOAD_TIMESTAMP_UTC_MILLIS"/>
+      <index name="AIRBOTSAMPLES_HUMIDITY" unique="false" columns="HUMIDITY"/>
+      <index name="AIRBOTSAMPLES_PARTICLECOUNT" unique="false" columns="PARTICLE_COUNT"/>
+      <index name="AIRBOTSAMPLES_TEMPERATURE" unique="false" columns="TEMPERATURE"/>
+      <index name="AIRBOTSAMPLES_UPLOADSTATUS" unique="false" columns="UPLOAD_STATUS"/>
+      <index name="AIRBOTSAMPLES_UPLOADTIMESTAMP" unique="false" columns="UPLOAD_TIMESTAMP_UTC_MILLIS"/>
+    </table>
+  </data-source>
+</component>

@@ -14,6 +14,7 @@ import org.bodytrack.airbot.CommunicationException;
 import org.bodytrack.airbot.DataSampleManager;
 import org.bodytrack.airbot.DataSampleUploader;
 import org.bodytrack.airbot.DataSampleDownloader;
+import org.bodytrack.airbot.InitializationException;
 import org.bodytrack.airbot.RemoteStorageCredentials;
 import org.bodytrack.airbot.RemoteStorageCredentialsValidator;
 import org.jetbrains.annotations.NotNull;
@@ -145,7 +146,16 @@ final class AirBotUploaderHelper
                }
 
             logInfo("Starting up the DataSampleManager...");
-            dataSampleManager = new DataSampleManager(airBotConfig, dataSampleDownloader);
+            try
+               {
+               dataSampleManager = new DataSampleManager(airBotConfig, dataSampleDownloader);
+               }
+            catch (InitializationException e)
+               {
+               LOG.error("AirBotUploaderHelper.scanAndConnect(): InitializationException while trying to create the DataSampleManager.  Aborting!", e);
+               System.exit(1);
+               }
+
             if (remoteStorageCredentials != null)
                {
                if (!dataSampleManager.setDataSampleUploader(new DataSampleUploader(remoteStorageCredentials)))

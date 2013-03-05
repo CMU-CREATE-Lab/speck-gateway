@@ -39,6 +39,22 @@
   <component name="CopyrightManager" default="">
     <module2copyright />
   </component>
+  <component name="DataSourceManagerImpl" format="xml" hash="3335961570">
+    <data-source source="LOCAL" name="Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="d6359876-f74e-4a5f-b510-0c52fcd8eee7">
+      <identifier-quote-string>&quot;</identifier-quote-string>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
+      <jdbc-url>jdbc:derby:jar:(/Users/chris/Documents/Work/Projects/AirBotUploader/AirBot-Uploader/etc/database/sample-db.jar)sample-db</jdbc-url>
+      <schema-pattern>*.AIRBOT</schema-pattern>
+      <default-schemas>*.AIRBOT</default-schemas>
+      <default-dialect>Derby</default-dialect>
+      <libraries>
+        <library>
+          <url>file://$PROJECT_DIR$/java/lib/apache-derby/derby.jar</url>
+        </library>
+      </libraries>
+    </data-source>
+  </component>
   <component name="DependencyValidationManager">
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
   </component>
@@ -503,6 +519,9 @@
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="JDK_1_6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/../IDEA_compiler_output" />
+  </component>
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/java/code/airbot/src/org/bodytrack/airbot/DatabaseDataSampleStore.java" dialect="Derby" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />

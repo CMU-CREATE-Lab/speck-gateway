@@ -7,7 +7,7 @@ package org.bodytrack.airbot;
  *
  * @author Chris Bartley (bartley@cmu.edu)
  */
-final class InitializationException extends Exception
+public final class InitializationException extends Exception
    {
    public InitializationException()
       {
