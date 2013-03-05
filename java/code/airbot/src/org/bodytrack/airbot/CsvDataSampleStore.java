@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public final class CsvDataSampleStore implements DataSampleStore
+final class CsvDataSampleStore implements DataSampleStore
    {
    private static final Logger LOG = Logger.getLogger(CsvDataSampleStore.class);
    private static final String COMMA = ",";
@@ -25,7 +25,7 @@ public final class CsvDataSampleStore implements DataSampleStore
    @NotNull
    private BufferedWriter writer;
 
-   public CsvDataSampleStore(@NotNull final AirBotConfig airBotConfig)
+   CsvDataSampleStore(@NotNull final AirBotConfig airBotConfig)
       {
       final File dataFileDirectory = AirBotUploaderConstants.FilePaths.getDeviceDataDirectory(airBotConfig);
       final File dataFile = new File(dataFileDirectory, "data_samples.csv");
