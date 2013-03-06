@@ -207,7 +207,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                             @Nullable final DataSampleDownloader dataSampleDownloader) throws InitializationException
       {
       this.dataSampleDownloader = dataSampleDownloader;
-      this.dataSampleStore = new MultiHeadDataSampleStore(airBotConfig);
+      this.dataSampleStore = new MultiDestinationDataSampleStore(airBotConfig);
 
       // register self as a listener to the uploader so we can get notified when uploads are complete
       if (dataSampleUploader != null)

@@ -7,11 +7,11 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-final class MultiHeadDataSampleStore implements DataSampleStore
+final class MultiDestinationDataSampleStore implements DataSampleStore
    {
    private final List<DataSampleStore> stores;
 
-   MultiHeadDataSampleStore(@NotNull final AirBotConfig airBotConfig) throws InitializationException
+   MultiDestinationDataSampleStore(@NotNull final AirBotConfig airBotConfig) throws InitializationException
       {
       stores = new ArrayList<DataSampleStore>(2);
       stores.add(new CsvDataSampleStore(airBotConfig));
