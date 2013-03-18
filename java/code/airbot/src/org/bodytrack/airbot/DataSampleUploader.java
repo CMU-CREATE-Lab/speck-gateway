@@ -1,13 +1,12 @@
 package org.bodytrack.airbot;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import edu.cmu.ri.createlab.util.thread.DaemonThreadFactory;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.FileEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -57,7 +56,7 @@ public final class DataSampleUploader
 
    public interface EventListener
       {
-      void handleFileUploadedEvent(@NotNull final File uploadedFile, @Nullable final DataSampleUploadResponse uploadResponse);
+      void handleDataSamplesUploadedEvent(@NotNull final DataSampleSet dataSampleSet, @Nullable final DataSampleSetUploadResponse uploadResponse);
       }
 
    private final ExecutorService executor = Executors.newFixedThreadPool(MAX_NUM_UPLOAD_THREADS, new DaemonThreadFactory(this.getClass() + ".executor"));
@@ -78,6 +77,12 @@ public final class DataSampleUploader
          }
       }
 
+   /** Returns the number of simultaneous uploads this uploader can perform. */
+   public int getSimultaneousUploadCount()
+      {
+      return MAX_NUM_UPLOAD_THREADS;
+      }
+
    public void addEventListener(@Nullable final EventListener listener)
       {
       if (listener != null)
@@ -86,38 +91,38 @@ public final class DataSampleUploader
          }
       }
 
-   public void submitUploadFileTask(@Nullable final File fileToUpload, @Nullable final String originalFilename)
+   public void submitUploadDataSampleSetTask(@NotNull final DataSampleSet dataSampleSet)
       {
       if (LOG.isDebugEnabled())
          {
-         LOG.debug("DataSampleUploader.submitUploadFileTask(" + fileToUpload + ", " + originalFilename + ")");
+         LOG.debug("DataSampleUploader.submitUploadFileTask()");
          }
 
-      if (fileToUpload != null && originalFilename != null)
+      if (!dataSampleSet.isEmpty())
          {
-         executor.execute(new UploadFileTask(fileToUpload));
+         executor.execute(new UploadDataSampleSetTask(dataSampleSet));
          }
       }
 
-   private final class UploadFileTask implements Runnable
+   private final class UploadDataSampleSetTask implements Runnable
       {
-      private final File fileToUpload;
+      @NotNull
+      private final DataSampleSet dataSampleSet;
 
-      private UploadFileTask(@NotNull final File fileToUpload)
+      private UploadDataSampleSetTask(@NotNull final DataSampleSet dataSampleSet)
          {
-         this.fileToUpload = fileToUpload;
+         this.dataSampleSet = dataSampleSet;
          }
 
       @Override
       public void run()
          {
-         final DataSampleUploadResponse dataSampleUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
-                                                                                             new FileEntity(fileToUpload, ContentType.APPLICATION_OCTET_STREAM),
-                                                                                             fileToUpload.toString());
+         final DataSampleSetUploadResponse dataSampleSetUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
+                                                                                                       new StringEntity(dataSampleSet.toJson(), ContentType.APPLICATION_OCTET_STREAM));
          // notify listeners
          for (final EventListener listener : eventListeners)
             {
-            listener.handleFileUploadedEvent(fileToUpload, dataSampleUploadResponse);
+            listener.handleDataSamplesUploadedEvent(dataSampleSet, dataSampleSetUploadResponse);
             }
          }
       }

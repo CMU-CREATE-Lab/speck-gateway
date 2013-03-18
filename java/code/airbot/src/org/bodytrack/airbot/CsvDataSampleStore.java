@@ -20,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 final class CsvDataSampleStore implements DataSampleStore
    {
    private static final Logger LOG = Logger.getLogger(CsvDataSampleStore.class);
-   private static final String COMMA = ",";
 
    @NotNull
    private BufferedWriter writer;
@@ -56,7 +55,7 @@ final class CsvDataSampleStore implements DataSampleStore
       LOG.debug("CsvDataSampleStore.save(): saving sample " + dataSample.getSampleTime());
       try
          {
-         write(dataSample);
+         write(dataSample.toCsv());
          }
       catch (IOException e)
          {
@@ -66,21 +65,6 @@ final class CsvDataSampleStore implements DataSampleStore
       return true;
       }
 
-   private void write(final AirBot.DataSample dataSample) throws IOException
-      {
-      final StringBuilder s = new StringBuilder();
-      s.append(dataSample.getSampleTime());
-      s.append(COMMA);
-      s.append(dataSample.getParticleCount());
-      s.append(COMMA);
-      s.append(dataSample.getTemperature());
-      s.append(COMMA);
-      s.append(dataSample.getHumidity());
-      s.append(COMMA);
-      s.append(dataSample.getDownloadTime());
-      write(s.toString());
-      }
-
    private void write(final String str) throws IOException
       {
       writer.write(str);
@@ -88,8 +72,31 @@ final class CsvDataSampleStore implements DataSampleStore
       writer.flush();
       }
 
+   /** Not supported, does nothing. */
    @Override
    public void resetStateOfUploadingSamples()
+      {
+      // not supported
+      }
+
+   /** Not supported, so the returned {@link DataSampleSet} will never contain any data samples. */
+   @NotNull
+   @Override
+   public DataSampleSet getDataSamplesToUpload(final int maxNumberRequested)
+      {
+      return new DataSampleSetImpl(null);
+      }
+
+   /** Not supported, does nothing. */
+   @Override
+   public void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet)
+      {
+      // not supported
+      }
+
+   /** Not supported, does nothing. */
+   @Override
+   public void markDataSamplesAsFailed(@NotNull final DataSampleSet dataSampleSet)
       {
       // not supported
       }

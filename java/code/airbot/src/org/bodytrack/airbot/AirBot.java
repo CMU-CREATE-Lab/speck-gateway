@@ -9,8 +9,12 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface AirBot extends CreateLabDeviceProxy
    {
-   interface DataSample
+   interface DataSample extends Comparable<DataSample>
       {
+      /** Returns the sample's database ID, if known. */
+      @Nullable
+      Integer getDatabaseId();
+
       /** The time the sample was taken, in UTC seconds since the epoch. */
       int getSampleTime();
 
@@ -31,6 +35,20 @@ public interface AirBot extends CreateLabDeviceProxy
        * available; returns <code>false</code> otherwise.
        */
       boolean isEmpty();
+
+      /**
+       * Returns this data sample as {@link String} containing values separated by commas.  Values are returned in this
+       * order: sample time, particle count, temperature, humidity, download time
+       */
+      @NotNull
+      String toCsv();
+
+      /**
+       * Returns this data sample as a JSON array {@link String}. The array does not include the download time.  Values
+       * are returned in this order: sample time, particle count, temperature, humidity
+       * */
+      @NotNull
+      String toJsonArray();
       }
 
    /**

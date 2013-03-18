@@ -4,12 +4,12 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * <p>
- * <code>DataSampleUploadResponse</code> contains the response details from the server after uploading a {@link DataFile}.
+ * <code>DataSampleSetUploadResponse</code> contains the response details from the server after uploading a {@link DataSampleSet}.
  * </p>
  *
  * @author Chris Bartley (bartley@cmu.edu)
  */
-interface DataSampleUploadResponse
+interface DataSampleSetUploadResponse
    {
    interface Payload
       {

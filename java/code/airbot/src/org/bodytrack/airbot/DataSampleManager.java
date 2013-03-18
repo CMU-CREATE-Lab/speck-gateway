@@ -197,7 +197,42 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
 
                if (delayInSecondsUntilNextDataSampleRequest >= 0)
                   {
-                  scheduleDownloadDataSample(delayInSecondsUntilNextDataSampleRequest, TimeUnit.SECONDS);
+                  scheduleDataSampleDownload(delayInSecondsUntilNextDataSampleRequest, TimeUnit.SECONDS);
+                  }
+               }
+            }
+         };
+
+   @NotNull
+   private Runnable uploadDataSampleRunnable =
+         new Runnable()
+         {
+         @Override
+         public void run()
+            {
+            if (dataSampleUploader != null)
+               {
+               CONSOLE_LOG.info("Uploading data samples...");
+
+               final DataSampleSet dataSampleSet = dataSampleStore.getDataSamplesToUpload(200);
+
+               if (!dataSampleSet.isEmpty())
+                  {
+                  final String msg = "Found " + dataSampleSet.size() + " samples to upload.";
+                  LOG.info("DataSampleManager.uploadDataSampleRunnable(): " + msg);
+                  CONSOLE_LOG.info(msg);
+                  dataSampleUploader.submitUploadDataSampleSetTask(dataSampleSet);
+
+                  // update statistics
+                  statistics.incrementUploadsRequested();
+                  }
+               else
+                  {
+                  final String msg = "No samples found which need to be uploaded.  Will retry in 1 minute.";
+                  LOG.info("DataSampleManager.uploadDataSampleRunnable(): " + msg);
+                  CONSOLE_LOG.info(msg);
+
+                  scheduleDataSampleUpload(1, TimeUnit.MINUTES);
                   }
                }
             }
@@ -208,12 +243,6 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
       {
       this.dataSampleDownloader = dataSampleDownloader;
       this.dataSampleStore = new MultiDestinationDataSampleStore(airBotConfig);
-
-      // register self as a listener to the uploader so we can get notified when uploads are complete
-      if (dataSampleUploader != null)
-         {
-         dataSampleUploader.addEventListener(this);
-         }
       }
 
    /**
@@ -237,11 +266,11 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
             // register self as a listener to the uploader so we can get notified when uploads are complete
             this.dataSampleUploader.addEventListener(this);
 
-            // make sure any existing downloaded files are scheduled for upload, but only if we're already running.  If
+            // make sure any existing downloaded samples are scheduled for upload, but only if we're already running. If
             // we're not, then don't worry about it since startup() will handle this itself.
             if (isRunning)
                {
-               uploadExistingDownloadedSamples();
+               scheduleDataSampleUpload(0, TimeUnit.SECONDS);
                }
 
             return true;
@@ -267,11 +296,11 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
             // Clean up samples in the data store, in case the program was terminated while an upload was in progress
             dataSampleStore.resetStateOfUploadingSamples();
 
-            // make sure any existing downloaded samples are scheduled for upload
-            uploadExistingDownloadedSamples();
+            // schedule the command to upload downloaded data samples, which will reschedule itself upon completion
+            scheduleDataSampleUpload(0, TimeUnit.SECONDS);
 
             // schedule the command to get available data samples, which will reschedule itself upon completion
-            scheduleDownloadDataSample(0, TimeUnit.SECONDS);
+            scheduleDataSampleDownload(0, TimeUnit.SECONDS);
             }
          else
             {
@@ -292,42 +321,19 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
          }
       }
 
-   private void uploadExistingDownloadedSamples()
-      {
-      LOG.debug("DataSampleManager.uploadExistingDownloadedSamples()");
-      // TODO
-      /*
-      // If the uploader is defined, then run through all existing downloaded files and kick off an upload job for
-      // each one.  To do so, start by getting the list of all downloaded files
-      if (isDataSampleUploaderDefined())
-         {
-         final File[] filesReadyForUpload = dataFileDirectory.listFiles(new DataFileStatusFilenameFilter(DataFileStatus.DOWNLOADED));
-
-         if (filesReadyForUpload != null && filesReadyForUpload.length > 0)
-            {
-            final String msg = "Found " + filesReadyForUpload.length + " local file(s) to upload.";
-            LOG.info("DataSampleManager.setDataFileUploader(): " + msg);
-            CONSOLE_LOG.info(msg);
-            for (final File file : filesReadyForUpload)
-               {
-               submitUploadFileTask(file);
-               }
-            }
-         else
-            {
-            final String msg = "No local file(s) found which need to be uploaded.";
-            LOG.info("DataSampleManager.setDataFileUploader(): " + msg);
-            CONSOLE_LOG.info(msg);
-            }
-         }
-      */
-      }
-
-   private void scheduleDownloadDataSample(final int delay, final TimeUnit timeUnit)
+   private void scheduleDataSampleDownload(final int delay, final TimeUnit timeUnit)
       {
       if (dataSampleDownloader != null)
          {
          executor.schedule(downloadDataSampleRunnable, delay, timeUnit);
+         }
+      }
+
+   private void scheduleDataSampleUpload(final int delay, final TimeUnit timeUnit)
+      {
+      if (isDataSampleUploaderDefined())
+         {
+         executor.schedule(uploadDataSampleRunnable, delay, timeUnit);
          }
       }
 
@@ -376,92 +382,38 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
          }
       }
 
-   private void submitUploadFileTask(@NotNull final AirBot.DataSample dataSample)
-      {
-      if (dataSampleUploader != null)
-         {
-         // TODO: do we need this?  Or should the uploader just have a thread that checks periodically for data to upload?
-         /*
-         final File fileToUpload = changeFileExtension(file, DataFileStatus.DOWNLOADED.getFilenameExtension(), DataFileStatus.UPLOADING.getFilenameExtension());
-         if (fileToUpload != null)
-            {
-            LOG.debug("DataSampleManager.submitUploadFileTask(): Submitting file [" + fileToUpload.getName() + "] for uploading...");
-            dataSampleUploader.submitUploadFileTask(fileToUpload, file.getName());
-
-            // update statistics
-            statistics.incrementUploadsRequested();
-            }
-         else
-            {
-            LOG.error("DataSampleManager.submitUploadFileTask(): Failed to rename file [" + file.getName() + "] in preparation for uploading it.  Skipping.");
-            }
-         */
-         }
-      }
-
    @Override
-   public void handleFileUploadedEvent(@NotNull final File uploadedFile, @Nullable final DataSampleUploadResponse uploadResponse)
+   public void handleDataSamplesUploadedEvent(@NotNull final DataSampleSet dataSampleSet, @Nullable final DataSampleSetUploadResponse uploadResponse)
       {
-      // TODO
-      /*
-      LOG.debug("DataSampleManager.handleFileUploadedEvent(" + uploadedFile + ", " + uploadResponse + ")");
-
-      if (DataFileStatus.UPLOADING.hasStatus(uploadedFile))
+      LOG.debug("DataSampleManager.handleDataSamplesUploadedEvent(" + dataSampleSet + ", " + uploadResponse + ")");
+      if (!dataSampleSet.isEmpty())
          {
-         if (LOG.isDebugEnabled())
-            {
-            if (LOG.isDebugEnabled())
-               {
-               LOG.debug("DataSampleManager.handleFileUploadedEvent(): file [" + uploadedFile + "], response = [" + uploadResponse + "]");
-               }
-            }
-
          if (uploadResponse == null)
             {
             // update statistics
             statistics.incrementUploadsFailed();
 
-            // If the response was null, then a problem occurred during upload, so just rename the file and return it
-            // back to the pool of uploadable files.  Also submit a new upload job for it.
-
-            LOG.info("DataSampleManager.handleFileUploadedEvent(): Upload failure for file [" + uploadedFile.getName() + "].  Renaming it back to the default and will try again later.");
-
-            lock.lock();  // block until condition holds
-            try
-               {
-               // change the extension back to the default
-               final File defaultFilename = changeFileExtension(uploadedFile, DataFileStatus.UPLOADING.getFilenameExtension(), DataFileStatus.DOWNLOADED.getFilenameExtension());
-               if (defaultFilename == null)
+            // If the response was null, then a problem occurred during upload, so just  submit a new upload job for it.
+            final String msg = "Data sample upload failure detected, will retry in 1 minute.";
+            LOG.info("DataSampleManager.handleDataSamplesUploadedEvent(): " + msg);
+            CONSOLE_LOG.info(msg);
+            executor.schedule(
+                  new Runnable()
                   {
-                  LOG.error("DataSampleManager.handleFileUploadedEvent(): Failed to rename file [" + uploadedFile + "] back to the default name.  Aborting.");
-                  CONSOLE_LOG.error("Failed to upload data file because the defaultFilename is null.");
-                  }
-               else
-                  {
-                  if (LOG.isDebugEnabled())
+                  @Override
+                  public void run()
                      {
-                     LOG.debug("DataSampleManager.handleFileUploadedEvent(): Renamed file [" + uploadedFile + "] to [" + defaultFilename + "].  Will retry upload in 1 minute.");
-                     }
-                  CONSOLE_LOG.error("Failed to upload data file " + defaultFilename.getName() + ".  Will retry upload in 1 minute.");
-
-                  // schedule the upload again
-                  executor.schedule(
-                        new Runnable()
+                     if (dataSampleUploader != null)
                         {
-                        @Override
-                        public void run()
-                           {
-                           submitUploadFileTask(defaultFilename);
-                           }
-                        },
-                        1,
-                        TimeUnit.MINUTES);
-                  }
-               }
-            finally
-               {
-               lock.unlock();
-               }
+                        dataSampleUploader.submitUploadDataSampleSetTask(dataSampleSet);
+
+                        // update statistics
+                        statistics.incrementUploadsRequested();
+                        }
+                     }
+                  },
+                  1,
+                  TimeUnit.MINUTES);
             }
          else
             {
@@ -470,35 +422,8 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                // update statistics
                statistics.incrementUploadsSuccessful();
 
-               // no failures!  rename the file to signify that the upload was successful...
-               lock.lock();  // block until condition holds
-               try
-                  {
-                  // change the extension to the one used for uploaded files
-                  final File newFile = changeFileExtension(uploadedFile, DataFileStatus.UPLOADING.getFilenameExtension(), DataFileStatus.UPLOADED.getFilenameExtension());
-                  if (newFile == null)
-                     {
-                     LOG.error("DataSampleManager.handleFileUploadedEvent(): Failed to rename successfully uploaded file [" + uploadedFile.getName() + "]");
-                     CONSOLE_LOG.error("File " + uploadedFile.getName() + " uploaded successfully, but could not rename to have the '" + DataFileStatus.UPLOADED + "' file extension.");
-                     }
-                  else
-                     {
-                     if (LOG.isDebugEnabled())
-                        {
-                        LOG.debug("DataSampleManager.handleFileUploadedEvent(): Renamed file [" + uploadedFile + "] to [" + newFile + "]");
-                        }
-                     if (CONSOLE_LOG.isInfoEnabled())
-                        {
-                        CONSOLE_LOG.info("File " + newFile.getName() + " uploaded successfully.");
-                        }
-                     }
-                  }
-               finally
-                  {
-                  lock.unlock();
-                  }
-
-               // Don't worry about telling the downloader that the file can be deleted here--that'll be handled elsewhere
+               // No failures!  Tell the data store to mark the samples as uploaded
+               dataSampleStore.markDataSamplesAsUploaded(dataSampleSet);
                }
             else
                {
@@ -506,38 +431,20 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                statistics.incrementUploadsFailed();
 
                final String failureMessage = uploadResponse.getMessage();
-               final DataSampleUploadResponse.Payload payload = uploadResponse.getPayload();
+               final DataSampleSetUploadResponse.Payload payload = uploadResponse.getPayload();
                final String payloadFailureMessage = (payload == null) ? null : payload.getFailureMessage();
                final Integer numFailures = (payload == null) ? null : payload.getNumFailedRecords();
 
-               // we had a failure, so just rename the local file to mark it as having corrupt data
-               if (LOG.isDebugEnabled())
-                  {
-                  LOG.debug("DataSampleManager.handleFileUploadedEvent(): num failed records is [" + numFailures + "] and failureMessage(s) [" + failureMessage + "|" + payloadFailureMessage + "], so mark the file as having corrupt data");
-                  }
-               lock.lock();  // block until condition holds
-               try
-                  {
-                  final File corruptFile = changeFileExtension(uploadedFile, DataFileStatus.UPLOADING.getFilenameExtension(), DataFileStatus.CORRUPT_DATA.getFilenameExtension());
-                  if (corruptFile == null)
-                     {
-                     LOG.error("DataSampleManager.handleFileUploadedEvent(): failed to mark file [" + uploadedFile + "] as having corrupt data!  No further action will be taken on this file.");
-                     CONSOLE_LOG.error("File " + uploadedFile.getName() + " failed to upload.  Failed records = " + numFailures + " and failureMessage(s) [" + failureMessage + "|" + payloadFailureMessage + "].  Also failed to rename the file to have the '" + DataFileStatus.CORRUPT_DATA + "' extension");
-                     }
-                  else
-                     {
-                     LOG.info("DataSampleManager.handleFileUploadedEvent(): renamed file [" + uploadedFile + "] to [" + corruptFile + "]  to mark it as having corrupt data");
-                     CONSOLE_LOG.error("File " + corruptFile.getName() + " failed to upload.  Failed records = " + numFailures + " and failureMessage(s) [" + failureMessage + "|" + payloadFailureMessage + "].");
-                     }
-                  }
-               finally
-                  {
-                  lock.unlock();
-                  }
+               // we had a failure, so just mark the samples as failed
+               dataSampleStore.markDataSamplesAsFailed(dataSampleSet);
+               LOG.error("DataSampleManager.handleDataSamplesUploadedEvent(): Upload failure: num failed samples is [" + numFailures + "] and failureMessage(s) [" + failureMessage + "|" + payloadFailureMessage + "]");
+               CONSOLE_LOG.error("Upload failure: Failed records = " + numFailures + " and failureMessage(s) [" + failureMessage + "|" + payloadFailureMessage + "].  Samples have been flagged as failed.");
                }
+
+            // schedule another upload
+            scheduleDataSampleUpload(0, TimeUnit.SECONDS);
             }
          }
-      */
       }
 
    public String getStatisticsAsString()

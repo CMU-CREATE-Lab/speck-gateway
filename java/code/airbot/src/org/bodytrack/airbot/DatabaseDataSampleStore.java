@@ -4,16 +4,23 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import edu.cmu.ri.createlab.persistence.DatabaseUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * <p>
@@ -44,6 +51,25 @@ final class DatabaseDataSampleStore implements DataSampleStore
 
    private static final String STATEMENT_NAME_INSERT_SAMPLE = "insert_sample";
    private static final String STATEMENT_INSERT_SAMPLE = "INSERT INTO AirBotSamples (particle_count, temperature, humidity, sample_timestamp_utc_secs, download_timestamp_utc_millis) VALUES (?, ?, ?, ?, ?)";
+
+   private static final String STATEMENT_NAME_UPDATE_ALL_SAMPLES_HAVING_STATUS = "update_all_samples_having_status";
+   private static final String STATEMENT_UPDATE_ALL_SAMPLES_HAVING_STATUS = "UPDATE AirBotSamples SET UPLOAD_STATUS = ? WHERE UPLOAD_STATUS = ?";
+
+   private static final String STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS = "select_samples_having_status";
+   private static final String STATEMENT_SELECT_SAMPLES_HAVING_STATUS = "SELECT\n" +
+                                                                        "   *\n" +
+                                                                        "FROM\n" +
+                                                                        "   (SELECT\n" +
+                                                                        "       ROW_NUMBER()\n" +
+                                                                        "       OVER () AS NUM_ROWS,\n" +
+                                                                        "       AirBotSamples.id,\n" +
+                                                                        "       AirBotSamples.SAMPLE_TIMESTAMP_UTC_SECS,\n" +
+                                                                        "       AirBotSamples.PARTICLE_COUNT,\n" +
+                                                                        "       AirBotSamples.TEMPERATURE,\n" +
+                                                                        "       AirBotSamples.HUMIDITY\n" +
+                                                                        "    FROM AirBotSamples\n" +
+                                                                        "    WHERE AirBotSamples.UPLOAD_STATUS = ?) AS TEMP\n" +
+                                                                        "WHERE NUM_ROWS <= ?\n";
 
    private static final String SQL_STATE_DUPLICATE_KEY = "23505";
    private static final int SQL_ERROR_CODE_DUPLICATE_KEY = 30000;
@@ -150,6 +176,8 @@ final class DatabaseDataSampleStore implements DataSampleStore
 
                // create prepared statements for insert and update
                preparedStatements.put(STATEMENT_NAME_INSERT_SAMPLE, connection.prepareStatement(STATEMENT_INSERT_SAMPLE));
+               preparedStatements.put(STATEMENT_NAME_UPDATE_ALL_SAMPLES_HAVING_STATUS, connection.prepareStatement(STATEMENT_UPDATE_ALL_SAMPLES_HAVING_STATUS));
+               preparedStatements.put(STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS, connection.prepareStatement(STATEMENT_SELECT_SAMPLES_HAVING_STATUS));
 
                wasSetupSuccessful = true;
                }
@@ -178,46 +206,240 @@ final class DatabaseDataSampleStore implements DataSampleStore
    @Override
    public boolean save(@NotNull final AirBot.DataSample dataSample)
       {
-      final PreparedStatement insertStatement = preparedStatements.get(STATEMENT_NAME_INSERT_SAMPLE);
-
-      if (insertStatement != null)
+      lock.lock();  // block until condition holds
+      try
          {
-         try
-            {
-            insertStatement.setInt(1, dataSample.getParticleCount());
-            insertStatement.setInt(2, dataSample.getTemperature());
-            insertStatement.setInt(3, dataSample.getHumidity());
-            insertStatement.setInt(4, dataSample.getSampleTime());
-            insertStatement.setLong(5, dataSample.getDownloadTime());
-            insertStatement.executeUpdate();
+         final PreparedStatement insertStatement = preparedStatements.get(STATEMENT_NAME_INSERT_SAMPLE);
 
-            LOG.debug("DatabaseDataSampleStore.save(): Saved data sample [" + dataSample.getSampleTime() + "] to the database.");
-            return true;
-            }
-         catch (SQLException e)
+         if (insertStatement != null)
             {
-            if (e.getErrorCode() == SQL_ERROR_CODE_DUPLICATE_KEY && SQL_STATE_DUPLICATE_KEY.equals(e.getSQLState()) )
+            try
                {
-               LOG.error("DatabaseDataSampleStore.save(): Saved failed because a sample with timestamp [" + dataSample.getSampleTime() + "] already exists.  Duplicate sample timestamps are not allowed.");
+               insertStatement.setInt(1, dataSample.getParticleCount());
+               insertStatement.setInt(2, dataSample.getTemperature());
+               insertStatement.setInt(3, dataSample.getHumidity());
+               insertStatement.setInt(4, dataSample.getSampleTime());
+               insertStatement.setLong(5, dataSample.getDownloadTime());
+               insertStatement.executeUpdate();
+
+               LOG.debug("DatabaseDataSampleStore.save(): Saved data sample [" + dataSample.getSampleTime() + "] to the database.");
+               return true;
                }
-            else
+            catch (SQLException e)
                {
-               LOG.error("DatabaseDataSampleStore.save(): SQLException while trying to save data sample [" + dataSample.getSampleTime() + "] " + getSqlExceptionAsString(e));
+               if (e.getErrorCode() == SQL_ERROR_CODE_DUPLICATE_KEY && SQL_STATE_DUPLICATE_KEY.equals(e.getSQLState()))
+                  {
+                  LOG.error("DatabaseDataSampleStore.save(): Saved failed because a sample with timestamp [" + dataSample.getSampleTime() + "] already exists.  Duplicate sample timestamps are not allowed.");
+                  }
+               else
+                  {
+                  LOG.error("DatabaseDataSampleStore.save(): SQLException while trying to save data sample [" + dataSample.getSampleTime() + "] " + getSqlExceptionAsString(e));
+                  }
                }
             }
+         else
+            {
+            LOG.error("DatabaseDataSampleStore.save(): Save failed because no insert statement is defined!");
+            }
+
+         return false;
          }
-      else
+      finally
          {
-         LOG.error("DatabaseDataSampleStore.save(): Save failed because no insert statement is defined!");
+         lock.unlock();
          }
-
-      return false;
       }
 
    @Override
    public void resetStateOfUploadingSamples()
       {
-      // TODO
+      lock.lock();  // block until condition holds
+      try
+         {
+         final PreparedStatement updateStatement = preparedStatements.get(STATEMENT_NAME_UPDATE_ALL_SAMPLES_HAVING_STATUS);
+         if (updateStatement != null)
+            {
+            try
+               {
+               updateStatement.setString(1, DataSampleUploadStatus.NOT_ATTEMPTED.getName());
+               updateStatement.setString(2, DataSampleUploadStatus.IN_PROGRESS.getName());
+               updateStatement.executeUpdate();
+
+               if (LOG.isDebugEnabled())
+                  {
+                  LOG.debug("DatabaseDataSampleStore.resetStateOfUploadingSamples(): Reset all data sample with upload status of [" + DataSampleUploadStatus.IN_PROGRESS + "] to [" + DataSampleUploadStatus.NOT_ATTEMPTED + "].");
+                  }
+               }
+            catch (SQLException e)
+               {
+               LOG.error("DatabaseDataSampleStore.save(): SQLException while trying to reset upload status of all [" + DataSampleUploadStatus.IN_PROGRESS + "] samples", e);
+               }
+            }
+         else
+            {
+            LOG.error("DatabaseDataSampleStore.resetStateOfUploadingSamples(): Reset failed because no update statement is defined!");
+            }
+         }
+      finally
+         {
+         lock.unlock();
+         }
+      }
+
+   @NotNull
+   @Override
+   public DataSampleSet getDataSamplesToUpload(final int maxNumberRequested)
+      {
+      lock.lock();  // block until condition holds
+      try
+         {
+         final SortedSet<AirBot.DataSample> dataSamples = new TreeSet<AirBot.DataSample>();
+         final PreparedStatement selectStatement = preparedStatements.get(STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS);
+         if (selectStatement != null)
+            {
+            final int maxNumberToGet = (maxNumberRequested < 1) ? 100 : maxNumberRequested;
+            try
+               {
+               selectStatement.setString(1, DataSampleUploadStatus.NOT_ATTEMPTED.getName());
+               selectStatement.setInt(2, maxNumberToGet);
+
+               LOG.debug("DatabaseDataSampleStore.getDataSamplesToUpload(): SQL = [" + selectStatement.toString() + "]");
+
+               final ResultSet resultSet = selectStatement.executeQuery();
+
+               // Build up our DataSampleSet, but also build the List of IDs so we can create
+               // a query to mark all these samples' upload state as IN_PROGRESS.
+               final List<Integer> ids = new ArrayList<Integer>();
+               while (resultSet.next())
+                  {
+                  final int id = resultSet.getInt(2);
+                  ids.add(id);
+                  dataSamples.add(new DataSample(id,
+                                                 resultSet.getInt(3),
+                                                 resultSet.getInt(4),
+                                                 resultSet.getInt(5),
+                                                 resultSet.getInt(6)));
+                  }
+
+               // if the update failed, then we should just return an empty DataSampleSet
+               if (!markDataSamplesWithStatus(ids, DataSampleUploadStatus.IN_PROGRESS))
+                  {
+                  dataSamples.clear();
+                  }
+               }
+            catch (SQLException e)
+               {
+               LOG.error("DatabaseDataSampleStore.getDataSamplesToUpload(): SQLException while trying to get data samples to upload", e);
+               }
+            }
+         else
+            {
+            LOG.error("DatabaseDataSampleStore.resetStateOfUploadingSamples(): Reset failed because no update statement is defined!");
+            }
+
+         return new DataSampleSetImpl(dataSamples);
+         }
+      finally
+         {
+         lock.unlock();
+         }
+      }
+
+   @Override
+   public void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet)
+      {
+      lock.lock();  // block until condition holds
+      try
+         {
+         markDataSamplesWithStatus(dataSampleSet, DataSampleUploadStatus.SUCCESS);
+         }
+      finally
+         {
+         lock.unlock();
+         }
+      }
+
+   @Override
+   public void markDataSamplesAsFailed(@NotNull final DataSampleSet dataSampleSet)
+      {
+      lock.lock();  // block until condition holds
+      try
+         {
+         markDataSamplesWithStatus(dataSampleSet, DataSampleUploadStatus.FAILURE);
+         }
+      finally
+         {
+         lock.unlock();
+         }
+      }
+
+   /**
+    * Marks the given samples with the given status.  MUST be called from within a lock block. Returns <code>true</code>
+    * upon success, <code>false</code> otherwise.
+    */
+   private boolean markDataSamplesWithStatus(@NotNull final DataSampleSet dataSampleSet, @NotNull final DataSampleUploadStatus status)
+      {
+      if (!dataSampleSet.isEmpty())
+         {
+         // build a list of the ids
+         final List<Integer> ids = new ArrayList<Integer>();
+         for (final AirBot.DataSample sample : dataSampleSet.getDataSamples())
+            {
+            final Integer id = sample.getDatabaseId();
+            if (id != null)
+               {
+               ids.add(id);
+               }
+            }
+         return markDataSamplesWithStatus(ids, status);
+         }
+      return false;
+      }
+
+   /**
+    * Marks the samples associated with the given IDs with the given status.  MUST be called from within a lock block.
+    * Returns <code>true</code> upon success, <code>false</code> otherwise.
+    */
+   private boolean markDataSamplesWithStatus(@NotNull final List<Integer> dataSamplesIds, @NotNull final DataSampleUploadStatus status)
+      {
+      boolean wasSuccessful = false;
+      if (!dataSamplesIds.isEmpty())
+         {
+         Statement updateStatement = null;
+         try
+            {
+            final String updateSql = "UPDATE AirBotSamples " +
+                                     "SET UPLOAD_STATUS='" + status.getName() + "' " +
+                                     "WHERE ID IN (" + StringUtils.join(dataSamplesIds, ",") + ")";
+
+            LOG.debug("DatabaseDataSampleStore.markDataSamplesWithStatus(): SQL = [" + updateSql + "]");
+            updateStatement = connection.createStatement();
+            updateStatement.executeUpdate(updateSql);
+            wasSuccessful = true;
+            }
+         catch (SQLException e)
+            {
+            LOG.error("DatabaseDataSampleStore.markDataSamplesWithStatus(): SQLException while trying to mark data samples as " + status, e);
+            }
+         finally
+            {
+            closeStatement(updateStatement);
+            }
+         }
+
+      if (LOG.isInfoEnabled())
+         {
+         if (wasSuccessful)
+            {
+            LOG.info("DatabaseDataSampleStore.markDataSamplesWithStatus(): Marked [" + dataSamplesIds.size() + "] samples' upload status as " + status);
+            }
+         else
+            {
+            LOG.info("DatabaseDataSampleStore.markDataSamplesWithStatus(): Failed to mark [" + dataSamplesIds.size() + "] samples' upload status as " + status);
+            }
+         }
+
+      return wasSuccessful;
       }
 
    public void shutdown()
@@ -252,17 +474,9 @@ final class DatabaseDataSampleStore implements DataSampleStore
             // close the prepared statements
             for (final String statementName : preparedStatements.keySet())
                {
-               final Statement statement = preparedStatements.get(statementName);
-               if (statement != null)
+               if (!closeStatement(preparedStatements.get(statementName)))
                   {
-                  try
-                     {
-                     statement.close();
-                     }
-                  catch (SQLException e)
-                     {
-                     LOG.error("DatabaseDataSampleStore.shutdown(): SQLException while trying to close the [" + statementName + "] statement.", e);
-                     }
+                  LOG.error("DatabaseDataSampleStore.shutdown(): Failed to close the [" + statementName + "] statement.");
                   }
                }
             preparedStatements.clear();
@@ -381,19 +595,26 @@ final class DatabaseDataSampleStore implements DataSampleStore
             }
          finally
             {
-            if (statement != null)
-               {
-               try
-                  {
-                  statement.close();
-                  }
-               catch (SQLException e)
-                  {
-                  LOG.error("DatabaseDataSampleStore.initializeDatabase(): SQLException while trying to close the statement", e);
-                  }
-               }
+            closeStatement(statement);
             }
          }
+      }
+
+   private boolean closeStatement(@Nullable final Statement statement)
+      {
+      try
+         {
+         if (statement != null)
+            {
+            statement.close();
+            return true;
+            }
+         }
+      catch (SQLException e)
+         {
+         LOG.error("DatabaseDataSampleStore.closeStatement(): SQLException while trying to close the statment.  Oh well.", e);
+         }
+      return false;
       }
 
    // TODO: get rid of this eventually...
@@ -406,7 +627,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
             @Override
             public String getId()
                {
-               return "CPBFakeAirbot";
+               return "0032343135321501101617";
                }
 
             @Override
@@ -415,6 +636,9 @@ final class DatabaseDataSampleStore implements DataSampleStore
                return 1;
                }
             });
+
+      final DataSampleSet dataSamplesToUpload = store.getDataSamplesToUpload(5);
+      System.out.println("dataSamplesToUpload.size() = " + dataSamplesToUpload.size());
       store.shutdown();
       }
    }

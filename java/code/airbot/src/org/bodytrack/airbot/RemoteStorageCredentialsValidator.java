@@ -23,10 +23,9 @@ public final class RemoteStorageCredentialsValidator
          try
             {
             // Send an empty JSON to test authenticaton
-            final DataSampleUploadResponse dataSampleUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
-                                                                                                new StringEntity("{}"),
-                                                                                                "n/a");
-            return dataSampleUploadResponse.wasSuccessful();
+            final DataSampleSetUploadResponse dataSampleSetUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
+                                                                                                          new StringEntity("{}"));
+            return dataSampleSetUploadResponse.wasSuccessful();
             }
          catch (UnsupportedEncodingException e)
             {

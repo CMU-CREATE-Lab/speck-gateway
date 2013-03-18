@@ -28,12 +28,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
-* @author Chris Bartley (bartley@cmu.edu)
-*/
+ * @author Chris Bartley (bartley@cmu.edu)
+ */
 final class DataSampleUploadHelper
    {
    private static final Logger LOG = Logger.getLogger(DataSampleUploadHelper.class);
-   
+
    /**
     * Determines the timeout in milliseconds until a connection is established. A timeout value of zero is interpreted
     * as an infinite timeout.
@@ -54,9 +54,8 @@ final class DataSampleUploadHelper
       }
 
    @NotNull
-   static DataSampleUploadResponse upload(@NotNull final RemoteStorageCredentials remoteStorageCredentials,
-                                               @NotNull final HttpEntity entity,
-                                               @NotNull final String entityName)
+   static DataSampleSetUploadResponse upload(@NotNull final RemoteStorageCredentials remoteStorageCredentials,
+                                             @NotNull final HttpEntity entity)
       {
       // set timeouts
       final HttpParams httpParams = new BasicHttpParams();
@@ -73,7 +72,7 @@ final class DataSampleUploadHelper
 
       final DefaultHttpClient httpClient = new DefaultHttpClient(httpParams);
 
-      @NotNull DataSampleUploadResponse dataSampleUploadResponse;
+      @NotNull DataSampleSetUploadResponse dataSampleSetUploadResponse;
       try
          {
          // Set up basic auth (got this code from http://hc.apache.org/httpcomponents-client-ga/httpclient/examples/org/apache/http/examples/client/ClientPreemptiveBasicAuthentication.java)
@@ -106,7 +105,7 @@ final class DataSampleUploadHelper
             {
             final String message = "Authorization Failed (HTTP " + HttpStatus.SC_UNAUTHORIZED + ")";
             LOG.error("DataSampleUploadHelper.upload(): " + message);
-            dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+            dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
             }
          else
             {
@@ -114,7 +113,7 @@ final class DataSampleUploadHelper
                {
                final String message = "HTTP entity response is null";
                LOG.error("DataSampleUploadHelper.upload(): " + message);
-               dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+               dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
                }
             else
                {
@@ -153,21 +152,21 @@ final class DataSampleUploadHelper
                      {
                      final String message = "Response not recognized as JSON (no opening curly brace)";
                      LOG.error("DataSampleUploadHelper.upload(): " + message);
-                     dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+                     dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
                      }
                   else
                      {
-                     // now parse the response, converting the JSON into a DataSampleUploadResponse
+                     // now parse the response, converting the JSON into a DataSampleSetUploadResponse
                      try
                         {
                         final ObjectMapper mapper = new ObjectMapper();
-                        dataSampleUploadResponse = mapper.readValue(json, DataSampleUploadResponseImpl.class);
+                        dataSampleSetUploadResponse = mapper.readValue(json, DataSampleSetUploadResponseImpl.class);
                         }
                      catch (IOException e)
                         {
                         final String message = "IOException while trying to parse the response as JSON";
                         LOG.error("DataSampleUploadHelper.upload(): " + message, e);
-                        dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+                        dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
                         }
                      }
                   }
@@ -175,19 +174,19 @@ final class DataSampleUploadHelper
                   {
                   final String message = "IOException while reading or parsing the response";
                   LOG.error("DataSampleUploadHelper.upload(): " + message, e);
-                  dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+                  dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
                   }
                catch (IllegalStateException e)
                   {
                   final String message = "IllegalStateException while reading the response";
                   LOG.error("DataSampleUploadHelper.upload(): " + message, e);
-                  dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+                  dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
                   }
                catch (Exception e)
                   {
                   final String message = "Exception while reading the response";
                   LOG.error("DataSampleUploadHelper.upload(): " + message, e);
-                  dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+                  dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
                   }
                }
             }
@@ -196,21 +195,21 @@ final class DataSampleUploadHelper
          }
       catch (ClientProtocolException e)
          {
-         final String message = "ClientProtocolException while trying to upload data file [" + entityName + "]";
+         final String message = "ClientProtocolException while trying to upload";
          LOG.error("DataSampleUploadHelper.upload(): " + message, e);
-         dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+         dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
          }
       catch (IOException e)
          {
-         final String message = "IOException while trying to upload data file [" + entityName + "]";
+         final String message = "IOException while trying to upload";
          LOG.error("DataSampleUploadHelper.upload(): " + message, e);
-         dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+         dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
          }
       catch (Exception e)
          {
-         final String message = "Exception while trying to upload data file [" + entityName + "]";
+         final String message = "Exception while trying to upload";
          LOG.error("DataSampleUploadHelper.upload(): " + message, e);
-         dataSampleUploadResponse = DataSampleUploadResponseImpl.createFailedResponse(message);
+         dataSampleSetUploadResponse = DataSampleSetUploadResponseImpl.createFailedResponse(message);
          }
       finally
          {
@@ -219,15 +218,15 @@ final class DataSampleUploadHelper
          httpClient.getConnectionManager().shutdown();
          }
 
-      return dataSampleUploadResponse;
+      return dataSampleSetUploadResponse;
       }
 
    private DataSampleUploadHelper()
       {
       // private to prevent instantiation
       }
-   
-   private static class PayloadImpl implements DataSampleUploadResponse.Payload
+
+   private static class PayloadImpl implements DataSampleSetUploadResponse.Payload
       {
       private Integer numSuccessfulRecords;
       private Integer numFailedRecords;
@@ -276,16 +275,15 @@ final class DataSampleUploadHelper
          }
       }
 
-   private static class DataSampleUploadResponseImpl implements DataSampleUploadResponse
+   private static class DataSampleSetUploadResponseImpl implements DataSampleSetUploadResponse
       {
-
       private static final String RESULT_SUCCESS = "OK";
       private static final String RESULT_FAILURE = "KO";
 
       @NotNull
-      private static DataSampleUploadResponse createFailedResponse(@NotNull final String message)
+      private static DataSampleSetUploadResponse createFailedResponse(@NotNull final String message)
          {
-         return new DataSampleUploadResponseImpl(RESULT_FAILURE, message);
+         return new DataSampleSetUploadResponseImpl(RESULT_FAILURE, message);
          }
 
       private String result;
@@ -293,11 +291,11 @@ final class DataSampleUploadHelper
       private PayloadImpl payload;
 
       @SuppressWarnings("UnusedDeclaration")
-      private DataSampleUploadResponseImpl()
+      private DataSampleSetUploadResponseImpl()
          {
          }
 
-      private DataSampleUploadResponseImpl(final String result, final String message)
+      private DataSampleSetUploadResponseImpl(final String result, final String message)
          {
          this.result = result;
          this.message = message;
@@ -358,7 +356,7 @@ final class DataSampleUploadHelper
       public String toString()
          {
          final StringBuilder sb = new StringBuilder();
-         sb.append("DataSampleUploadResponseImpl");
+         sb.append("DataSampleSetUploadResponseImpl");
          sb.append("{result='").append(result).append('\'');
          sb.append(", message='").append(message).append('\'');
          sb.append(", payload=").append(payload);

@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AntConfiguration">
-    <defaultAnt bundledAnt="true" />
-  </component>
   <component name="ArtifactsStructureConfigurable.UI">
     <splitter-proportions>
       <SplitterProportionsDataImpl />
@@ -39,12 +36,30 @@
   <component name="CopyrightManager" default="">
     <module2copyright />
   </component>
-  <component name="DataSourceManagerImpl" format="xml" hash="3335961570">
-    <data-source source="LOCAL" name="Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="d6359876-f74e-4a5f-b510-0c52fcd8eee7">
+  <component name="DataSourceManagerImpl" format="xml" hash="1830129192">
+    <data-source source="LOCAL" name="Production Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="3ff4c361-ca66-4b38-a2b3-28a73899fa9c">
       <identifier-quote-string>&quot;</identifier-quote-string>
       <synchronize>true</synchronize>
       <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
-      <jdbc-url>jdbc:derby:jar:(/Users/chris/Documents/Work/Projects/AirBotUploader/AirBot-Uploader/etc/database/sample-db.jar)sample-db</jdbc-url>
+      <jdbc-url>jdbc:derby:$USER_HOME$/BodyTrack/AirBotData/AirBot0032343135321501101617/database/db</jdbc-url>
+      <user-name>airbot</user-name>
+      <user-password>dfcbdfc3dfd8dfc8dfc5dfde</user-password>
+      <schema-pattern>*.AIRBOT</schema-pattern>
+      <default-schemas>*.AIRBOT</default-schemas>
+      <default-dialect>Derby</default-dialect>
+      <libraries>
+        <library>
+          <url>file://$PROJECT_DIR$/java/lib/apache-derby/derby.jar</url>
+        </library>
+      </libraries>
+    </data-source>
+    <data-source source="LOCAL" name="Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="7693384e-3d0e-4676-a9f0-9dc85f1a89cd">
+      <identifier-quote-string>&quot;</identifier-quote-string>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
+      <jdbc-url>jdbc:derby:jar:($PROJECT_DIR$/etc/database/sample-db.jar)sample-db</jdbc-url>
+      <user-name>airbot</user-name>
+      <user-password>dfcbdfc3dfd8dfc8dfc5dfde</user-password>
       <schema-pattern>*.AIRBOT</schema-pattern>
       <default-schemas>*.AIRBOT</default-schemas>
       <default-dialect>Derby</default-dialect>

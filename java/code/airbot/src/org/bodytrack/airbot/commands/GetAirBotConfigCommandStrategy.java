@@ -39,6 +39,11 @@ public final class GetAirBotConfigCommandStrategy extends CreateLabHIDReturnValu
       if (response != null && response.wasSuccessful())
          {
          final byte[] data = response.getData();
+         if (LOG.isDebugEnabled())
+            {
+            LOG.debug("GetAirBotConfigCommandStrategy.convertResponse(): response = " + CommandStrategyHelper.byteArrayToString(data));
+            }
+
          if (CommandStrategyHelper.isResponseDataValid(data))
             {
             final StringBuilder sb = new StringBuilder();
