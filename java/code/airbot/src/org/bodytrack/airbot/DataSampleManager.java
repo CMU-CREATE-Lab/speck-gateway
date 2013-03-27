@@ -164,7 +164,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                      break;
                   case NO_DATA_AVAILABLE:
 
-                     delayInSecondsUntilNextDataSampleRequest = 60;
+                     delayInSecondsUntilNextDataSampleRequest = 30;
 
                      if (LOG.isInfoEnabled() || CONSOLE_LOG.isInfoEnabled())
                         {
@@ -228,11 +228,11 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                   }
                else
                   {
-                  final String msg = "No samples found which need to be uploaded.  Will retry in 1 minute.";
+                  final String msg = "No samples found which need to be uploaded.  Will retry in 15 seconds.";
                   LOG.info("DataSampleManager.uploadDataSampleRunnable(): " + msg);
                   CONSOLE_LOG.info(msg);
 
-                  scheduleDataSampleUpload(1, TimeUnit.MINUTES);
+                  scheduleDataSampleUpload(15, TimeUnit.SECONDS);
                   }
                }
             }
@@ -393,7 +393,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
             // update statistics
             statistics.incrementUploadsFailed();
 
-            // If the response was null, then a problem occurred during upload, so just  submit a new upload job for it.
+            // If the response was null, then a problem occurred during upload, so just submit a new upload job for it.
             final String msg = "Data sample upload failure detected, will retry in 1 minute.";
             LOG.info("DataSampleManager.handleDataSamplesUploadedEvent(): " + msg);
             CONSOLE_LOG.info(msg);
