@@ -280,6 +280,7 @@ class AirBotProxy implements AirBot
    private abstract static class RetryingActionExecutor<ReturnType>
       {
       private static final int MAX_RETRIES = 3;
+      private static final int SLEEP_DURATION_IN_MILLIS = 200;
 
       /**
        * Executes an action and returns the result, retrying if necessary up to three times.  Returns <code>null</code>
@@ -309,7 +310,7 @@ class AirBotProxy implements AirBot
                {
                try
                   {
-                  Thread.sleep(200);
+                  Thread.sleep(SLEEP_DURATION_IN_MILLIS);
                   }
                catch (InterruptedException e)
                   {
