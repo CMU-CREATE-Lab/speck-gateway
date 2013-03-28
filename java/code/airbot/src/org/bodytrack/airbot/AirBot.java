@@ -24,8 +24,11 @@ public interface AirBot extends CreateLabDeviceProxy
       /** The particle count in particles/Liter. */
       int getParticleCount();
 
+      /** The temperature in degrees F. */
+      double getTemperatureInDegreesF();
+
       /** The temperature in 1/10 degrees F. */
-      int getTemperature();
+      int getTemperatureInTenthsOfADegreeF();
 
       /** The humidity in percent relative humidity. */
       int getHumidity();

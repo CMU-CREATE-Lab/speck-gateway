@@ -216,7 +216,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
             try
                {
                insertStatement.setInt(1, dataSample.getParticleCount());
-               insertStatement.setInt(2, dataSample.getTemperature());
+               insertStatement.setInt(2, dataSample.getTemperatureInTenthsOfADegreeF());
                insertStatement.setInt(3, dataSample.getHumidity());
                insertStatement.setInt(4, dataSample.getSampleTime());
                insertStatement.setLong(5, dataSample.getDownloadTime());
@@ -615,30 +615,5 @@ final class DatabaseDataSampleStore implements DataSampleStore
          LOG.error("DatabaseDataSampleStore.closeStatement(): SQLException while trying to close the statment.  Oh well.", e);
          }
       return false;
-      }
-
-   // TODO: get rid of this eventually...
-   public static void main(final String[] args) throws InitializationException
-      {
-      final DatabaseDataSampleStore store = new DatabaseDataSampleStore(
-            new AirBotConfig()
-            {
-            @NotNull
-            @Override
-            public String getId()
-               {
-               return "0032343135321501101617";
-               }
-
-            @Override
-            public int getProtocolVersion()
-               {
-               return 1;
-               }
-            });
-
-      final DataSampleSet dataSamplesToUpload = store.getDataSamplesToUpload(5);
-      System.out.println("dataSamplesToUpload.size() = " + dataSamplesToUpload.size());
-      store.shutdown();
       }
    }

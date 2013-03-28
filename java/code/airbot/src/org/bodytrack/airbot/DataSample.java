@@ -18,7 +18,7 @@ public final class DataSample implements AirBot.DataSample
    private final int sampleTimeUtcSeconds;
    private final long downloadTime = System.currentTimeMillis();
    private final int particleCount;
-   private final int temperature;
+   private final int temperatureInTenthsOfDegreeF;
    private final int humidity;
 
    public DataSample(@NotNull final byte[] data)
@@ -30,12 +30,12 @@ public final class DataSample implements AirBot.DataSample
            ByteUtils.unsignedByteToInt(data[11]));
       }
 
-   public DataSample(@Nullable final Integer databaseId, final int sampleTimeUtcSeconds, final int particleCount, final int temperature, final int humidity)
+   public DataSample(@Nullable final Integer databaseId, final int sampleTimeUtcSeconds, final int particleCount, final int temperatureInTenthsOfDegreeF, final int humidity)
       {
       this.databaseId = databaseId;
       this.sampleTimeUtcSeconds = sampleTimeUtcSeconds;
       this.particleCount = particleCount;
-      this.temperature = temperature;
+      this.temperatureInTenthsOfDegreeF = temperatureInTenthsOfDegreeF;
       this.humidity = humidity;
       }
 
@@ -65,9 +65,15 @@ public final class DataSample implements AirBot.DataSample
       }
 
    @Override
-   public int getTemperature()
+   public double getTemperatureInDegreesF()
       {
-      return temperature;
+      return temperatureInTenthsOfDegreeF / 10.0;
+      }
+
+   @Override
+   public int getTemperatureInTenthsOfADegreeF()
+      {
+      return temperatureInTenthsOfDegreeF;
       }
 
    @Override
@@ -79,7 +85,7 @@ public final class DataSample implements AirBot.DataSample
    @Override
    public boolean isEmpty()
       {
-      return sampleTimeUtcSeconds == 0 && particleCount == 0 && temperature == 0 && humidity == 0;
+      return sampleTimeUtcSeconds == 0 && particleCount == 0 && temperatureInTenthsOfDegreeF == 0 && humidity == 0;
       }
 
    @NotNull
@@ -91,7 +97,7 @@ public final class DataSample implements AirBot.DataSample
       s.append(COMMA);
       s.append(particleCount);
       s.append(COMMA);
-      s.append(temperature);
+      s.append(getTemperatureInDegreesF());
       s.append(COMMA);
       s.append(humidity);
       s.append(COMMA);
@@ -108,7 +114,7 @@ public final class DataSample implements AirBot.DataSample
       s.append(COMMA);
       s.append(particleCount);
       s.append(COMMA);
-      s.append(temperature);
+      s.append(getTemperatureInDegreesF());
       s.append(COMMA);
       s.append(humidity);
       s.append("]");
@@ -153,7 +159,7 @@ public final class DataSample implements AirBot.DataSample
       sb.append(", sampleTime=").append(sampleTimeUtcSeconds);
       sb.append(", downloadTime=").append(downloadTime);
       sb.append(", particleCount=").append(particleCount);
-      sb.append(", temperature=").append(temperature);
+      sb.append(", temperatureInTenthsOfDegreeF=").append(temperatureInTenthsOfDegreeF);
       sb.append(", humidity=").append(humidity);
       sb.append('}');
       return sb.toString();
