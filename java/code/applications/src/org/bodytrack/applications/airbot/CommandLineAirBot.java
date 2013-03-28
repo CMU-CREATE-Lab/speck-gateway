@@ -1,7 +1,10 @@
 package org.bodytrack.applications.airbot;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Set;
 import edu.cmu.ri.createlab.device.CreateLabDevicePingFailureEventListener;
 import edu.cmu.ri.createlab.util.commandline.BaseCommandLineApplication;
 import org.bodytrack.airbot.AirBot;
@@ -87,7 +90,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                   }
                catch (CommunicationException e)
                   {
-                  println("Failed to read current sample");
+                  println("Failed to read current sample: " + e);
                   }
                }
             else
@@ -110,7 +113,99 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                   }
                catch (CommunicationException e)
                   {
-                  println("Failed to read data sample");
+                  println("Failed to read data sample: " + e);
+                  }
+               }
+            else
+               {
+               println("You must be connected to the AirBot first.");
+               }
+            }
+         };
+
+   private final Runnable getDataSamplesAction =
+         new Runnable()
+         {
+         @SuppressWarnings("BusyWait")
+         public void run()
+            {
+            if (isConnected())
+               {
+               final Integer millisToWait = readInteger("Milliseconds to wait between data sample fetches: ");
+               if (millisToWait == null || millisToWait < 0)
+                  {
+                  println("Invalid duration");
+                  return;
+                  }
+
+               println("Press ENTER to stop reading and deleting samples...");
+
+               final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+               try
+                  {
+                  final Set<Integer> sampleTimes = new HashSet<Integer>();
+                  boolean shouldQuit = false;
+                  while (!shouldQuit)
+                     {
+                     // check whether the user pressed a key
+                     if (in.ready())
+                        {
+                        shouldQuit = true;
+                        }
+
+                     final AirBot.DataSample sample = device.getSample();
+                     final boolean isNoDataAvailable = (sample == null || sample.isEmpty());
+                     if (isNoDataAvailable)
+                        {
+                        println("No data available, waiting 30 seconds before trying again...");
+                        }
+                     else
+                        {
+                        final int sampleTime = sample.getSampleTime();
+                        println("Sample: [" + sampleTime + ", " + sample.getParticleCount() + ", " + sample.getTemperature() + ", " + sample.getHumidity() + "]");
+
+                        // keep track of which ones we've seen to detect duplicates
+                        if (sampleTimes.contains(sampleTime))
+                           {
+                           println("DUPLICATE SAMPLE!!!");
+                           }
+                        else
+                           {
+                           sampleTimes.add(sampleTime);
+                           }
+
+                        device.deleteSample(sampleTime);
+                        }
+
+                     final long sleepUntil = System.currentTimeMillis() + (isNoDataAvailable ? 30000 : millisToWait);
+
+                     while (System.currentTimeMillis() < sleepUntil && !shouldQuit)
+                        {
+                        try
+                           {
+                           Thread.sleep(10);
+                           }
+                        catch (InterruptedException e)
+                           {
+                           println("InterruptedException while sleeping: " + e);
+                           }
+
+                        // check whether the user pressed a key
+                        if (in.ready())
+                           {
+                           shouldQuit = true;
+                           }
+                        }
+                     }
+                  }
+               catch (IOException e)
+                  {
+                  println("IOException while trying to read keyboard input: " + e);
+                  }
+               catch (CommunicationException e)
+                  {
+                  println("Failed to read data sample. Aborting: " + e);
                   }
                }
             else
@@ -134,6 +229,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                   return;
                   }
 
+               //noinspection UnusedCatchParameter
                try
                   {
                   if (device.deleteSample(Integer.parseInt(timestampStr)))
@@ -145,13 +241,13 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                      println("Failed to delete sample");
                      }
                   }
-               catch (NumberFormatException e)
+               catch (NumberFormatException ignored)
                   {
                   println("Invalid timestamp");
                   }
                catch (CommunicationException e)
                   {
-                  println("Failed to delete data sample");
+                  println("Failed to delete data sample: " + e);
                   }
                }
             else
@@ -370,6 +466,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
       registerAction("d", disconnectFromDeviceAction);
       registerAction("s", getCurrentStateAction);
       registerAction("g", getDataSampleAction);
+      registerAction("G", getDataSamplesAction);
       registerAction("x", deleteDataSampleAction);
       registerAction("w", wipeStorageAction);
       registerAction("w2", wipeStorageAction2);
@@ -407,6 +504,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
       println("");
       println("s         Gets the current state");
       println("g         Gets a data sample");
+      println("G         Repeatedly gets (and deletes) a data sample every N milliseconds");
       println("x         Delete a data sample");
       println("w         Wipe AirBot's storage by getting and deleting all saved samples");
       println("w2        Wipe AirBot's storage by getting (but not deleting) all saved samples");
