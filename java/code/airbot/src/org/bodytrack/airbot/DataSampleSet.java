@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  */
 interface DataSampleSet
    {
-   int DEFAULT_SIZE = 100;
+   int DEFAULT_SIZE = 200;
 
    @NotNull
    SortedSet<AirBot.DataSample> getDataSamples();
