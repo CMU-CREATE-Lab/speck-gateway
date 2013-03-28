@@ -297,7 +297,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
          final PreparedStatement selectStatement = preparedStatements.get(STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS);
          if (selectStatement != null)
             {
-            final int maxNumberToGet = (maxNumberRequested < 1) ? 100 : maxNumberRequested;
+            final int maxNumberToGet = (maxNumberRequested < 1) ? DataSampleSet.DEFAULT_SIZE : maxNumberRequested;
             try
                {
                selectStatement.setString(1, DataSampleUploadStatus.NOT_ATTEMPTED.getName());
