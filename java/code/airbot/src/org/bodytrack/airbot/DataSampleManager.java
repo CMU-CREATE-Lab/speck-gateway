@@ -1,6 +1,5 @@
 package org.bodytrack.airbot;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -106,7 +105,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                         }
                      else
                         {
-                        if (LOG.isInfoEnabled())
+                        if (CONSOLE_LOG.isInfoEnabled())
                            {
                            CONSOLE_LOG.info("Got data sample " + dataSample.getSampleTime());
                            CONSOLE_LOG.info("Saving data sample " + dataSample.getSampleTime() + "...");
@@ -122,7 +121,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
 
                            LOG.debug("DataSampleManager.downloadDataSampleRunnable.run(): Saved data sample [" + dataSample.getSampleTime() + "]");
 
-                           if (LOG.isInfoEnabled())
+                           if (CONSOLE_LOG.isInfoEnabled())
                               {
                               CONSOLE_LOG.info("Saved data sample " + dataSample.getSampleTime());
                               CONSOLE_LOG.info("Deleting data sample " + dataSample.getSampleTime() + " from device...");
@@ -136,18 +135,18 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                               {
                               statistics.incrementDeletesSuccessful();
 
-                              if (LOG.isInfoEnabled())
+                              if (CONSOLE_LOG.isInfoEnabled())
                                  {
-                                 CONSOLE_LOG.info("Data sample " + dataSample + " was successfully deleted from the device.");
+                                 CONSOLE_LOG.info("Data sample " + dataSample.getSampleTime() + " was successfully deleted from the device.");
                                  }
                               }
                            else
                               {
                               statistics.incrementDeletesFailed();
 
-                              if (LOG.isInfoEnabled())
+                              if (CONSOLE_LOG.isInfoEnabled())
                                  {
-                                 CONSOLE_LOG.error("Data sample " + dataSample + " could not be deleted from the device.");
+                                 CONSOLE_LOG.error("Data sample " + dataSample.getSampleTime() + " could not be deleted from the device.");
                                  }
                               }
                            }
@@ -216,23 +215,30 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
 
                final DataSampleSet dataSampleSet = dataSampleStore.getDataSamplesToUpload(200);
 
-               if (!dataSampleSet.isEmpty())
+               if (dataSampleSet.isEmpty())
                   {
-                  final String msg = "Found " + dataSampleSet.size() + " samples to upload.";
-                  LOG.info("DataSampleManager.uploadDataSampleRunnable(): " + msg);
-                  CONSOLE_LOG.info(msg);
+                  if (LOG.isInfoEnabled() || CONSOLE_LOG.isInfoEnabled())
+                     {
+                     final String msg = "No samples found which need to be uploaded.  Will retry in 15 seconds.";
+                     LOG.info("DataSampleManager.uploadDataSampleRunnable(): " + msg);
+                     CONSOLE_LOG.info(msg);
+                     }
+
+                  scheduleDataSampleUpload(15, TimeUnit.SECONDS);
+                  }
+               else
+                  {
+                  if (LOG.isInfoEnabled() || CONSOLE_LOG.isInfoEnabled())
+                     {
+                     final String msg = "Found " + dataSampleSet.size() + " samples to upload.";
+                     LOG.info("DataSampleManager.uploadDataSampleRunnable(): " + msg);
+                     CONSOLE_LOG.info(msg);
+                     }
+
                   dataSampleUploader.submitUploadDataSampleSetTask(dataSampleSet);
 
                   // update statistics
                   statistics.incrementUploadsRequested();
-                  }
-               else
-                  {
-                  final String msg = "No samples found which need to be uploaded.  Will retry in 15 seconds.";
-                  LOG.info("DataSampleManager.uploadDataSampleRunnable(): " + msg);
-                  CONSOLE_LOG.info(msg);
-
-                  scheduleDataSampleUpload(15, TimeUnit.SECONDS);
                   }
                }
             }
@@ -254,8 +260,8 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
       if (isDataSampleUploaderDefined())
          {
          final String msg = "The DataSampleUploader can only be set once.";
-         LOG.info("DataSampleManager.setDataSampleUploader(): " + msg);
-         CONSOLE_LOG.info(msg);
+         LOG.warn("DataSampleManager.setDataSampleUploader(): " + msg);
+         CONSOLE_LOG.warn(msg);
          }
       else
          {
@@ -394,9 +400,12 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
             statistics.incrementUploadsFailed();
 
             // If the response was null, then a problem occurred during upload, so just submit a new upload job for it.
-            final String msg = "Data sample upload failure detected, will retry in 1 minute.";
-            LOG.info("DataSampleManager.handleDataSamplesUploadedEvent(): " + msg);
-            CONSOLE_LOG.info(msg);
+            if (LOG.isInfoEnabled() || CONSOLE_LOG.isInfoEnabled())
+               {
+               final String msg = "Data sample upload failure detected, will retry in 1 minute.";
+               LOG.info("DataSampleManager.handleDataSamplesUploadedEvent(): " + msg);
+               CONSOLE_LOG.info(msg);
+               }
             executor.schedule(
                   new Runnable()
                   {
