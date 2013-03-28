@@ -180,11 +180,12 @@ public class CommandLineAirBot extends BaseCommandLineApplication
 
                      final long sleepUntil = System.currentTimeMillis() + (isNoDataAvailable ? 30000 : millisToWait);
 
+                     final int sleepDuration = Math.min(10, millisToWait);
                      while (System.currentTimeMillis() < sleepUntil && !shouldQuit)
                         {
                         try
                            {
-                           Thread.sleep(10);
+                           Thread.sleep(sleepDuration);
                            }
                         catch (InterruptedException e)
                            {
