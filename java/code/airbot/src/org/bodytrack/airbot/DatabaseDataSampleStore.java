@@ -41,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
 final class DatabaseDataSampleStore implements DataSampleStore
    {
    private static final Logger LOG = Logger.getLogger(DatabaseDataSampleStore.class);
+   private static final Logger CONSOLE_LOG = Logger.getLogger("ConsoleLog");
 
    private static final String DERBY_SYSTEM_HOME_PROPERTY_KEY = "derby.system.home";
 
@@ -159,7 +160,9 @@ final class DatabaseDataSampleStore implements DataSampleStore
             }
          catch (SQLException e)
             {
-            LOG.error("DatabaseDataSampleStore.DatabaseDataSampleStore(): SQLException while trying to create the database connection: " + getSqlExceptionAsString(e), e);
+            final String message = "SQLException while trying to create the database connection: " + getSqlExceptionAsString(e);
+            LOG.error("DatabaseDataSampleStore.DatabaseDataSampleStore(): " + message, e);
+            CONSOLE_LOG.error(message);
             }
 
          boolean wasSetupSuccessful = false;
@@ -183,12 +186,16 @@ final class DatabaseDataSampleStore implements DataSampleStore
                }
             catch (SQLException e)
                {
-               LOG.error("DatabaseDataSampleStore.DatabaseDataSampleStore(): SQLException while trying to configure or initialize the database: " + getSqlExceptionAsString(e), e);
+               final String message = "SQLException while trying to configure or initialize the database: " + getSqlExceptionAsString(e);
+               LOG.error("DatabaseDataSampleStore.DatabaseDataSampleStore(): " + message, e);
+               CONSOLE_LOG.error(message);
                }
 
-            if (LOG.isInfoEnabled())
+            if (LOG.isInfoEnabled() || CONSOLE_LOG.isInfoEnabled())
                {
-               LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): Connected to and created database " + DATABASE_NAME);
+               final String message = "Connected to and created database " + DATABASE_NAME;
+               LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): " + message);
+               CONSOLE_LOG.info(message);
                }
             }
 
@@ -450,7 +457,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
          if (!isShutDown)
             {
             LOG.debug("DatabaseDataSampleStore.shutdown(): Shutting down...");
-
+            CONSOLE_LOG.info("Shutting down the database...");
             try
                {
                // the shutdown=true attribute shuts down Derby
@@ -462,12 +469,14 @@ final class DatabaseDataSampleStore implements DataSampleStore
                   {
                   // we got the expected exception
                   LOG.info("DatabaseDataSampleStore.shutdown(): Derby shut down normally");
+                  CONSOLE_LOG.info("Database shut down normally");
                   }
                else
                   {
                   // if the error code or SQLState is different, we have
                   // an unexpected exception (shutdown failed)
-                  LOG.error("DatabaseDataSampleStore.shutdown(): Derby did not shut down normally: " + getSqlExceptionAsString(e));
+                  LOG.error("DatabaseDataSampleStore.shutdown(): Derby did not shut down normally: " + getSqlExceptionAsString(e), e);
+                  CONSOLE_LOG.error("Database did not shut down normally: " + getSqlExceptionAsString(e));
                   }
                }
 
