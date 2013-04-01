@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="AirBotUploader" default="all">
+<project name="SpeckGateway" default="all">
    <dirname property="base.directory" file="${ant.file}"/>
    <property file="build.properties"/>
 
    <!-- Paths -->
-   <path id="airbot-core-classpath">
+   <path id="speck-core-classpath">
       <!-- third-party jars -->
       <pathelement path="${apache-derby1.jar}"/>
       <pathelement path="${apache-derby2.jar}"/>
@@ -31,9 +31,9 @@
       <pathelement path="${log4j-extras.jar}"/>
    </path>
 
-   <path id="airbot-applications-classpath">
+   <path id="speck-applications-classpath">
       <!-- other classes within this project -->
-      <pathelement path="${airbot-core.build.dir}"/>
+      <pathelement path="${speck-core.build.dir}"/>
 
       <!-- third-party jars -->
       <pathelement path="${apache-derby1.jar}"/>
@@ -107,61 +107,61 @@
    </tstamp>
 
    <!-- get the svn repository url and revision -->
-   <property name="airbot-uploader.version-number" value="${airbot-uploader.version-number.major}.${airbot-uploader.version-number.minor}.${airbot-uploader.version-number.revision}"/>
-   <echo level="info">AirBot Uploader Version Number: ${airbot-uploader.version-number}</echo>
+   <property name="speck-gateway.version-number" value="${speck-gateway.version-number.major}.${speck-gateway.version-number.minor}.${speck-gateway.version-number.revision}"/>
+   <echo level="info">Speck Gatway Version Number: ${speck-gateway.version-number}</echo>
 
    <target name="all" depends="clean, dist" description="clean, then build everything"/>
 
-   <target name="clean" depends="clean-airbot-core,
-                                 clean-airbot-applications,
-                                 clean-airbot-uploader-webstart" description="clean up everything"/>
+   <target name="clean" depends="clean-speck-core,
+                                 clean-speck-applications,
+                                 clean-speck-gateway-webstart" description="clean up everything"/>
 
-   <target name="clean-airbot-core" description="clean up airbot-core">
-      <delete dir="${airbot-core.build.dir}"/>
-      <delete dir="${airbot-core.dist.dir}"/>
+   <target name="clean-speck-core" description="clean up speck-core">
+      <delete dir="${speck-core.build.dir}"/>
+      <delete dir="${speck-core.dist.dir}"/>
    </target>
 
-   <target name="clean-airbot-applications" description="clean up airbot-applications">
-      <delete dir="${airbot-applications.build.dir}"/>
-      <delete dir="${airbot-applications.dist.dir}"/>
+   <target name="clean-speck-applications" description="clean up speck-applications">
+      <delete dir="${speck-applications.build.dir}"/>
+      <delete dir="${speck-applications.dist.dir}"/>
    </target>
 
-   <target name="clean-airbot-uploader-webstart" description="clean up airbot-uploader-webstart">
-      <delete dir="${airbot-uploader-webstart.dist.dir}"/>
+   <target name="clean-speck-gateway-webstart" description="clean up speck-gateway-webstart">
+      <delete dir="${speck-gateway-webstart.dist.dir}"/>
    </target>
    
-   <target name="build" depends="build-airbot-core, build-airbot-applications" description="builds the source code" unless="build-is-complete">
+   <target name="build" depends="build-speck-core, build-speck-applications" description="builds the source code" unless="build-is-complete">
       <property name="build-is-complete" value="true"/>
    </target>
 
-   <target name="build-airbot-core" description="builds the airbot-core source code" unless="build-airbot-core-is-complete">
-      <compile-code-and-copy-resources src.dir="${airbot-core.src.dir}"
-                                       build.dir="${airbot-core.build.dir}"
-                                       classpath-ref="airbot-core-classpath"/>
+   <target name="build-speck-core" description="builds the speck-core source code" unless="build-speck-core-is-complete">
+      <compile-code-and-copy-resources src.dir="${speck-core.src.dir}"
+                                       build.dir="${speck-core.build.dir}"
+                                       classpath-ref="speck-core-classpath"/>
 
-      <property name="build-airbot-core-is-complete" value="true"/>
+      <property name="build-speck-core-is-complete" value="true"/>
    </target>
 
-   <target name="build-airbot-applications" depends="build-airbot-core" description="builds the airbot-applications source code" unless="build-airbot-applications-is-complete">
-      <compile-code-and-copy-resources src.dir="${airbot-applications.src.dir}"
-                                       build.dir="${airbot-applications.build.dir}"
-                                       classpath-ref="airbot-applications-classpath">
+   <target name="build-speck-applications" depends="build-speck-core" description="builds the speck-applications source code" unless="build-speck-applications-is-complete">
+      <compile-code-and-copy-resources src.dir="${speck-applications.src.dir}"
+                                       build.dir="${speck-applications.build.dir}"
+                                       classpath-ref="speck-applications-classpath">
          <resources-filterset>
             <filterset>
-               <filter token="version.number" value="${airbot-uploader.version-number}"/>
+               <filter token="version.number" value="${speck-gateway.version-number}"/>
             </filterset>
          </resources-filterset>
       </compile-code-and-copy-resources>
 
-      <property name="build-airbot-applications-is-complete" value="true"/>
+      <property name="build-speck-applications-is-complete" value="true"/>
    </target>
 
-   <target name="dist" depends="dist-airbot-core, dist-airbot-applications" description="builds the project" unless="dist-is-complete">
+   <target name="dist" depends="dist-speck-core, dist-speck-applications" description="builds the project" unless="dist-is-complete">
       <property name="dist-is-complete" value="true"/>
    </target>
 
-   <target name="dist-airbot-core" depends="build-airbot-core" description="builds airbot-core" unless="dist-airbot-core-is-complete">
-      <create-dist component.name="airbot-core">
+   <target name="dist-speck-core" depends="build-speck-core" description="builds speck-core" unless="dist-speck-core-is-complete">
+      <create-dist component.name="speck-core">
          <additional-files-to-copy>
             <fileset file="${apache-derby1.jar}"/>
             <fileset file="${apache-derby2.jar}"/>
@@ -190,16 +190,16 @@
          </additional-files-to-copy>
       </create-dist>
 
-      <property name="dist-airbot-core-is-complete" value="true"/>
+      <property name="dist-speck-core-is-complete" value="true"/>
    </target>
 
-   <target name="dist-airbot-applications" depends="dist-airbot-core, build-airbot-applications" description="builds airbot-applications" unless="dist-airbot-applications-is-complete">
-      <create-dist component.name="airbot-applications">
+   <target name="dist-speck-applications" depends="dist-speck-core, build-speck-applications" description="builds speck-applications" unless="dist-speck-applications-is-complete">
+      <create-dist component.name="speck-applications">
          <jar-manifest-attributes>
-            <attribute name="Main-Class" value="org.bodytrack.applications.airbot.AirBotUploader"/>
+            <attribute name="Main-Class" value="org.bodytrack.applications.speck.SpeckGateway"/>
          </jar-manifest-attributes>
          <additional-files-to-copy>
-            <fileset file="${airbot-core.dist.dir}/${airbot-core.jar.filename}"/>
+            <fileset file="${speck-core.dist.dir}/${speck-core.jar.filename}"/>
             <fileset file="${apache-derby1.jar}"/>
             <fileset file="${apache-derby2.jar}"/>
             <fileset file="${commons-io.jar}"/>
@@ -227,30 +227,30 @@
          </additional-files-to-copy>
       </create-dist>
 
-      <property name="dist-airbot-applications-is-complete" value="true"/>
+      <property name="dist-speck-applications-is-complete" value="true"/>
    </target>
 
    <target name="dist-webstart" depends="dist" description="Creates the Java Web Start application" unless="dist-webstart-is-complete">
 
-      <mkdir dir="${airbot-uploader-webstart.dist.dir}"/>
+      <mkdir dir="${speck-gateway-webstart.dist.dir}"/>
 
       <!-- copy all the web content and jars we need -->
-      <copy todir="${airbot-uploader-webstart.dist.dir}" flatten="false">
-         <fileset dir="${airbot-uploader-webstart.src.dir}">
+      <copy todir="${speck-gateway-webstart.dist.dir}" flatten="false">
+         <fileset dir="${speck-gateway-webstart.src.dir}">
             <exclude name="index.html"/>
             <include name="**/*"/>
          </fileset>
       </copy>
-      <copy todir="${airbot-uploader-webstart.dist.dir}" flatten="false">
-         <fileset dir="${airbot-uploader-webstart.src.dir}">
+      <copy todir="${speck-gateway-webstart.dist.dir}" flatten="false">
+         <fileset dir="${speck-gateway-webstart.src.dir}">
             <include name="index.html"/>
          </fileset>
          <filterset>
-            <filter token="version.number" value="${airbot-uploader.version-number}"/>
+            <filter token="version.number" value="${speck-gateway.version-number}"/>
          </filterset>
       </copy>
-      <copy todir="${airbot-uploader-webstart.dist.dir}/jar" flatten="true">
-         <fileset dir="${airbot-applications.dist.dir}">
+      <copy todir="${speck-gateway-webstart.dist.dir}/jar" flatten="true">
+         <fileset dir="${speck-applications.dist.dir}">
             <include name="**/*.jar"/>
          </fileset>
          <fileset file="${hidapi-webstart.native1}"/>
@@ -264,7 +264,7 @@
             storepass="${keystore.password}"
             keypass="${keystore.private-key.password}"
             lazy="false">
-         <fileset dir="${airbot-uploader-webstart.dist.dir}">
+         <fileset dir="${speck-gateway-webstart.dist.dir}">
             <include name="**/*.jar"/>
          </fileset>
       </signjar>

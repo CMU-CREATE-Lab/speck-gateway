@@ -1,1 +1,1 @@
-This is a just sample database, identical to the one(s) created by the uploader, but only used for IntelliJ database integration.
+This is a just sample database, identical to the one(s) created by the gateway, but only used for IntelliJ database integration.

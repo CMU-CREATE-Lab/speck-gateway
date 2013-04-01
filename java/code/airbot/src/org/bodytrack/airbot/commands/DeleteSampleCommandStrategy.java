@@ -3,8 +3,6 @@ package org.bodytrack.airbot.commands;
 import edu.cmu.ri.createlab.usb.hid.CreateLabHIDReturnValueCommandStrategy;
 import edu.cmu.ri.createlab.usb.hid.HIDCommandResponse;
 import org.apache.log4j.Logger;
-import org.bodytrack.airbot.AirBot;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**

@@ -1,4 +1,4 @@
-package org.bodytrack.applications.airbot;
+package org.bodytrack.applications.speck;
 
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
@@ -22,12 +22,12 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public final class AirBotUploader extends JPanel
+public final class SpeckGateway extends JPanel
    {
-   private static final Logger LOG = Logger.getLogger(AirBotUploader.class);
+   private static final Logger LOG = Logger.getLogger(SpeckGateway.class);
    private static final Logger CONSOLE_LOG = Logger.getLogger("ConsoleLog");
 
-   private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(AirBotUploader.class.getName());
+   private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(SpeckGateway.class.getName());
 
    private static final String LOGGING_LEVEL_SWITCH = "--logging-level";
    private static final String COMMAND_LINE_SWITCH = "--command-line";
@@ -82,7 +82,7 @@ public final class AirBotUploader extends JPanel
       // see whether we should launch the command-line version of the app, or the GUI
       if (arguments.containsKey(COMMAND_LINE_SWITCH))
          {
-         new AirBotUploaderCommandLine(arguments.get(CONFIG_SWITCH)).run();
+         new SpeckGatewayCommandLine(arguments.get(CONFIG_SWITCH)).run();
          }
       else
          {
@@ -93,7 +93,7 @@ public final class AirBotUploader extends JPanel
                public void run()
                   {
                   final JFrame jFrame = new JFrame();
-                  final AirBotUploaderGui application = new AirBotUploaderGui(jFrame);
+                  final SpeckGatewayGui application = new SpeckGatewayGui(jFrame);
 
                   // set various properties for the JFrame
                   jFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -158,7 +158,7 @@ public final class AirBotUploader extends JPanel
       CONSOLE_LOG.info(message);
       }
 
-   private AirBotUploader()
+   private SpeckGateway()
       {
       // private to prevent instantiation
       }

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>
- * <code>CsvDataSampleStore</code> handles storage {@link AirBot.DataSample data samples}, storing them in a text file
+ * <code>CsvDataSampleStore</code> handles storage {@link Speck.DataSample data samples}, storing them in a text file
  * as records with comma-delimited values.
  * Does not support retrieval.
  * </p>
@@ -24,9 +24,9 @@ final class CsvDataSampleStore implements DataSampleStore
    @NotNull
    private BufferedWriter writer;
 
-   CsvDataSampleStore(@NotNull final AirBotConfig airBotConfig)
+   CsvDataSampleStore(@NotNull final SpeckConfig speckConfig)
       {
-      final File dataFileDirectory = AirBotUploaderConstants.FilePaths.getDeviceDataDirectory(airBotConfig);
+      final File dataFileDirectory = SpeckGatewayConstants.FilePaths.getDeviceDataDirectory(speckConfig);
       final File dataFile = new File(dataFileDirectory, "data_samples.csv");
       final boolean doesFileAlreadyExist = dataFile.exists();
       try
@@ -51,7 +51,7 @@ final class CsvDataSampleStore implements DataSampleStore
 
    @Override
    @NotNull
-   public SaveResult save(@NotNull final AirBot.DataSample dataSample)
+   public SaveResult save(@NotNull final Speck.DataSample dataSample)
       {
       LOG.debug("CsvDataSampleStore.save(): saving sample " + dataSample.getSampleTime());
       try

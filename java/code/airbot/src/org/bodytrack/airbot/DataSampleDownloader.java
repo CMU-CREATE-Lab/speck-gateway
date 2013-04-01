@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The <code>DataSampleDownloader</code> manages downloading of {@link AirBot.DataSample data samples} from an AirBot.
+ * The <code>DataSampleDownloader</code> manages downloading of {@link Speck.DataSample data samples} from a Speck.
  *
  * @author Chris Bartley (bartley@cmu.edu)
  */
@@ -47,9 +47,9 @@ public final class DataSampleDownloader
       private final Status status;
 
       @Nullable
-      private final AirBot.DataSample sample;
+      private final Speck.DataSample sample;
 
-      public DownloadResponse(@NotNull final Status status, @Nullable final AirBot.DataSample sample)
+      public DownloadResponse(@NotNull final Status status, @Nullable final Speck.DataSample sample)
          {
          this.status = status;
          this.sample = sample;
@@ -62,15 +62,15 @@ public final class DataSampleDownloader
          }
 
       @Nullable
-      public AirBot.DataSample getDataSample()
+      public Speck.DataSample getDataSample()
          {
          return sample;
          }
       }
 
-   private final AirBot device;
+   private final Speck device;
 
-   public DataSampleDownloader(@NotNull final AirBot device)
+   public DataSampleDownloader(@NotNull final Speck device)
       {
       this.device = device;
       }
@@ -84,7 +84,7 @@ public final class DataSampleDownloader
          }
 
       DownloadResponse.Status failureCause = DownloadResponse.Status.OK;
-      AirBot.DataSample dataSample = null;
+      Speck.DataSample dataSample = null;
       try
          {
          dataSample = device.getSample();
@@ -106,7 +106,7 @@ public final class DataSampleDownloader
       return new DownloadResponse(failureCause, dataSample);
       }
 
-   public boolean deleteDataSample(@Nullable final AirBot.DataSample dataSample)
+   public boolean deleteDataSample(@Nullable final Speck.DataSample dataSample)
       {
       boolean wasDeleteSuccessful = false;
 

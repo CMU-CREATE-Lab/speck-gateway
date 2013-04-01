@@ -24,19 +24,19 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * <p>
- * <code>DatabaseDataSampleStore</code> handles storage and retrieval of {@link AirBot.DataSample data samples}, storing
+ * <code>DatabaseDataSampleStore</code> handles storage and retrieval of {@link Speck.DataSample data samples}, storing
  * them in a local database.
  * </p>
  * <p>By default, if the database doesn't exist it will be created in a subdirectory of the user's home directory
- * (e.g. <code>~/BodyTrack/AirBotData/AirBot5832343135321501101617/database</code>).  This can be overridden by
- * specifying a different directory in the <code>derby.system.home</code> system property.
+ * (e.g. <code>~/CREATELab/Speck/Speck00343135321504100f17/database</code>).  This can be overridden by specifying a
+ * different directory in the <code>derby.system.home</code> system property.
  * </p>
  * <p>
  * Much of this code is taken from the Apache Derby project's <a href="http://svn.apache.org/repos/asf/db/derby/code/trunk/java/demo/simple/SimpleApp.java">SimpleApp example</a>.
  * </p>
  *
- * @author Apache Derby
  * @author Chris Bartley (bartley@cmu.edu)
+ * @author Apache Derby
  */
 final class DatabaseDataSampleStore implements DataSampleStore
    {
@@ -51,10 +51,10 @@ final class DatabaseDataSampleStore implements DataSampleStore
    private static final String PROTOCOL = "jdbc:derby:";
 
    private static final String STATEMENT_NAME_INSERT_SAMPLE = "insert_sample";
-   private static final String STATEMENT_INSERT_SAMPLE = "INSERT INTO AirBotSamples (raw_particle_count, particle_count, temperature, humidity, sample_timestamp_utc_secs, download_timestamp_utc_millis) VALUES (?, ?, ?, ?, ?, ?)";
+   private static final String STATEMENT_INSERT_SAMPLE = "INSERT INTO SpeckSamples (raw_particle_count, particle_count, temperature, humidity, sample_timestamp_utc_secs, download_timestamp_utc_millis) VALUES (?, ?, ?, ?, ?, ?)";
 
    private static final String STATEMENT_NAME_UPDATE_ALL_SAMPLES_HAVING_STATUS = "update_all_samples_having_status";
-   private static final String STATEMENT_UPDATE_ALL_SAMPLES_HAVING_STATUS = "UPDATE AirBotSamples SET UPLOAD_STATUS = ? WHERE UPLOAD_STATUS = ?";
+   private static final String STATEMENT_UPDATE_ALL_SAMPLES_HAVING_STATUS = "UPDATE SpeckSamples SET UPLOAD_STATUS = ? WHERE UPLOAD_STATUS = ?";
 
    private static final String STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS = "select_samples_having_status";
    private static final String STATEMENT_SELECT_SAMPLES_HAVING_STATUS = "SELECT\n" +
@@ -63,14 +63,14 @@ final class DatabaseDataSampleStore implements DataSampleStore
                                                                         "   (SELECT\n" +
                                                                         "       ROW_NUMBER()\n" +
                                                                         "       OVER () AS NUM_ROWS,\n" +
-                                                                        "       AirBotSamples.id,\n" +
-                                                                        "       AirBotSamples.SAMPLE_TIMESTAMP_UTC_SECS,\n" +
-                                                                        "       AirBotSamples.RAW_PARTICLE_COUNT,\n" +
-                                                                        "       AirBotSamples.PARTICLE_COUNT,\n" +
-                                                                        "       AirBotSamples.TEMPERATURE,\n" +
-                                                                        "       AirBotSamples.HUMIDITY\n" +
-                                                                        "    FROM AirBotSamples\n" +
-                                                                        "    WHERE AirBotSamples.UPLOAD_STATUS = ?) AS TEMP\n" +
+                                                                        "       SpeckSamples.id,\n" +
+                                                                        "       SpeckSamples.SAMPLE_TIMESTAMP_UTC_SECS,\n" +
+                                                                        "       SpeckSamples.RAW_PARTICLE_COUNT,\n" +
+                                                                        "       SpeckSamples.PARTICLE_COUNT,\n" +
+                                                                        "       SpeckSamples.TEMPERATURE,\n" +
+                                                                        "       SpeckSamples.HUMIDITY\n" +
+                                                                        "    FROM SpeckSamples\n" +
+                                                                        "    WHERE SpeckSamples.UPLOAD_STATUS = ?) AS TEMP\n" +
                                                                         "WHERE NUM_ROWS <= ?\n";
 
    private static final String SQL_STATE_DUPLICATE_KEY = "23505";
@@ -104,21 +104,27 @@ final class DatabaseDataSampleStore implements DataSampleStore
    private boolean isShutDown = false;
    private final Lock lock = new ReentrantLock();
 
-   DatabaseDataSampleStore(@NotNull final AirBotConfig airBotConfig) throws InitializationException
+   DatabaseDataSampleStore(@NotNull final SpeckConfig speckConfig) throws InitializationException
       {
       lock.lock();  // block until condition holds
       try
          {
          // See whether the Derby home directory is defined.  If not, then define it.  We do this because the database
          // will be created under the directory specified by the derby.system.home system property.
-         LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): System.getProperty(" + DERBY_SYSTEM_HOME_PROPERTY_KEY + ") = [" + System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) + "]");
+         if (LOG.isInfoEnabled())
+            {
+            LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): System.getProperty(" + DERBY_SYSTEM_HOME_PROPERTY_KEY + ") = [" + System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) + "]");
+            }
          if (System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) == null)
             {
-            final File dataDirectory = AirBotUploaderConstants.FilePaths.getDeviceDataDirectory(airBotConfig);
+            final File dataDirectory = SpeckGatewayConstants.FilePaths.getDeviceDataDirectory(speckConfig);
             final File databaseParentDirectory = new File(dataDirectory, "database");
             System.setProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY, databaseParentDirectory.getAbsolutePath());
             }
-         LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): System.getProperty(" + DERBY_SYSTEM_HOME_PROPERTY_KEY + ") = [" + System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) + "]");
+         if (LOG.isInfoEnabled())
+            {
+            LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): System.getProperty(" + DERBY_SYSTEM_HOME_PROPERTY_KEY + ") = [" + System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) + "]");
+            }
 
          final String databaseParentDirectoryPath = System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY);
          final File databaseParentDirectory = new File(databaseParentDirectoryPath);
@@ -145,12 +151,12 @@ final class DatabaseDataSampleStore implements DataSampleStore
             System.exit(1);
             }
 
-         // Define connection properties.  Providing a user name and password is optional in the embedded framework, but,
-         // by default, the schema APP will be used when no username is provided.  Otherwise, the schema name is the same
+         // Define connection properties. Providing a user name and password is optional in the embedded framework, but,
+         // by default, the schema APP will be used when no username is provided. Otherwise, the schema name is the same
          // as the user name.
          final Properties properties = new Properties();
-         properties.put("user", "airbot");
-         properties.put("password", "airbot");
+         properties.put("user", "speck");
+         properties.put("password", "speck");
 
          try
             {
@@ -213,7 +219,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
 
    @Override
    @NotNull
-   public SaveResult save(@NotNull final AirBot.DataSample dataSample)
+   public SaveResult save(@NotNull final Speck.DataSample dataSample)
       {
       lock.lock();  // block until condition holds
       try
@@ -233,7 +239,10 @@ final class DatabaseDataSampleStore implements DataSampleStore
                insertStatement.setLong(6, dataSample.getDownloadTime());
                insertStatement.executeUpdate();
 
-               LOG.debug("DatabaseDataSampleStore.save(): Saved data sample [" + dataSample.getSampleTime() + "] to the database.");
+               if (LOG.isDebugEnabled())
+                  {
+                  LOG.debug("DatabaseDataSampleStore.save(): Saved data sample [" + dataSample.getSampleTime() + "] to the database.");
+                  }
                return SaveResult.SUCCESS;
                }
             catch (SQLException e)
@@ -305,7 +314,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
       lock.lock();  // block until condition holds
       try
          {
-         final SortedSet<AirBot.DataSample> dataSamples = new TreeSet<AirBot.DataSample>();
+         final SortedSet<Speck.DataSample> dataSamples = new TreeSet<Speck.DataSample>();
          final PreparedStatement selectStatement = preparedStatements.get(STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS);
          if (selectStatement != null)
             {
@@ -314,8 +323,6 @@ final class DatabaseDataSampleStore implements DataSampleStore
                {
                selectStatement.setString(1, DataSampleUploadStatus.NOT_ATTEMPTED.getName());
                selectStatement.setInt(2, maxNumberToGet);
-
-               LOG.debug("DatabaseDataSampleStore.getDataSamplesToUpload(): SQL = [" + selectStatement.toString() + "]");
 
                final ResultSet resultSet = selectStatement.executeQuery();
 
@@ -396,7 +403,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
          {
          // build a list of the ids
          final List<Integer> ids = new ArrayList<Integer>();
-         for (final AirBot.DataSample sample : dataSampleSet.getDataSamples())
+         for (final Speck.DataSample sample : dataSampleSet.getDataSamples())
             {
             final Integer id = sample.getDatabaseId();
             if (id != null)
@@ -421,11 +428,10 @@ final class DatabaseDataSampleStore implements DataSampleStore
          Statement updateStatement = null;
          try
             {
-            final String updateSql = "UPDATE AirBotSamples " +
+            final String updateSql = "UPDATE SpeckSamples " +
                                      "SET UPLOAD_STATUS='" + status.getName() + "' " +
                                      "WHERE ID IN (" + StringUtils.join(dataSamplesIds, ",") + ")";
 
-            LOG.debug("DatabaseDataSampleStore.markDataSamplesWithStatus(): SQL = [" + updateSql + "]");
             updateStatement = connection.createStatement();
             updateStatement.executeUpdate(updateSql);
             wasSuccessful = true;
@@ -440,7 +446,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
             }
          }
 
-      if (LOG.isInfoEnabled())
+      if (LOG.isInfoEnabled() && !dataSamplesIds.isEmpty())
          {
          if (wasSuccessful)
             {
@@ -571,15 +577,15 @@ final class DatabaseDataSampleStore implements DataSampleStore
 
    private void initializeDatabase(@NotNull final Connection connection) throws SQLException
       {
-      if (!DatabaseUtils.doesTableExist(connection, "AirBotSamples"))
+      if (!DatabaseUtils.doesTableExist(connection, "SpeckSamples"))
          {
          Statement statement = null;
 
          try
             {
-            LOG.debug("DatabaseDataSampleStore.initializeDatabase(): Creating table AirBotSamples...");
+            LOG.debug("DatabaseDataSampleStore.initializeDatabase(): Creating table SpeckSamples...");
             statement = connection.createStatement();
-            statement.execute("CREATE TABLE AirBotSamples (\n" +
+            statement.execute("CREATE TABLE SpeckSamples (\n" +
                               "   id                            INTEGER     NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n" +
                               "   raw_particle_count            INTEGER     NOT NULL,\n" +
                               "   particle_count                INTEGER     NOT NULL,\n" +
@@ -589,24 +595,24 @@ final class DatabaseDataSampleStore implements DataSampleStore
                               "   download_timestamp_utc_millis BIGINT      NOT NULL,\n" +
                               "   upload_timestamp_utc_millis   BIGINT,\n" +
                               "   upload_status                 VARCHAR(13) NOT NULL DEFAULT 'not_attempted',\n" +
-                              "   CONSTRAINT AirBotSamples_PrimaryKey PRIMARY KEY (id),\n" +
-                              "   CONSTRAINT AirBotSamples_SampleTimestamp_Unique UNIQUE (sample_timestamp_utc_secs),\n" +
-                              "   CONSTRAINT AirBotSamples_StatusContraint CHECK (upload_status IN\n" +
+                              "   CONSTRAINT SpeckSamples_PrimaryKey PRIMARY KEY (id),\n" +
+                              "   CONSTRAINT SpeckSamples_SampleTimestamp_Unique UNIQUE (sample_timestamp_utc_secs),\n" +
+                              "   CONSTRAINT SpeckSamples_StatusContraint CHECK (upload_status IN\n" +
                               "                                                   ('not_attempted',\n" +
                               "                                                    'in_progress',\n" +
                               "                                                    'success',\n" +
                               "                                                    'failure'))\n" +
                               ")");
 
-            LOG.debug("DatabaseDataSampleStore.initializeDatabase(): Creating indeces for table AirBotSamples...");
+            LOG.debug("DatabaseDataSampleStore.initializeDatabase(): Creating indeces for table SpeckSamples...");
 
-            statement.execute("CREATE INDEX AirBotSamples_RawParticleCount ON AirBotSamples (raw_particle_count)");
-            statement.execute("CREATE INDEX AirBotSamples_ParticleCount ON AirBotSamples (particle_count)");
-            statement.execute("CREATE INDEX AirBotSamples_Temperature ON AirBotSamples (temperature)");
-            statement.execute("CREATE INDEX AirBotSamples_Humidity ON AirBotSamples (humidity)");
-            statement.execute("CREATE INDEX AirBotSamples_DownloadTimestamp ON AirBotSamples (download_timestamp_utc_millis)");
-            statement.execute("CREATE INDEX AirBotSamples_UploadTimestamp ON AirBotSamples (upload_timestamp_utc_millis)");
-            statement.execute("CREATE INDEX AirBotSamples_UploadStatus ON AirBotSamples (upload_status)");
+            statement.execute("CREATE INDEX SpeckSamples_RawParticleCount ON SpeckSamples (raw_particle_count)");
+            statement.execute("CREATE INDEX SpeckSamples_ParticleCount ON SpeckSamples (particle_count)");
+            statement.execute("CREATE INDEX SpeckSamples_Temperature ON SpeckSamples (temperature)");
+            statement.execute("CREATE INDEX SpeckSamples_Humidity ON SpeckSamples (humidity)");
+            statement.execute("CREATE INDEX SpeckSamples_DownloadTimestamp ON SpeckSamples (download_timestamp_utc_millis)");
+            statement.execute("CREATE INDEX SpeckSamples_UploadTimestamp ON SpeckSamples (upload_timestamp_utc_millis)");
+            statement.execute("CREATE INDEX SpeckSamples_UploadStatus ON SpeckSamples (upload_status)");
 
             LOG.debug("DatabaseDataSampleStore.initializeDatabase(): Database initialization complete!");
             }
@@ -638,7 +644,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
    public static void main(final String[] args) throws InitializationException
       {
       final DatabaseDataSampleStore store = new DatabaseDataSampleStore(
-            new AirBotConfig()
+            new SpeckConfig()
             {
             @NotNull
             @Override

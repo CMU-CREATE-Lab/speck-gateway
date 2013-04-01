@@ -1,4 +1,4 @@
-package org.bodytrack.applications.airbot;
+package org.bodytrack.applications.speck;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,23 +7,23 @@ import java.util.HashSet;
 import java.util.Set;
 import edu.cmu.ri.createlab.device.CreateLabDevicePingFailureEventListener;
 import edu.cmu.ri.createlab.util.commandline.BaseCommandLineApplication;
-import org.bodytrack.airbot.AirBot;
-import org.bodytrack.airbot.AirBotConfig;
-import org.bodytrack.airbot.AirBotFactory;
+import org.bodytrack.airbot.Speck;
+import org.bodytrack.airbot.SpeckConfig;
+import org.bodytrack.airbot.SpeckFactory;
 import org.bodytrack.airbot.CommunicationException;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public class CommandLineAirBot extends BaseCommandLineApplication
+public class CommandLineSpeck extends BaseCommandLineApplication
    {
    public static void main(final String[] args)
       {
-      new CommandLineAirBot().run();
+      new CommandLineSpeck().run();
       }
 
-   private AirBot device;
+   private Speck device;
 
    private final CreateLabDevicePingFailureEventListener pingFailureEventListener =
          new CreateLabDevicePingFailureEventListener()
@@ -35,7 +35,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
             }
          };
 
-   private CommandLineAirBot()
+   private CommandLineSpeck()
       {
       super(new BufferedReader(new InputStreamReader(System.in)));
 
@@ -49,11 +49,11 @@ public class CommandLineAirBot extends BaseCommandLineApplication
             {
             if (isConnected())
                {
-               println("You are already connected to an AirBot.");
+               println("You are already connected to a Speck.");
                }
             else
                {
-               device = AirBotFactory.create();
+               device = SpeckFactory.create();
 
                if (device == null)
                   {
@@ -95,7 +95,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                }
             else
                {
-               println("You must be connected to the AirBot first.");
+               println("You must be connected to the Speck first.");
                }
             }
          };
@@ -118,7 +118,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                }
             else
                {
-               println("You must be connected to the AirBot first.");
+               println("You must be connected to the Speck first.");
                }
             }
          };
@@ -154,7 +154,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                         shouldQuit = true;
                         }
 
-                     final AirBot.DataSample sample = device.getSample();
+                     final Speck.DataSample sample = device.getSample();
                      final boolean isNoDataAvailable = (sample == null || sample.isEmpty());
                      if (isNoDataAvailable)
                         {
@@ -211,7 +211,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                }
             else
                {
-               println("You must be connected to the AirBot first.");
+               println("You must be connected to the Speck first.");
                }
             }
          };
@@ -253,7 +253,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                }
             else
                {
-               println("You must be connected to the AirBot first.");
+               println("You must be connected to the Speck first.");
                }
             }
          };
@@ -265,16 +265,16 @@ public class CommandLineAirBot extends BaseCommandLineApplication
             {
             if (isConnected())
                {
-               println("Wiping all samples from AirBot storage...");
+               println("Wiping all samples from Speck storage...");
                print("Deleting");
                int numSamplesRead = 0;
                int numSamplesDeleted = 0;
                int missesDetected = 0;
 
-               AirBot.DataSample previousSample = null;
-               AirBot.DataSample firstNonEmptySample = null;
-               AirBot.DataSample lastNonEmptySample = null;
-               AirBot.DataSample sample = null;
+               Speck.DataSample previousSample = null;
+               Speck.DataSample firstNonEmptySample = null;
+               Speck.DataSample lastNonEmptySample = null;
+               Speck.DataSample sample = null;
                do
                   {
                   try
@@ -330,7 +330,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                }
             else
                {
-               println("You must be connected to the AirBot first.");
+               println("You must be connected to the Speck first.");
                }
             }
          };
@@ -342,15 +342,15 @@ public class CommandLineAirBot extends BaseCommandLineApplication
             {
             if (isConnected())
                {
-               println("Wiping all samples from AirBot storage...");
+               println("Wiping all samples from Speck storage...");
                print("Deleting");
                int numSamplesRead = 0;
                int missesDetected = 0;
 
-               AirBot.DataSample previousSample = null;
-               AirBot.DataSample firstNonEmptySample = null;
-               AirBot.DataSample lastNonEmptySample = null;
-               AirBot.DataSample sample = null;
+               Speck.DataSample previousSample = null;
+               Speck.DataSample firstNonEmptySample = null;
+               Speck.DataSample lastNonEmptySample = null;
+               Speck.DataSample sample = null;
                do
                   {
                   try
@@ -405,12 +405,12 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                }
             else
                {
-               println("You must be connected to the AirBot first.");
+               println("You must be connected to the Speck first.");
                }
             }
          };
 
-   private void printSample(@Nullable final AirBot.DataSample dataSample)
+   private void printSample(@Nullable final Speck.DataSample dataSample)
       {
       if (dataSample == null || dataSample.isEmpty())
          {
@@ -454,7 +454,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
             }
          else
             {
-            println("You must be connected to the AirBot first.");
+            println("You must be connected to the Speck first.");
             }
          }
 
@@ -474,22 +474,22 @@ public class CommandLineAirBot extends BaseCommandLineApplication
       registerAction("w2", wipeStorageAction2);
 
       registerAction("i",
-                     new GetStringAction("AirBot ID")
+                     new GetStringAction("Speck ID")
                      {
                      @Override
                      protected String getString()
                         {
-                        final AirBotConfig config = device.getAirBotConfig();
+                        final SpeckConfig config = device.getSpeckConfig();
                         return config.getId();
                         }
                      });
       registerAction("v",
-                     new GetStringAction("AirBot Protocol Version")
+                     new GetStringAction("Speck Protocol Version")
                      {
                      @Override
                      protected String getString()
                         {
-                        final AirBotConfig config = device.getAirBotConfig();
+                        final SpeckConfig config = device.getSpeckConfig();
                         return String.valueOf(config.getProtocolVersion());
                         }
                      });
@@ -501,18 +501,18 @@ public class CommandLineAirBot extends BaseCommandLineApplication
       {
       println("COMMANDS -----------------------------------");
       println("");
-      println("c         Connect to the AirBot");
-      println("d         Disconnect from the AirBot");
+      println("c         Connect to the Speck");
+      println("d         Disconnect from the Speck");
       println("");
       println("s         Gets the current state");
       println("g         Gets a data sample");
       println("G         Repeatedly gets (and deletes) a data sample every N milliseconds");
       println("x         Delete a data sample");
-      println("w         Wipe AirBot's storage by getting and deleting all saved samples");
-      println("w2        Wipe AirBot's storage by getting (but not deleting) all saved samples");
+      println("w         Wipe Speck's storage by getting and deleting all saved samples");
+      println("w2        Wipe Speck's storage by getting (but not deleting) all saved samples");
       println("");
-      println("i         Gets the AirBot's unique ID");
-      println("v         Gets the AirBot's protocol version");
+      println("i         Gets the Speck's unique ID");
+      println("v         Gets the Speck's protocol version");
       println("");
       println("q         Quit");
       println("");

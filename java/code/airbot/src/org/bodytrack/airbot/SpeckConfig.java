@@ -5,12 +5,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public interface AirBotConfig
+public interface SpeckConfig
    {
-   /** Returns the AirBot's unique ID. */
+   /** Returns the Speck's unique ID. */
    @NotNull
    String getId();
 
-   /** Returns the AirBot's protocol version. */
+   /** Returns the Speck's protocol version. */
    int getProtocolVersion();
    }

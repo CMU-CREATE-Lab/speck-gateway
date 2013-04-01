@@ -11,7 +11,7 @@ interface DataSampleSet
    int DEFAULT_SIZE = 200;
 
    @NotNull
-   SortedSet<AirBot.DataSample> getDataSamples();
+   SortedSet<Speck.DataSample> getDataSamples();
 
    /** Returns <code>true</code> if this set contains no samples. */
    boolean isEmpty();

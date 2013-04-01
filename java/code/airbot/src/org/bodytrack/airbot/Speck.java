@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public interface AirBot extends CreateLabDeviceProxy
+public interface Speck extends CreateLabDeviceProxy
    {
    interface DataSample extends Comparable<DataSample>
       {
@@ -93,7 +93,7 @@ public interface AirBot extends CreateLabDeviceProxy
     */
    boolean deleteSample(final int sampleTime) throws CommunicationException;
 
-   /** Returns the {@link AirBotConfig configuration} for this <code>AirBot</code>. */
+   /** Returns the {@link SpeckConfig configuration} for this <code>Speck</code>. */
    @NotNull
-   AirBotConfig getAirBotConfig();
+   SpeckConfig getSpeckConfig();
    }

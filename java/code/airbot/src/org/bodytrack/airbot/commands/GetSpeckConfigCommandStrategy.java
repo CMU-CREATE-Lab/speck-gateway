@@ -4,16 +4,16 @@ import edu.cmu.ri.createlab.usb.hid.CreateLabHIDReturnValueCommandStrategy;
 import edu.cmu.ri.createlab.usb.hid.HIDCommandResponse;
 import edu.cmu.ri.createlab.util.ByteUtils;
 import org.apache.log4j.Logger;
-import org.bodytrack.airbot.AirBotConfig;
+import org.bodytrack.airbot.SpeckConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public final class GetAirBotConfigCommandStrategy extends CreateLabHIDReturnValueCommandStrategy<AirBotConfig>
+public final class GetSpeckConfigCommandStrategy extends CreateLabHIDReturnValueCommandStrategy<SpeckConfig>
    {
-   private static final Logger LOG = Logger.getLogger(GetAirBotConfigCommandStrategy.class);
+   private static final Logger LOG = Logger.getLogger(GetSpeckConfigCommandStrategy.class);
 
    private static final byte COMMAND_PREFIX = 'I';
    private static final int UNIQUE_ID_STARTING_BYTE_INDEX = 1;
@@ -34,14 +34,14 @@ public final class GetAirBotConfigCommandStrategy extends CreateLabHIDReturnValu
 
    @Nullable
    @Override
-   public AirBotConfig convertResponse(final HIDCommandResponse response)
+   public SpeckConfig convertResponse(final HIDCommandResponse response)
       {
       if (response != null && response.wasSuccessful())
          {
          final byte[] data = response.getData();
          if (LOG.isDebugEnabled())
             {
-            LOG.debug("GetAirBotConfigCommandStrategy.convertResponse(): response = " + CommandStrategyHelper.byteArrayToString(data));
+            LOG.debug("GetSpeckConfigCommandStrategy.convertResponse(): response = " + CommandStrategyHelper.byteArrayToString(data));
             }
 
          if (CommandStrategyHelper.isResponseDataValid(data))
@@ -51,20 +51,20 @@ public final class GetAirBotConfigCommandStrategy extends CreateLabHIDReturnValu
                {
                sb.append(ByteUtils.byteToHexString(data[i]));
                }
-            return new AirBotConfigImpl(sb.toString(), data[PROTOCOL_VERSION_BYTE_INDEX]);
+            return new SpeckConfigImpl(sb.toString(), data[PROTOCOL_VERSION_BYTE_INDEX]);
             }
          }
-      LOG.error("GetAirBotConfigCommandStrategy.convertResponse(): Failure!  response = [" + response + "]");
+      LOG.error("GetSpeckConfigCommandStrategy.convertResponse(): Failure!  response = [" + response + "]");
       return null;
       }
 
-   private static final class AirBotConfigImpl implements AirBotConfig
+   private static final class SpeckConfigImpl implements SpeckConfig
       {
       @NotNull
       private final String id;
       private final int protocolVersion;
 
-      private AirBotConfigImpl(@NotNull final String id, final int protocolVersion)
+      private SpeckConfigImpl(@NotNull final String id, final int protocolVersion)
          {
          this.id = id;
          this.protocolVersion = protocolVersion;
@@ -95,7 +95,7 @@ public final class GetAirBotConfigCommandStrategy extends CreateLabHIDReturnValu
             return false;
             }
 
-         final AirBotConfigImpl that = (AirBotConfigImpl)o;
+         final SpeckConfigImpl that = (SpeckConfigImpl)o;
 
          if (protocolVersion != that.protocolVersion)
             {
@@ -120,7 +120,7 @@ public final class GetAirBotConfigCommandStrategy extends CreateLabHIDReturnValu
       @Override
       public String toString()
          {
-         final StringBuilder sb = new StringBuilder("AirBotConfig{");
+         final StringBuilder sb = new StringBuilder("SpeckConfig{");
          sb.append("id='").append(id).append('\'');
          sb.append(", protocolVersion=").append(protocolVersion);
          sb.append('}');

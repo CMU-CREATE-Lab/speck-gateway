@@ -1,4 +1,4 @@
-package org.bodytrack.applications.airbot;
+package org.bodytrack.applications.speck;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -22,7 +22,7 @@ import edu.cmu.ri.createlab.userinterface.component.Spinner;
 import edu.cmu.ri.createlab.userinterface.util.AbstractTimeConsumingAction;
 import edu.cmu.ri.createlab.userinterface.util.SwingUtils;
 import edu.cmu.ri.createlab.util.net.HostAndPort;
-import org.bodytrack.airbot.AirBotConfig;
+import org.bodytrack.airbot.SpeckConfig;
 import org.bodytrack.airbot.DataSampleManager;
 import org.bodytrack.airbot.RemoteStorageCredentialsImpl;
 import org.bodytrack.airbot.RemoteStorageCredentialsValidator;
@@ -33,9 +33,9 @@ import org.jetbrains.annotations.Nullable;
  * @author Chris Bartley (bartley@cmu.edu)
  */
 @SuppressWarnings("CloneableClassWithoutClone")
-final class AirBotUploaderGui
+final class SpeckGatewayGui
    {
-   private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(AirBotUploaderGui.class.getName());
+   private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(SpeckGatewayGui.class.getName());
 
    private static final int DEFAULT_PORT = 80;
    private static final int SMALL_GAP = 5;
@@ -43,15 +43,15 @@ final class AirBotUploaderGui
    private static final String STATISTICS_VALUE_ZERO = "0";
    private static final String EMPTY_LABEL_TEXT = " ";
 
-   private final Spinner airBotConnectionSpinner = new Spinner(RESOURCES.getString("label.spinner"), GUIConstants.FONT_NORMAL);
-   private final JPanel airBotConnectionStatusPanel = new JPanel();
+   private final Spinner connectionSpinner = new Spinner(RESOURCES.getString("label.spinner"), GUIConstants.FONT_NORMAL);
+   private final JPanel connectionStatusPanel = new JPanel();
 
    @NotNull
-   private final AirBotUploaderHelper helper;
+   private final SpeckGatewayHelper helper;
 
    private final Font FONT_NORMAL_BOLD = new Font(GUIConstants.FONT_NAME, Font.BOLD, GUIConstants.FONT_NORMAL.getSize());
-   private final JLabel airBotConnectionStatusLabelAirBotId = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
-   private final JLabel airBotConnectionStatusLabelPortName = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
+   private final JLabel connectionStatusLabelSpeckId = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
+   private final JLabel connectionStatusLabelPortName = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
 
    private final JTextField hostAndPortTextField = new JTextField(30);
    private final JTextField usernameTextField = new JTextField(30);
@@ -81,7 +81,7 @@ final class AirBotUploaderGui
 
    private StatisticsListener statisticsListener = new StatisticsListener();
 
-   AirBotUploaderGui(@NotNull final JFrame jFrame)
+   SpeckGatewayGui(@NotNull final JFrame jFrame)
       {
       statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.DOWNLOADS_REQUESTED, statsDownloadsRequested);
       statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.DOWNLOADS_SUCCESSFUL, statsDownloadsSuccessful);
@@ -97,11 +97,11 @@ final class AirBotUploaderGui
       statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.SAMPLE_UPLOADS_FAILED, statsSampleUploadsFailed);
 
       this.jFrame = jFrame;
-      helper = new AirBotUploaderHelper(
-            new AirBotUploaderHelper.EventListener()
+      helper = new SpeckGatewayHelper(
+            new SpeckGatewayHelper.EventListener()
             {
             @Override
-            public void handleConnectionEvent(@NotNull final AirBotConfig airBotConfig, @NotNull final String portName)
+            public void handleConnectionEvent(@NotNull final SpeckConfig speckConfig, @NotNull final String portName)
                {
                SwingUtilities.invokeLater(
                      new Runnable()
@@ -109,10 +109,10 @@ final class AirBotUploaderGui
                      @Override
                      public void run()
                         {
-                        airBotConnectionSpinner.setVisible(false);
-                        airBotConnectionStatusPanel.setVisible(true);
-                        airBotConnectionStatusLabelAirBotId.setText(airBotConfig.getId());
-                        airBotConnectionStatusLabelPortName.setText(portName);
+                        connectionSpinner.setVisible(false);
+                        connectionStatusPanel.setVisible(true);
+                        connectionStatusLabelSpeckId.setText(speckConfig.getId());
+                        connectionStatusLabelPortName.setText(portName);
                         helper.addStatisticsListener(statisticsListener);
                         jFrame.pack();
                         jFrame.repaint();
@@ -130,8 +130,8 @@ final class AirBotUploaderGui
                      @Override
                      public void run()
                         {
-                        airBotConnectionSpinner.setVisible(true);
-                        airBotConnectionStatusPanel.setVisible(false);
+                        connectionSpinner.setVisible(true);
+                        connectionStatusPanel.setVisible(false);
                         fluxtreamButton.setVisible(true);
                         fluxtreamConnectionStatus.setText(EMPTY_LABEL_TEXT);
                         setFluxtreamTextFieldsEnabled(true);
@@ -145,12 +145,12 @@ final class AirBotUploaderGui
                }
             });
 
-      jFrame.setTitle(AirBotUploaderHelper.APPLICATION_NAME_AND_VERSION_NUMBER);
+      jFrame.setTitle(SpeckGatewayHelper.APPLICATION_NAME_AND_VERSION_NUMBER);
 
       final JPanel mainPanel = new JPanel();
       mainPanel.setBackground(Color.WHITE);
 
-      final JPanel airBotPanel = createAirBotPanel();
+      final JPanel speckPanel = createSpeckPanel();
       final JPanel fluxtreamPanel = createFluxtreamPanel();
       final JPanel statisticsPanel = createStatisticsPanel();
 
@@ -172,7 +172,7 @@ final class AirBotUploaderGui
       mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                   .addGroup(mainPanelLayout.createSequentialGroup()
-                                  .addComponent(airBotPanel)
+                                  .addComponent(speckPanel)
                                   .addGap(GAP)
                                   .addComponent(verticalDivider)
                                   .addGap(GAP)
@@ -183,7 +183,7 @@ final class AirBotUploaderGui
       mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createSequentialGroup()
                   .addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                  .addComponent(airBotPanel)
+                                  .addComponent(speckPanel)
                                   .addComponent(verticalDivider)
                                   .addComponent(fluxtreamPanel))
                   .addComponent(horizontalDivider)
@@ -197,10 +197,10 @@ final class AirBotUploaderGui
       jFrame.setLocationRelativeTo(null);    // center the window on the screen
       jFrame.setVisible(true);
 
-      airBotConnectionSpinner.setVisible(true);
-      airBotConnectionStatusPanel.setVisible(false);
+      connectionSpinner.setVisible(true);
+      connectionStatusPanel.setVisible(false);
 
-      // Kick off a connection attempt to the AirBot
+      // Kick off a connection attempt to the Speck
       final SwingWorker sw =
             new SwingWorker<Object, Object>()
             {
@@ -221,33 +221,33 @@ final class AirBotUploaderGui
       }
 
    @NotNull
-   private JPanel createAirBotPanel()
+   private JPanel createSpeckPanel()
       {
-      final JLabel titleLabel = SwingUtils.createLabel(RESOURCES.getString("label.airbot"), GUIConstants.FONT_LARGE);
+      final JLabel titleLabel = SwingUtils.createLabel(RESOURCES.getString("label.speck"), GUIConstants.FONT_LARGE);
 
-      final GroupLayout airBotConnectionStatusPanelLayout = new GroupLayout(airBotConnectionStatusPanel);
-      airBotConnectionStatusPanel.setLayout(airBotConnectionStatusPanelLayout);
-      airBotConnectionStatusPanel.setBackground(Color.WHITE);
+      final GroupLayout speckConnectionStatusPanelLayout = new GroupLayout(connectionStatusPanel);
+      connectionStatusPanel.setLayout(speckConnectionStatusPanelLayout);
+      connectionStatusPanel.setBackground(Color.WHITE);
 
-      final JLabel airBotConnectionStatusLabel1 = SwingUtils.createLabel(RESOURCES.getString("label.connected-to-airbot"));//"Connected to AirBot"
-      final JLabel airBotConnectionStatusLabel3 = SwingUtils.createLabel(RESOURCES.getString("label.on-port"));// on port
+      final JLabel speckConnectionStatusLabel1 = SwingUtils.createLabel(RESOURCES.getString("label.connected-to-speck"));    // "Connected to Speck"
+      final JLabel speckConnectionStatusLabel3 = SwingUtils.createLabel(RESOURCES.getString("label.on-port"));               // on port
 
-      airBotConnectionStatusPanelLayout.setHorizontalGroup(
-            airBotConnectionStatusPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                  .addComponent(airBotConnectionStatusLabel1)
-                  .addComponent(airBotConnectionStatusLabelAirBotId)
-                  .addComponent(airBotConnectionStatusLabel3)
-                  .addComponent(airBotConnectionStatusLabelPortName)
+      speckConnectionStatusPanelLayout.setHorizontalGroup(
+            speckConnectionStatusPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                  .addComponent(speckConnectionStatusLabel1)
+                  .addComponent(connectionStatusLabelSpeckId)
+                  .addComponent(speckConnectionStatusLabel3)
+                  .addComponent(connectionStatusLabelPortName)
       );
-      airBotConnectionStatusPanelLayout.setVerticalGroup(
-            airBotConnectionStatusPanelLayout.createSequentialGroup()
-                  .addComponent(airBotConnectionStatusLabel1)
+      speckConnectionStatusPanelLayout.setVerticalGroup(
+            speckConnectionStatusPanelLayout.createSequentialGroup()
+                  .addComponent(speckConnectionStatusLabel1)
                   .addGap(GAP)
-                  .addComponent(airBotConnectionStatusLabelAirBotId)
+                  .addComponent(connectionStatusLabelSpeckId)
                   .addGap(GAP)
-                  .addComponent(airBotConnectionStatusLabel3)
+                  .addComponent(speckConnectionStatusLabel3)
                   .addGap(GAP)
-                  .addComponent(airBotConnectionStatusLabelPortName)
+                  .addComponent(connectionStatusLabelPortName)
       );
 
       final JPanel panel = new JPanel();
@@ -258,15 +258,15 @@ final class AirBotUploaderGui
       panelLayout.setHorizontalGroup(
             panelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                   .addComponent(titleLabel)
-                  .addComponent(airBotConnectionSpinner)
-                  .addComponent(airBotConnectionStatusPanel)
+                  .addComponent(connectionSpinner)
+                  .addComponent(connectionStatusPanel)
       );
       panelLayout.setVerticalGroup(
             panelLayout.createSequentialGroup()
                   .addComponent(titleLabel)
                   .addGap(GAP)
-                  .addComponent(airBotConnectionSpinner)
-                  .addComponent(airBotConnectionStatusPanel)
+                  .addComponent(connectionSpinner)
+                  .addComponent(connectionStatusPanel)
                   .addGap(GAP)
       );
 
@@ -405,7 +405,7 @@ final class AirBotUploaderGui
                if (success != null && (Boolean)success)
                   {
                   fluxtreamButton.setVisible(false);
-                  fluxtreamConnectionStatus.setText(RESOURCES.getString("label.uploading-airbot-data-files"));
+                  fluxtreamConnectionStatus.setText(RESOURCES.getString("label.uploading-speck-data-files"));
                   }
                else
                   {

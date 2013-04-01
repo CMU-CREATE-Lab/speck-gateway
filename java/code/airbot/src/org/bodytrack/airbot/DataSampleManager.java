@@ -101,7 +101,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                      statistics.incrementDownloadsSuccessful();
 
                      // make sure the data sample is non-null
-                     final AirBot.DataSample dataSample = downloadResponse.getDataSample();
+                     final Speck.DataSample dataSample = downloadResponse.getDataSample();
                      if (dataSample == null)
                         {
                         LOG.error("DataSampleManager.downloadDataSampleRunnable.run(): Failed to save data sample because it was null.  This shouldn't ever happen!");
@@ -248,11 +248,11 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
             }
          };
 
-   public DataSampleManager(@NotNull final AirBotConfig airBotConfig,
+   public DataSampleManager(@NotNull final SpeckConfig speckConfig,
                             @Nullable final DataSampleDownloader dataSampleDownloader) throws InitializationException
       {
       this.dataSampleDownloader = dataSampleDownloader;
-      this.dataSampleStore = new MultiDestinationDataSampleStore(airBotConfig);
+      this.dataSampleStore = new MultiDestinationDataSampleStore(speckConfig);
       }
 
    /**

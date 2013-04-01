@@ -14,16 +14,16 @@ import org.jetbrains.annotations.Nullable;
  */
 final class DataSampleSetImpl implements DataSampleSet
    {
-   private final SortedSet<AirBot.DataSample> dataSamples;
+   private final SortedSet<Speck.DataSample> dataSamples;
 
    /**
-    * Creates a <code>DataSampleSet</code> from the given {@link SortedSet} of {@link AirBot.DataSample data samples}
+    * Creates a <code>DataSampleSet</code> from the given {@link SortedSet} of {@link Speck.DataSample data samples}
     * by copying all the samples into a new collection.  If the given <code>dataSamples</code> is <code>null</code>,
     * this <code>DataSampleSet</code> simply has no data samples.
     */
-   DataSampleSetImpl(@Nullable final SortedSet<AirBot.DataSample> dataSamples)
+   DataSampleSetImpl(@Nullable final SortedSet<Speck.DataSample> dataSamples)
       {
-      this.dataSamples = new TreeSet<AirBot.DataSample>();
+      this.dataSamples = new TreeSet<Speck.DataSample>();
       if (dataSamples != null)
          {
          this.dataSamples.addAll(dataSamples);
@@ -31,11 +31,11 @@ final class DataSampleSetImpl implements DataSampleSet
       }
 
    /**
-    * Returns an unmodifiable {@link SortedSet} of {@link AirBot.DataSample data samples}.
+    * Returns an unmodifiable {@link SortedSet} of {@link Speck.DataSample data samples}.
     */
    @NotNull
    @Override
-   public SortedSet<AirBot.DataSample> getDataSamples()
+   public SortedSet<Speck.DataSample> getDataSamples()
       {
       return Collections.unmodifiableSortedSet(dataSamples);
       }
@@ -60,7 +60,7 @@ final class DataSampleSetImpl implements DataSampleSet
       if (!isEmpty())
          {
          final List<String> dataSamplesAsJson = new ArrayList<String>(dataSamples.size());
-         for (final AirBot.DataSample dataSample : dataSamples)
+         for (final Speck.DataSample dataSample : dataSamples)
             {
             dataSamplesAsJson.add(dataSample.toJsonArray());
             }

@@ -19,7 +19,7 @@ public final class DataSampleUploader
    private static final Logger LOG = Logger.getLogger(DataSampleUploader.class);
    private static final Logger CONSOLE_LOG = Logger.getLogger("ConsoleLog");
 
-   public static final String MAX_NUM_UPLOAD_THREADS_SYSTEM_PROPERTY = "org.bodytrack.airbot.DataSampleUploader.max-num-upload-threads";
+   public static final String MAX_NUM_UPLOAD_THREADS_SYSTEM_PROPERTY = "org.bodytrack.speck.DataSampleUploader.max-num-upload-threads";
    private static final int DEFAULT_MAX_NUM_UPLOAD_THREADS = 1;
    private static final int MAX_NUM_UPLOAD_THREADS;
 

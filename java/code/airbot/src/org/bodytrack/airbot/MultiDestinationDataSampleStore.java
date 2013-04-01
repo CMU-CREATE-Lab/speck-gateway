@@ -11,15 +11,15 @@ final class MultiDestinationDataSampleStore implements DataSampleStore
    private final DataSampleStore csvDataSampleStore;
    private final DataSampleStore databaseDataSampleStore;
 
-   MultiDestinationDataSampleStore(@NotNull final AirBotConfig airBotConfig) throws InitializationException
+   MultiDestinationDataSampleStore(@NotNull final SpeckConfig speckConfig) throws InitializationException
       {
-      databaseDataSampleStore = new DatabaseDataSampleStore(airBotConfig);
-      csvDataSampleStore = new CsvDataSampleStore(airBotConfig);
+      databaseDataSampleStore = new DatabaseDataSampleStore(speckConfig);
+      csvDataSampleStore = new CsvDataSampleStore(speckConfig);
       }
 
    @Override
    @NotNull
-   public SaveResult save(@NotNull final AirBot.DataSample dataSample)
+   public SaveResult save(@NotNull final Speck.DataSample dataSample)
       {
       final SaveResult databaseSaveResult = databaseDataSampleStore.save(dataSample);
 

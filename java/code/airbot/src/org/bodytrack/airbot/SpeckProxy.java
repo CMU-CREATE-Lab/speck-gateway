@@ -19,7 +19,7 @@ import edu.cmu.ri.createlab.util.commandexecution.CommandExecutionFailureHandler
 import edu.cmu.ri.createlab.util.thread.DaemonThreadFactory;
 import org.apache.log4j.Logger;
 import org.bodytrack.airbot.commands.DeleteSampleCommandStrategy;
-import org.bodytrack.airbot.commands.GetAirBotConfigCommandStrategy;
+import org.bodytrack.airbot.commands.GetSpeckConfigCommandStrategy;
 import org.bodytrack.airbot.commands.GetDataSampleCommandStrategy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,48 +27,48 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-class AirBotProxy implements AirBot
+class SpeckProxy implements Speck
    {
-   private static final Logger LOG = Logger.getLogger(AirBotProxy.class);
+   private static final Logger LOG = Logger.getLogger(SpeckProxy.class);
    private static final Logger CONSOLE_LOG = Logger.getLogger("ConsoleLog");
 
    private static final int DELAY_IN_SECONDS_BETWEEN_PINGS = 5;
 
    /**
-    * Tries to create an <code>AirBotProxy</code>. Returns <code>null</code> if the connection could not be established.
+    * Tries to create a <code>SpeckProxy</code>. Returns <code>null</code> if the connection could not be established.
     */
    @Nullable
-   static AirBotProxy create()
+   static SpeckProxy create()
       {
       try
          {
          // create the HID device
          if (LOG.isDebugEnabled())
             {
-            LOG.debug("AirBotProxy.create(): creating HID device for vendor ID [" + Integer.toHexString(AirBotUploaderConstants.UsbHidConfiguration.USB_VENDOR_ID) + "] and product ID [" + Integer.toHexString(AirBotUploaderConstants.UsbHidConfiguration.USB_PRODUCT_ID) + "]");
+            LOG.debug("SpeckProxy.create(): creating HID device for vendor ID [" + Integer.toHexString(SpeckConstants.UsbHidConfiguration.USB_VENDOR_ID) + "] and product ID [" + Integer.toHexString(SpeckConstants.UsbHidConfiguration.USB_PRODUCT_ID) + "]");
             }
-         final HIDDevice hidDevice = HIDDeviceFactory.create(AirBotUploaderConstants.UsbHidConfiguration.HID_DEVICE_DESCRIPTOR);
+         final HIDDevice hidDevice = HIDDeviceFactory.create(SpeckConstants.UsbHidConfiguration.HID_DEVICE_DESCRIPTOR);
 
-         LOG.debug("AirBotProxy.create(): attempting connection...");
+         LOG.debug("SpeckProxy.create(): attempting connection...");
          hidDevice.connectExclusively();
 
          // create the HID device command execution queue (which will attempt to connect to the device)
          final HIDCommandExecutionQueue commandQueue = new HIDCommandExecutionQueue(hidDevice);
 
-         // create the AirBotProxy
-         return new AirBotProxy(commandQueue, hidDevice);
+         // create the SpeckProxy
+         return new SpeckProxy(commandQueue, hidDevice);
          }
       catch (HIDConnectionException e)
          {
-         LOG.error("HIDConnectionException while trying to connect to the AirBot, returning null", e);
+         LOG.error("HIDConnectionException while trying to connect to the Speck, returning null", e);
          }
       catch (HIDDeviceNotFoundException e)
          {
-         LOG.error("HIDDeviceNotFoundException while trying to connect to the AirBot, returning null", e);
+         LOG.error("HIDDeviceNotFoundException while trying to connect to the Speck, returning null", e);
          }
       catch (InitializationException e)
          {
-         LOG.error("InitializationException while trying to connect to the AirBot, returning null", e);
+         LOG.error("InitializationException while trying to connect to the Speck, returning null", e);
          }
       return null;
       }
@@ -86,9 +86,9 @@ class AirBotProxy implements AirBot
    private final HIDDeviceReturnValueCommandExecutor<Boolean> deleteSampleCommandExecutor;
 
    @NotNull
-   private final AirBotConfig airBotConfig;
+   private final SpeckConfig speckConfig;
 
-   private AirBotProxy(final HIDCommandExecutionQueue commandQueue, final HIDDevice hidDevice) throws InitializationException
+   private SpeckProxy(final HIDCommandExecutionQueue commandQueue, final HIDDevice hidDevice) throws InitializationException
       {
       this.commandQueue = commandQueue;
       this.hidDevice = hidDevice;
@@ -104,39 +104,39 @@ class AirBotProxy implements AirBot
 
       getSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<DataSample>(commandQueue, commandExecutionFailureHandler);
       deleteSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Boolean>(commandQueue, commandExecutionFailureHandler);
-      final HIDDeviceReturnValueCommandExecutor<AirBotConfig> airBotConfigReturnValueCommandExecutor = new HIDDeviceReturnValueCommandExecutor<AirBotConfig>(commandQueue, commandExecutionFailureHandler);
+      final HIDDeviceReturnValueCommandExecutor<SpeckConfig> hidDeviceReturnValueCommandExecutor = new HIDDeviceReturnValueCommandExecutor<SpeckConfig>(commandQueue, commandExecutionFailureHandler);
 
       // we cache all the config values since the chances of the user reconfiguring the device while the program is
       // running is low and isn't supported by the devices anyway
-      final AirBotConfig tempAirBotConfig =
-            new RetryingActionExecutor<AirBotConfig>()
+      final SpeckConfig tempSpeckConfig =
+            new RetryingActionExecutor<SpeckConfig>()
             {
             @Override
             @Nullable
-            protected AirBotConfig executionWorkhorse(final int attemptNumber, final int maxNumberOfAttempts)
+            protected SpeckConfig executionWorkhorse(final int attemptNumber, final int maxNumberOfAttempts)
                {
-               final String msg = "Reading device ID from AirBot (attempt " + attemptNumber + " of " + maxNumberOfAttempts + ")...";
+               final String msg = "Reading device ID from Speck (attempt " + attemptNumber + " of " + maxNumberOfAttempts + ")...";
                CONSOLE_LOG.info(msg);
                if (LOG.isInfoEnabled())
                   {
-                  LOG.info("AirBotProxy.executionWorkhorse(): " + msg);
+                  LOG.info("SpeckProxy.executionWorkhorse(): " + msg);
                   }
-               LOG.debug("AirBotProxy.executionWorkhorse(): Reading ID...");
-               return airBotConfigReturnValueCommandExecutor.execute(new GetAirBotConfigCommandStrategy());
+               LOG.debug("SpeckProxy.executionWorkhorse(): Reading ID...");
+               return hidDeviceReturnValueCommandExecutor.execute(new GetSpeckConfigCommandStrategy());
                }
             }.execute();
 
-      if (tempAirBotConfig == null)
+      if (tempSpeckConfig == null)
          {
-         final String message = "Failed to read unique ID from the AirBot!";
+         final String message = "Failed to read unique ID from the Speck!";
          LOG.error(message);
          CONSOLE_LOG.error(message);
          throw new InitializationException(message);
          }
       else
          {
-         airBotConfig = tempAirBotConfig;
-         final String message = "Successfully read unique ID from the AirBot.";
+         speckConfig = tempSpeckConfig;
+         final String message = "Successfully read unique ID from the Speck.";
          LOG.info(message);
          CONSOLE_LOG.info(message);
          }
@@ -211,13 +211,13 @@ class AirBotProxy implements AirBot
       final DataSample dataSample = getSampleCommandExecutor.execute(sampleCommandStrategy);
       if (dataSample == null)
          {
-         throw new CommunicationException("Failed to read a sample from the AirBot");
+         throw new CommunicationException("Failed to read a sample from the Speck");
          }
       return dataSample;
       }
 
    @Override
-   public boolean deleteSample(@Nullable final AirBot.DataSample dataSample) throws CommunicationException
+   public boolean deleteSample(@Nullable final Speck.DataSample dataSample) throws CommunicationException
       {
       if (dataSample != null)
          {
@@ -233,23 +233,23 @@ class AirBotProxy implements AirBot
       final Boolean success = deleteSampleCommandExecutor.execute(new DeleteSampleCommandStrategy(sampleTime));
       if (success == null)
          {
-         throw new CommunicationException("Failed to delete a sample [" + sampleTime + "] from the AirBot");
+         throw new CommunicationException("Failed to delete a sample [" + sampleTime + "] from the Speck");
          }
       return success;
       }
 
    @Override
    @NotNull
-   public AirBotConfig getAirBotConfig()
+   public SpeckConfig getSpeckConfig()
       {
-      return airBotConfig;
+      return speckConfig;
       }
 
    public void disconnect()
       {
       if (LOG.isDebugEnabled())
          {
-         LOG.debug("AirBotProxy.disconnect()");
+         LOG.debug("SpeckProxy.disconnect()");
          }
 
       // turn off the pinger
@@ -257,23 +257,23 @@ class AirBotProxy implements AirBot
          {
          pingScheduledFuture.cancel(false);
          pingExecutorService.shutdownNow();
-         LOG.debug("AirBotProxy.disconnect(): Successfully shut down the AirBot pinger.");
+         LOG.debug("SpeckProxy.disconnect(): Successfully shut down the Speck pinger.");
          }
       catch (Exception e)
          {
-         LOG.error("AirBotProxy.disconnect(): Exception caught while trying to shut down pinger", e);
+         LOG.error("SpeckProxy.disconnect(): Exception caught while trying to shut down pinger", e);
          }
 
       // shut down the command queue, which closes the serial port
       try
          {
-         LOG.debug("AirBotProxy.disconnect(): shutting down the SerialDeviceCommandExecutionQueue...");
+         LOG.debug("SpeckProxy.disconnect(): shutting down the SerialDeviceCommandExecutionQueue...");
          commandQueue.shutdown();
-         LOG.debug("AirBotProxy.disconnect(): done shutting down the SerialDeviceCommandExecutionQueue");
+         LOG.debug("SpeckProxy.disconnect(): done shutting down the SerialDeviceCommandExecutionQueue");
          }
       catch (Exception e)
          {
-         LOG.error("AirBotProxy.disconnect(): Exception while trying to shut down the SerialDeviceCommandExecutionQueue", e);
+         LOG.error("SpeckProxy.disconnect(): Exception while trying to shut down the SerialDeviceCommandExecutionQueue", e);
          }
       }
 
@@ -340,7 +340,7 @@ class AirBotProxy implements AirBot
             this.isPaused = isPaused;
             if (LOG.isDebugEnabled())
                {
-               LOG.debug("AirBotProxy$Pinger.setPaused(): pinger paused = [" + isPaused + "]");
+               LOG.debug("SpeckProxy$Pinger.setPaused(): pinger paused = [" + isPaused + "]");
                }
             }
          finally
@@ -356,7 +356,7 @@ class AirBotProxy implements AirBot
             {
             if (isPaused)
                {
-               LOG.trace("AirBotProxy$Pinger.run(): not pinging because the pinger is paused");
+               LOG.trace("SpeckProxy$Pinger.run(): not pinging because the pinger is paused");
                }
             else
                {
@@ -367,7 +367,7 @@ class AirBotProxy implements AirBot
             }
          catch (Exception e)
             {
-            LOG.error("AirBotProxy$Pinger.run(): Exception caught while executing the pinger", e);
+            LOG.error("SpeckProxy$Pinger.run(): Exception caught while executing the pinger", e);
             handlePingFailure();
             }
          finally
@@ -380,18 +380,18 @@ class AirBotProxy implements AirBot
          {
          try
             {
-            LOG.debug("AirBotProxy$Pinger.handlePingFailure(): Ping failed.  Attempting to disconnect...");
+            LOG.debug("SpeckProxy$Pinger.handlePingFailure(): Ping failed.  Attempting to disconnect...");
             disconnect();
-            LOG.debug("AirBotProxy$Pinger.handlePingFailure(): Done disconnecting from the AirBot");
+            LOG.debug("SpeckProxy$Pinger.handlePingFailure(): Done disconnecting from the Speck");
             }
          catch (Exception e)
             {
-            LOG.error("AirBotProxy$Pinger.handlePingFailure(): Exeption caught while trying to disconnect from the AirBot", e);
+            LOG.error("SpeckProxy$Pinger.handlePingFailure(): Exeption caught while trying to disconnect from the Speck", e);
             }
 
          if (LOG.isDebugEnabled())
             {
-            LOG.debug("AirBotProxy$Pinger.handlePingFailure(): Notifying " + createLabDevicePingFailureEventListeners.size() + " listeners of ping failure...");
+            LOG.debug("SpeckProxy$Pinger.handlePingFailure(): Notifying " + createLabDevicePingFailureEventListeners.size() + " listeners of ping failure...");
             }
          for (final CreateLabDevicePingFailureEventListener listener : createLabDevicePingFailureEventListeners)
             {
@@ -399,13 +399,13 @@ class AirBotProxy implements AirBot
                {
                if (LOG.isDebugEnabled())
                   {
-                  LOG.debug("   AirBotProxy$Pinger.handlePingFailure(): Notifying " + listener);
+                  LOG.debug("   SpeckProxy$Pinger.handlePingFailure(): Notifying " + listener);
                   }
                listener.handlePingFailureEvent();
                }
             catch (Exception e)
                {
-               LOG.error("AirBotProxy$Pinger.handlePingFailure(): Exeption caught while notifying SerialDevicePingFailureEventListener", e);
+               LOG.error("SpeckProxy$Pinger.handlePingFailure(): Exeption caught while notifying SerialDevicePingFailureEventListener", e);
                }
             }
          }

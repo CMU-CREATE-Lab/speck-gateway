@@ -4,19 +4,19 @@
     <identifier-quote-string>&quot;</identifier-quote-string>
     <synchronize>true</synchronize>
     <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
-    <jdbc-url>jdbc:derby:$USER_HOME$/BodyTrack/AirBotData/AirBot00343135321504100f17/database/db</jdbc-url>
-    <user-name>airbot</user-name>
-    <user-password>dfcbdfc3dfd8dfc8dfc5dfde</user-password>
-    <schema-pattern>*.AIRBOT</schema-pattern>
-    <default-schemas>*.AIRBOT</default-schemas>
+    <jdbc-url>jdbc:derby:$USER_HOME$/CREATELab/Speck/Speck00343135321504100f17/database/db</jdbc-url>
+    <user-name>speck</user-name>
+    <user-password>dfd9dfdadfcfdfc9dfc1</user-password>
+    <schema-pattern>*.SPECK</schema-pattern>
+    <default-schemas>*.SPECK</default-schemas>
     <default-dialect>Derby</default-dialect>
     <libraries>
       <library>
         <url>file://$PROJECT_DIR$/java/lib/apache-derby/derby.jar</url>
       </library>
     </libraries>
-    <schema name="AIRBOT" catalog=""/>
-    <table name="AIRBOTSAMPLES" schema="AIRBOT" catalog="" type="TABLE">
+    <schema name="SPECK" catalog=""/>
+    <table name="SPECKSAMPLES" schema="SPECK" catalog="" type="TABLE">
       <column name="ID" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4" def="QVVUT0lOQ1JFTUVOVDogc3RhcnQgMSBpbmNyZW1lbnQgMQ==" autoIncrement="true"/>
       <column name="RAW_PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
       <column name="PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
@@ -26,14 +26,14 @@
       <column name="DOWNLOAD_TIMESTAMP_UTC_MILLIS" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5"/>
       <column name="UPLOAD_TIMESTAMP_UTC_MILLIS" sqlType="BIGINT" length="19" precision="0" nullable="true" jdbcType="-5"/>
       <column name="UPLOAD_STATUS" sqlType="VARCHAR" length="13" precision="0" nullable="false" jdbcType="12" def="J25vdF9hdHRlbXB0ZWQn"/>
-      <primary-key name="AIRBOTSAMPLES_PRIMARYKEY" columns="ID"/>
-      <index name="AIRBOTSAMPLES_DOWNLOADTIMESTAMP" unique="false" columns="DOWNLOAD_TIMESTAMP_UTC_MILLIS"/>
-      <index name="AIRBOTSAMPLES_HUMIDITY" unique="false" columns="HUMIDITY"/>
-      <index name="AIRBOTSAMPLES_PARTICLECOUNT" unique="false" columns="PARTICLE_COUNT"/>
-      <index name="AIRBOTSAMPLES_RAWPARTICLECOUNT" unique="false" columns="RAW_PARTICLE_COUNT"/>
-      <index name="AIRBOTSAMPLES_TEMPERATURE" unique="false" columns="TEMPERATURE"/>
-      <index name="AIRBOTSAMPLES_UPLOADSTATUS" unique="false" columns="UPLOAD_STATUS"/>
-      <index name="AIRBOTSAMPLES_UPLOADTIMESTAMP" unique="false" columns="UPLOAD_TIMESTAMP_UTC_MILLIS"/>
+      <primary-key name="SPECKSAMPLES_PRIMARYKEY" columns="ID"/>
+      <index name="SPECKSAMPLES_DOWNLOADTIMESTAMP" unique="false" columns="DOWNLOAD_TIMESTAMP_UTC_MILLIS"/>
+      <index name="SPECKSAMPLES_HUMIDITY" unique="false" columns="HUMIDITY"/>
+      <index name="SPECKSAMPLES_PARTICLECOUNT" unique="false" columns="PARTICLE_COUNT"/>
+      <index name="SPECKSAMPLES_RAWPARTICLECOUNT" unique="false" columns="RAW_PARTICLE_COUNT"/>
+      <index name="SPECKSAMPLES_TEMPERATURE" unique="false" columns="TEMPERATURE"/>
+      <index name="SPECKSAMPLES_UPLOADSTATUS" unique="false" columns="UPLOAD_STATUS"/>
+      <index name="SPECKSAMPLES_UPLOADTIMESTAMP" unique="false" columns="UPLOAD_TIMESTAMP_UTC_MILLIS"/>
     </table>
   </data-source>
   <data-source source="LOCAL" name="Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="7693384e-3d0e-4676-a9f0-9dc85f1a89cd">
@@ -41,18 +41,18 @@
     <synchronize>true</synchronize>
     <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
     <jdbc-url>jdbc:derby:jar:($PROJECT_DIR$/etc/database/sample-db.jar)sample-db</jdbc-url>
-    <user-name>airbot</user-name>
-    <user-password>dfcbdfc3dfd8dfc8dfc5dfde</user-password>
-    <schema-pattern>*.AIRBOT</schema-pattern>
-    <default-schemas>*.AIRBOT</default-schemas>
+    <user-name>speck</user-name>
+    <user-password>dfd9dfdadfcfdfc9dfc1</user-password>
+    <schema-pattern>*.SPECK</schema-pattern>
+    <default-schemas>*.SPECK</default-schemas>
     <default-dialect>Derby</default-dialect>
     <libraries>
       <library>
         <url>file://$PROJECT_DIR$/java/lib/apache-derby/derby.jar</url>
       </library>
     </libraries>
-    <schema name="AIRBOT" catalog=""/>
-    <table name="AIRBOTSAMPLES" schema="AIRBOT" catalog="" type="TABLE">
+    <schema name="SPECK" catalog=""/>
+    <table name="SPECKSAMPLES" schema="SPECK" catalog="" type="TABLE">
       <column name="ID" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4" def="QVVUT0lOQ1JFTUVOVDogc3RhcnQgMSBpbmNyZW1lbnQgMQ==" autoIncrement="true"/>
       <column name="RAW_PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
       <column name="PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
@@ -62,14 +62,14 @@
       <column name="DOWNLOAD_TIMESTAMP_UTC_MILLIS" sqlType="BIGINT" length="19" precision="0" nullable="false" jdbcType="-5"/>
       <column name="UPLOAD_TIMESTAMP_UTC_MILLIS" sqlType="BIGINT" length="19" precision="0" nullable="true" jdbcType="-5"/>
       <column name="UPLOAD_STATUS" sqlType="VARCHAR" length="13" precision="0" nullable="false" jdbcType="12" def="J25vdF9hdHRlbXB0ZWQn"/>
-      <primary-key name="AIRBOTSAMPLES_PRIMARYKEY" columns="ID"/>
-      <index name="AIRBOTSAMPLES_DOWNLOADTIMESTAMP" unique="false" columns="DOWNLOAD_TIMESTAMP_UTC_MILLIS"/>
-      <index name="AIRBOTSAMPLES_HUMIDITY" unique="false" columns="HUMIDITY"/>
-      <index name="AIRBOTSAMPLES_PARTICLECOUNT" unique="false" columns="PARTICLE_COUNT"/>
-      <index name="AIRBOTSAMPLES_RAWPARTICLECOUNT" unique="false" columns="RAW_PARTICLE_COUNT"/>
-      <index name="AIRBOTSAMPLES_TEMPERATURE" unique="false" columns="TEMPERATURE"/>
-      <index name="AIRBOTSAMPLES_UPLOADSTATUS" unique="false" columns="UPLOAD_STATUS"/>
-      <index name="AIRBOTSAMPLES_UPLOADTIMESTAMP" unique="false" columns="UPLOAD_TIMESTAMP_UTC_MILLIS"/>
+      <primary-key name="SPECKSAMPLES_PRIMARYKEY" columns="ID"/>
+      <index name="SPECKSAMPLES_DOWNLOADTIMESTAMP" unique="false" columns="DOWNLOAD_TIMESTAMP_UTC_MILLIS"/>
+      <index name="SPECKSAMPLES_HUMIDITY" unique="false" columns="HUMIDITY"/>
+      <index name="SPECKSAMPLES_PARTICLECOUNT" unique="false" columns="PARTICLE_COUNT"/>
+      <index name="SPECKSAMPLES_RAWPARTICLECOUNT" unique="false" columns="RAW_PARTICLE_COUNT"/>
+      <index name="SPECKSAMPLES_TEMPERATURE" unique="false" columns="TEMPERATURE"/>
+      <index name="SPECKSAMPLES_UPLOADSTATUS" unique="false" columns="UPLOAD_STATUS"/>
+      <index name="SPECKSAMPLES_UPLOADTIMESTAMP" unique="false" columns="UPLOAD_TIMESTAMP_UTC_MILLIS"/>
     </table>
   </data-source>
 </component>

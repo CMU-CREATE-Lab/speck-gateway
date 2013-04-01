@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>
- * <code>DataSampleUploadStatus</code> represents the various upload states a {@link AirBot.DataSample} can be in, from the
+ * <code>DataSampleUploadStatus</code> represents the various upload states a {@link Speck.DataSample} can be in, from the
  * perspective of the {@link DataSampleManager}.
  * </p>
  *

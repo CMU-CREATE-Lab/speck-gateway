@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public final class DataSample implements AirBot.DataSample
+public final class DataSample implements Speck.DataSample
    {
    private static final String COMMA = ",";
 
@@ -172,7 +172,7 @@ public final class DataSample implements AirBot.DataSample
    @Override
    public String toString()
       {
-      final StringBuilder sb = new StringBuilder("AirBotDataSample{");
+      final StringBuilder sb = new StringBuilder("DataSample{");
       sb.append("id=").append(databaseId);
       sb.append(", sampleTime=").append(sampleTimeUtcSeconds);
       sb.append(", downloadTime=").append(downloadTime);
@@ -186,7 +186,7 @@ public final class DataSample implements AirBot.DataSample
 
    /** Comparison is perform solely based on the {@link #getSampleTime() sample time}. */
    @Override
-   public int compareTo(@NotNull final AirBot.DataSample dataSample)
+   public int compareTo(@NotNull final Speck.DataSample dataSample)
       {
       if (this.sampleTimeUtcSeconds < dataSample.getSampleTime())
          {

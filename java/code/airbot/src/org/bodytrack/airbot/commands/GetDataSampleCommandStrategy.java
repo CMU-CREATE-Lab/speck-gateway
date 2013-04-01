@@ -3,14 +3,14 @@ package org.bodytrack.airbot.commands;
 import edu.cmu.ri.createlab.usb.hid.CreateLabHIDReturnValueCommandStrategy;
 import edu.cmu.ri.createlab.usb.hid.HIDCommandResponse;
 import org.apache.log4j.Logger;
-import org.bodytrack.airbot.AirBot;
+import org.bodytrack.airbot.Speck;
 import org.bodytrack.airbot.DataSample;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueCommandStrategy<AirBot.DataSample>
+public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueCommandStrategy<Speck.DataSample>
    {
    private static final Logger LOG = Logger.getLogger(GetDataSampleCommandStrategy.class);
 
@@ -48,7 +48,7 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
 
    @Nullable
    @Override
-   public AirBot.DataSample convertResponse(final HIDCommandResponse response)
+   public Speck.DataSample convertResponse(final HIDCommandResponse response)
       {
       if (response != null && response.wasSuccessful())
          {

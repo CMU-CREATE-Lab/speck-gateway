@@ -3,7 +3,7 @@ package org.bodytrack.airbot.commands;
 import java.nio.ByteBuffer;
 import edu.cmu.ri.createlab.util.ByteUtils;
 import org.apache.log4j.Logger;
-import org.bodytrack.airbot.AirBotUploaderConstants;
+import org.bodytrack.airbot.SpeckConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,7 +42,7 @@ final class CommandStrategyHelper
       final byte[] timeBytes = intToByteArray(currentTimeInSecs);
 
       // build the command
-      final byte[] command = new byte[AirBotUploaderConstants.UsbHidConfiguration.REPORT_LENGTH_IN_BYTES];
+      final byte[] command = new byte[SpeckConstants.UsbHidConfiguration.REPORT_LENGTH_IN_BYTES];
       command[0] = commandCharacter;
       command[1] = timeBytes[0];
       command[2] = timeBytes[1];
@@ -97,7 +97,7 @@ final class CommandStrategyHelper
 
    private static byte computeChecksum(@NotNull final byte[] data)
       {
-      // AirBot checksum simply sums all the bytes and then uses the lowest 8 bits
+      // Speck checksum simply sums all the bytes and then uses the lowest 8 bits
       long sum = 0;
       for (int i = 0; i < SIZE_IN_BYTES_OF_EXPECTED_RESPONSE - 1; i++)
          {

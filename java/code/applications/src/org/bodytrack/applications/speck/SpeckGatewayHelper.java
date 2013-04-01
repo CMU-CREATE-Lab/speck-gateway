@@ -1,4 +1,4 @@
-package org.bodytrack.applications.airbot;
+package org.bodytrack.applications.speck;
 
 import java.io.File;
 import java.io.FileReader;
@@ -7,9 +7,9 @@ import java.util.PropertyResourceBundle;
 import java.util.TreeSet;
 import edu.cmu.ri.createlab.device.CreateLabDevicePingFailureEventListener;
 import org.apache.log4j.Logger;
-import org.bodytrack.airbot.AirBot;
-import org.bodytrack.airbot.AirBotConfig;
-import org.bodytrack.airbot.AirBotFactory;
+import org.bodytrack.airbot.Speck;
+import org.bodytrack.airbot.SpeckConfig;
+import org.bodytrack.airbot.SpeckFactory;
 import org.bodytrack.airbot.CommunicationException;
 import org.bodytrack.airbot.DataSampleManager;
 import org.bodytrack.airbot.DataSampleUploader;
@@ -23,14 +23,14 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-final class AirBotUploaderHelper
+final class SpeckGatewayHelper
    {
-   private static final Logger LOG = Logger.getLogger(AirBotUploaderHelper.class);
+   private static final Logger LOG = Logger.getLogger(SpeckGatewayHelper.class);
    private static final Logger CONSOLE_LOG = Logger.getLogger("ConsoleLog");
 
    interface EventListener
       {
-      void handleConnectionEvent(@NotNull final AirBotConfig airBotConfig, @NotNull final String portName);
+      void handleConnectionEvent(@NotNull final SpeckConfig speckConfig, @NotNull final String portName);
 
       void handlePingFailureEvent();
       }
@@ -47,14 +47,14 @@ final class AirBotUploaderHelper
       CONSOLE_LOG.error(message);
       }
 
-   private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(AirBotUploaderHelper.class.getName());
+   private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(SpeckGatewayHelper.class.getName());
 
    public static final String APPLICATION_NAME = RESOURCES.getString("application.name");
    public static final String VERSION_NUMBER = RESOURCES.getString("version.number");
    public static final String APPLICATION_NAME_AND_VERSION_NUMBER = APPLICATION_NAME + " v" + VERSION_NUMBER;
 
    @Nullable
-   private AirBot device;
+   private Speck device;
 
    @Nullable
    private DataSampleManager dataSampleManager;
@@ -74,12 +74,12 @@ final class AirBotUploaderHelper
          {
          public void handlePingFailureEvent()
             {
-            LOG.debug("AirBotUploaderHelper.handlePingFailureEvent(): ping failure detected, cleaning up...");
+            LOG.debug("SpeckGatewayHelper.handlePingFailureEvent(): ping failure detected, cleaning up...");
 
             logError("Connection failure detected.  Cleaning up...");
             disconnect(false);
 
-            LOG.debug("AirBotUploaderHelper.handlePingFailureEvent(): ping failure detected, attempting reconnect...");
+            LOG.debug("SpeckGatewayHelper.handlePingFailureEvent(): ping failure detected, attempting reconnect...");
 
             // notify listener of the ping failure
             eventListener.handlePingFailureEvent();
@@ -89,12 +89,12 @@ final class AirBotUploaderHelper
             }
          };
 
-   AirBotUploaderHelper(@NotNull final EventListener eventListener)
+   SpeckGatewayHelper(@NotNull final EventListener eventListener)
       {
       this(eventListener, null);
       }
 
-   AirBotUploaderHelper(@NotNull final EventListener eventListener, @Nullable final String pathToConfigFile)
+   SpeckGatewayHelper(@NotNull final EventListener eventListener, @Nullable final String pathToConfigFile)
       {
       this.eventListener = eventListener;
       this.pathToConfigFile = pathToConfigFile;
@@ -109,19 +109,19 @@ final class AirBotUploaderHelper
       {
       if (isConnected())
          {
-         logInfo("You are already connected to an AirBot.");
+         logInfo("You are already connected to a Speck.");
          }
       else
          {
          if (isDownloadDisabled())
             {
             logInfo("Loading config file...");
-            device = createFakeAirBot();
+            device = createFakeSpeck();
             }
          else
             {
-            logInfo("Scanning for an AirBot...");
-            device = AirBotFactory.create();
+            logInfo("Scanning for a Speck...");
+            device = SpeckFactory.create();
             }
 
          if (device == null)
@@ -131,28 +131,28 @@ final class AirBotUploaderHelper
          else
             {
             device.addCreateLabDevicePingFailureEventListener(pingFailureEventListener);
-            final AirBotConfig airBotConfig = device.getAirBotConfig();
+            final SpeckConfig speckConfig = device.getSpeckConfig();
 
             final DataSampleDownloader dataSampleDownloader;
             if (isDownloadDisabled())
                {
-               logInfo("Data files will not be downloaded from an AirBot since you specified a config file for AirBot [" + airBotConfig.getId() + "]");
+               logInfo("Data files will not be downloaded from a Speck since you specified a config file for Speck [" + speckConfig.getId() + "]");
                dataSampleDownloader = null;
                }
             else
                {
-               logInfo("Connection successful to AirBot [" + airBotConfig.getId() + "] on serial port [" + device.getPortName() + "].");
+               logInfo("Connection successful to Speck [" + speckConfig.getId() + "] on serial port [" + device.getPortName() + "].");
                dataSampleDownloader = new DataSampleDownloader(device);
                }
 
             logInfo("Starting up the DataSampleManager...");
             try
                {
-               dataSampleManager = new DataSampleManager(airBotConfig, dataSampleDownloader);
+               dataSampleManager = new DataSampleManager(speckConfig, dataSampleDownloader);
                }
             catch (InitializationException e)
                {
-               LOG.error("AirBotUploaderHelper.scanAndConnect(): InitializationException while trying to create the DataSampleManager.  Aborting!", e);
+               LOG.error("SpeckGatewayHelper.scanAndConnect(): InitializationException while trying to create the DataSampleManager.  Aborting!", e);
                System.exit(1);
                }
 
@@ -164,7 +164,7 @@ final class AirBotUploaderHelper
                   }
                }
             dataSampleManager.startup();
-            eventListener.handleConnectionEvent(airBotConfig, device.getPortName());
+            eventListener.handleConnectionEvent(speckConfig, device.getPortName());
             }
          }
       }
@@ -253,7 +253,7 @@ final class AirBotUploaderHelper
       }
 
    @Nullable
-   private AirBot createFakeAirBot()
+   private Speck createFakeSpeck()
       {
       if (pathToConfigFile == null || pathToConfigFile.length() < 1)
          {
@@ -276,14 +276,14 @@ final class AirBotUploaderHelper
                      final String val = properties.getProperty((String)key);
                      s.append("   [").append(key).append("]=[").append(val).append("]").append(System.getProperty("line.separator", "\n"));
                      }
-                  LOG.debug("AirBotUploaderCommandLine.createFakeAirBot(): " + s);
+                  LOG.debug("SpeckGatewayCommandLine.createFakeSpeck(): " + s);
                   }
 
-               return new FakeAirBot(properties);
+               return new FakeSpeck(properties);
                }
             catch (Exception e)
                {
-               LOG.error("AirBotUploaderCommandLine.createFakeAirBot(): Exception while trying to read the config file [" + pathToConfigFile + "]", e);
+               LOG.error("SpeckGatewayCommandLine.createFakeSpeck(): Exception while trying to read the config file [" + pathToConfigFile + "]", e);
                logError("Failed to read the config file '" + pathToConfigFile + "'");
                }
             }
@@ -295,24 +295,24 @@ final class AirBotUploaderHelper
       return null;
       }
 
-   private static final class FakeAirBot implements AirBot
+   private static final class FakeSpeck implements Speck
       {
-      private final AirBotConfig airBotConfig;
+      private final SpeckConfig speckConfig;
 
-      private FakeAirBot(@NotNull final Properties properties)
+      private FakeSpeck(@NotNull final Properties properties)
          {
-         airBotConfig =
-               new AirBotConfig()
+         speckConfig =
+               new SpeckConfig()
                {
-               /** Returns the AirBot's unique ID. */
+               /** Returns the Speck's unique ID. */
                @NotNull
                @Override
                public String getId()
                   {
-                  return properties.getProperty("id", "FakeAirBot");
+                  return properties.getProperty("id", "FakeSpeck");
                   }
 
-               /** Returns the AirBot's protocol version. */
+               /** Returns the Speck's protocol version. */
                @Override
                public int getProtocolVersion()
                   {
@@ -325,18 +325,18 @@ final class AirBotUploaderHelper
       @Override
       public DataSample getSample() throws CommunicationException
          {
-         throw new CommunicationException("This fake AirBot doesn't support DataSample retrieval");
+         throw new CommunicationException("This fake Speck doesn't support DataSample retrieval");
          }
 
       @NotNull
       @Override
       public DataSample getCurrentSample() throws CommunicationException
          {
-         throw new CommunicationException("This fake AirBot doesn't support DataSample retrieval");
+         throw new CommunicationException("This fake Speck doesn't support DataSample retrieval");
          }
 
       @Override
-      public boolean deleteSample(@Nullable final AirBot.DataSample dataSample)
+      public boolean deleteSample(@Nullable final Speck.DataSample dataSample)
          {
          return false;
          }
@@ -349,9 +349,9 @@ final class AirBotUploaderHelper
 
       @Override
       @NotNull
-      public AirBotConfig getAirBotConfig()
+      public SpeckConfig getSpeckConfig()
          {
-         return airBotConfig;
+         return speckConfig;
          }
 
       @Override

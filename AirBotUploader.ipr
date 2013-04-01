@@ -36,16 +36,16 @@
   <component name="CopyrightManager" default="">
     <module2copyright />
   </component>
-  <component name="DataSourceManagerImpl" format="xml" hash="1009898397">
+  <component name="DataSourceManagerImpl" format="xml" hash="149491878">
     <data-source source="LOCAL" name="Production Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="3ff4c361-ca66-4b38-a2b3-28a73899fa9c">
       <identifier-quote-string>&quot;</identifier-quote-string>
       <synchronize>true</synchronize>
       <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
-      <jdbc-url>jdbc:derby:$USER_HOME$/BodyTrack/AirBotData/AirBot00343135321504100f17/database/db</jdbc-url>
-      <user-name>airbot</user-name>
-      <user-password>dfcbdfc3dfd8dfc8dfc5dfde</user-password>
-      <schema-pattern>*.AIRBOT</schema-pattern>
-      <default-schemas>*.AIRBOT</default-schemas>
+      <jdbc-url>jdbc:derby:$USER_HOME$/CREATELab/Speck/Speck00343135321504100f17/database/db</jdbc-url>
+      <user-name>speck</user-name>
+      <user-password>dfd9dfdadfcfdfc9dfc1</user-password>
+      <schema-pattern>*.SPECK</schema-pattern>
+      <default-schemas>*.SPECK</default-schemas>
       <default-dialect>Derby</default-dialect>
       <libraries>
         <library>
@@ -58,10 +58,10 @@
       <synchronize>true</synchronize>
       <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
       <jdbc-url>jdbc:derby:jar:($PROJECT_DIR$/etc/database/sample-db.jar)sample-db</jdbc-url>
-      <user-name>airbot</user-name>
-      <user-password>dfcbdfc3dfd8dfc8dfc5dfde</user-password>
-      <schema-pattern>*.AIRBOT</schema-pattern>
-      <default-schemas>*.AIRBOT</default-schemas>
+      <user-name>speck</user-name>
+      <user-password>dfd9dfdadfcfdfc9dfc1</user-password>
+      <schema-pattern>*.SPECK</schema-pattern>
+      <default-schemas>*.SPECK</default-schemas>
       <default-dialect>Derby</default-dialect>
       <libraries>
         <library>

@@ -1,4 +1,4 @@
-package org.bodytrack.applications.airbot;
+package org.bodytrack.applications.speck;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -6,7 +6,7 @@ import edu.cmu.ri.createlab.util.commandline.BaseCommandLineApplication;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.bodytrack.airbot.AirBotConfig;
+import org.bodytrack.airbot.SpeckConfig;
 import org.bodytrack.airbot.RemoteStorageCredentials;
 import org.bodytrack.airbot.RemoteStorageCredentialsImpl;
 import org.jetbrains.annotations.NotNull;
@@ -15,22 +15,22 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Chris Bartley (bartley@cmu.edu)
  */
-final class AirBotUploaderCommandLine extends BaseCommandLineApplication
+final class SpeckGatewayCommandLine extends BaseCommandLineApplication
    {
-   private static final Logger LOG = Logger.getLogger(AirBotUploaderCommandLine.class);
+   private static final Logger LOG = Logger.getLogger(SpeckGatewayCommandLine.class);
 
    @NotNull
-   private final AirBotUploaderHelper helper;
+   private final SpeckGatewayHelper helper;
 
-   AirBotUploaderCommandLine(@Nullable final String pathToConfigFile)
+   SpeckGatewayCommandLine(@Nullable final String pathToConfigFile)
       {
       super(new BufferedReader(new InputStreamReader(System.in)));
 
-      helper = new AirBotUploaderHelper(
-            new AirBotUploaderHelper.EventListener()
+      helper = new SpeckGatewayHelper(
+            new SpeckGatewayHelper.EventListener()
             {
             @Override
-            public void handleConnectionEvent(@NotNull final AirBotConfig airBotConfig, @NotNull final String portName)
+            public void handleConnectionEvent(@NotNull final SpeckConfig speckConfig, @NotNull final String portName)
                {
                // nothing to do
                }
@@ -46,7 +46,7 @@ final class AirBotUploaderCommandLine extends BaseCommandLineApplication
       registerActions();
       }
 
-   private final Runnable connectToAirBotAction =
+   private final Runnable connectToSpeckAction =
          new Runnable()
          {
          public void run()
@@ -73,7 +73,7 @@ final class AirBotUploaderCommandLine extends BaseCommandLineApplication
                }
             else
                {
-               println("You are not connected to an AirBot.");
+               println("You are not connected to a Speck.");
                }
             }
          };
@@ -133,7 +133,7 @@ final class AirBotUploaderCommandLine extends BaseCommandLineApplication
             {
             if (helper.areDataStorageCredentialsSet())
                {
-               println("The host and login details can only be defined once per AirBot connection.");
+               println("The host and login details can only be defined once per Speck connection.");
                }
             else
                {
@@ -236,7 +236,7 @@ final class AirBotUploaderCommandLine extends BaseCommandLineApplication
          {
          public void run()
             {
-            LOG.debug("AirBotUploaderCommandLine.run(): Quit requested by user.");
+            LOG.debug("SpeckGatewayCommandLine.run(): Quit requested by user.");
             disconnect();
             println("Bye!");
             }
@@ -244,7 +244,7 @@ final class AirBotUploaderCommandLine extends BaseCommandLineApplication
 
    private void registerActions()
       {
-      registerAction("c", connectToAirBotAction);
+      registerAction("c", connectToSpeckAction);
       registerAction("u", defineDataStorageCredentials);
       registerAction("s", printStatisticsAction);
       registerAction("l", setLoggingLevelAction);
@@ -257,7 +257,7 @@ final class AirBotUploaderCommandLine extends BaseCommandLineApplication
    protected void startup()
       {
       println("");
-      println(AirBotUploaderHelper.APPLICATION_NAME_AND_VERSION_NUMBER);
+      println(SpeckGatewayHelper.APPLICATION_NAME_AND_VERSION_NUMBER);
       println("");
       }
 
@@ -270,7 +270,7 @@ final class AirBotUploaderCommandLine extends BaseCommandLineApplication
       {
       println("COMMANDS -----------------------------------");
       println("");
-      println("c         Connect to the AirBot");
+      println("c         Connect to the Speck");
       println("u         Specify host and login credentials for uploads");
       println("s         Print statistics for files downloaded, uploaded, and deleted");
       println("l         Set the logging level for the log file (has no effect on console logging)");
