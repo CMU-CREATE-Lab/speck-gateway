@@ -11,11 +11,35 @@ import org.jetbrains.annotations.NotNull;
  */
 interface DataSampleStore
    {
-   /**
-    * Saves the given {@link AirBot.DataSample sample} and returns <code>true</code> upon success, <code>false</code>
-    * otherwise.
-    */
-   boolean save(@NotNull AirBot.DataSample dataSample);
+   enum SaveResult
+      {
+         SUCCESS("Success", true),
+         FAILURE_ERROR("Error", false),
+         FAILURE_DUPLICATE("Duplicate", false);
+
+      private final String name;
+      private final boolean wasSuccessfullySaved;
+
+      private SaveResult(final String name, final boolean wasSuccessfullySaved)
+         {
+         this.name = name;
+         this.wasSuccessfullySaved = wasSuccessfullySaved;
+         }
+
+      public String getName()
+         {
+         return name;
+         }
+
+      public boolean wasSuccessful()
+         {
+         return wasSuccessfullySaved;
+         }
+      }
+
+   /** Saves the given {@link AirBot.DataSample sample} and returns the appropriate {@link SaveResult}. */
+   @NotNull
+   SaveResult save(@NotNull AirBot.DataSample dataSample);
 
    /** Finds all samples which are in the uploading state, and resets them so that an upload will be retried. */
    void resetStateOfUploadingSamples();

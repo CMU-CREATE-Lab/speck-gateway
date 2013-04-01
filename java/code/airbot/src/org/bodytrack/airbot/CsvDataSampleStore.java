@@ -50,7 +50,8 @@ final class CsvDataSampleStore implements DataSampleStore
       }
 
    @Override
-   public boolean save(@NotNull final AirBot.DataSample dataSample)
+   @NotNull
+   public SaveResult save(@NotNull final AirBot.DataSample dataSample)
       {
       LOG.debug("CsvDataSampleStore.save(): saving sample " + dataSample.getSampleTime());
       try
@@ -60,9 +61,10 @@ final class CsvDataSampleStore implements DataSampleStore
       catch (IOException e)
          {
          LOG.error("CsvDataSampleStore.save(): IOException while trying to write to the file", e);
+         return SaveResult.FAILURE_ERROR;
          }
 
-      return true;
+      return SaveResult.SUCCESS;
       }
 
    private void write(final String str) throws IOException

@@ -1,7 +1,5 @@
 package org.bodytrack.airbot;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -9,34 +7,29 @@ import org.jetbrains.annotations.NotNull;
  */
 final class MultiDestinationDataSampleStore implements DataSampleStore
    {
-   private static final String STORE_NAME_CSV = "CSV";
-   private static final String STORE_NAME_DATABASE = "Database";
-
    @NotNull
-   private final Map<String, DataSampleStore> stores = new HashMap<String, DataSampleStore>(2);
-
-   @NotNull
-   private final DatabaseDataSampleStore databaseDataSampleStore;
+   private final DataSampleStore csvDataSampleStore;
+   private final DataSampleStore databaseDataSampleStore;
 
    MultiDestinationDataSampleStore(@NotNull final AirBotConfig airBotConfig) throws InitializationException
       {
       databaseDataSampleStore = new DatabaseDataSampleStore(airBotConfig);
-      stores.put(STORE_NAME_CSV, new CsvDataSampleStore(airBotConfig));
-      stores.put(STORE_NAME_DATABASE, databaseDataSampleStore);
+      csvDataSampleStore = new CsvDataSampleStore(airBotConfig);
       }
 
    @Override
-   public boolean save(@NotNull final AirBot.DataSample dataSample)
+   @NotNull
+   public SaveResult save(@NotNull final AirBot.DataSample dataSample)
       {
-      boolean wereAllSuccessful = true;
-      for (final DataSampleStore store : stores.values())
+      final SaveResult databaseSaveResult = databaseDataSampleStore.save(dataSample);
+
+      // don't write to the CSV if it was a duplicate
+      if (!SaveResult.FAILURE_DUPLICATE.equals(databaseSaveResult))
          {
-         if (!store.save(dataSample))
-            {
-            wereAllSuccessful = false;
-            }
+         return csvDataSampleStore.save(dataSample);
          }
-      return wereAllSuccessful;
+
+      return databaseSaveResult;
       }
 
    @Override
@@ -67,9 +60,7 @@ final class MultiDestinationDataSampleStore implements DataSampleStore
    @Override
    public void shutdown()
       {
-      for (final DataSampleStore store : stores.values())
-         {
-         store.shutdown();
-         }
+      databaseDataSampleStore.shutdown();
+      csvDataSampleStore.shutdown();
       }
    }

@@ -116,9 +116,9 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
 
                         // try to save the data sample
                         statistics.incrementSavesRequested();
-                        final boolean wasSaveSuccessful = dataSampleStore.save(dataSample);
+                        final DataSampleStore.SaveResult saveResult = dataSampleStore.save(dataSample);
 
-                        if (wasSaveSuccessful)
+                        if (saveResult.wasSuccessful())
                            {
                            statistics.incrementSavesSuccessful();
 

@@ -211,13 +211,15 @@ final class DatabaseDataSampleStore implements DataSampleStore
       }
 
    @Override
-   public boolean save(@NotNull final AirBot.DataSample dataSample)
+   @NotNull
+   public SaveResult save(@NotNull final AirBot.DataSample dataSample)
       {
       lock.lock();  // block until condition holds
       try
          {
          final PreparedStatement insertStatement = preparedStatements.get(STATEMENT_NAME_INSERT_SAMPLE);
 
+         boolean isDuplicate = false;
          if (insertStatement != null)
             {
             try
@@ -230,13 +232,14 @@ final class DatabaseDataSampleStore implements DataSampleStore
                insertStatement.executeUpdate();
 
                LOG.debug("DatabaseDataSampleStore.save(): Saved data sample [" + dataSample.getSampleTime() + "] to the database.");
-               return true;
+               return SaveResult.SUCCESS;
                }
             catch (SQLException e)
                {
                if (e.getErrorCode() == SQL_ERROR_CODE_DUPLICATE_KEY && SQL_STATE_DUPLICATE_KEY.equals(e.getSQLState()))
                   {
                   LOG.error("DatabaseDataSampleStore.save(): Saved failed because a sample with timestamp [" + dataSample.getSampleTime() + "] already exists.  Duplicate sample timestamps are not allowed.");
+                  isDuplicate = true;
                   }
                else
                   {
@@ -249,7 +252,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
             LOG.error("DatabaseDataSampleStore.save(): Save failed because no insert statement is defined!");
             }
 
-         return false;
+         return (isDuplicate) ? SaveResult.FAILURE_DUPLICATE : SaveResult.FAILURE_ERROR;
          }
       finally
          {
