@@ -4,7 +4,7 @@
     <identifier-quote-string>&quot;</identifier-quote-string>
     <synchronize>true</synchronize>
     <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
-    <jdbc-url>jdbc:derby:$USER_HOME$/BodyTrack/AirBotData/AirBot0032343135321501101617/database/db</jdbc-url>
+    <jdbc-url>jdbc:derby:$USER_HOME$/BodyTrack/AirBotData/AirBot0032343135321502060b17/database/db</jdbc-url>
     <user-name>airbot</user-name>
     <user-password>dfcbdfc3dfd8dfc8dfc5dfde</user-password>
     <schema-pattern>*.AIRBOT</schema-pattern>
