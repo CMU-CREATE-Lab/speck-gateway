@@ -4,7 +4,7 @@
     <identifier-quote-string>&quot;</identifier-quote-string>
     <synchronize>true</synchronize>
     <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
-    <jdbc-url>jdbc:derby:$USER_HOME$/BodyTrack/AirBotData/AirBot0032343135321502060b17/database/db</jdbc-url>
+    <jdbc-url>jdbc:derby:$USER_HOME$/BodyTrack/AirBotData/AirBot00343135321504100f17/database/db</jdbc-url>
     <user-name>airbot</user-name>
     <user-password>dfcbdfc3dfd8dfc8dfc5dfde</user-password>
     <schema-pattern>*.AIRBOT</schema-pattern>
@@ -18,6 +18,7 @@
     <schema name="AIRBOT" catalog=""/>
     <table name="AIRBOTSAMPLES" schema="AIRBOT" catalog="" type="TABLE">
       <column name="ID" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4" def="QVVUT0lOQ1JFTUVOVDogc3RhcnQgMSBpbmNyZW1lbnQgMQ==" autoIncrement="true"/>
+      <column name="RAW_PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
       <column name="PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
       <column name="TEMPERATURE" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
       <column name="HUMIDITY" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
@@ -29,6 +30,7 @@
       <index name="AIRBOTSAMPLES_DOWNLOADTIMESTAMP" unique="false" columns="DOWNLOAD_TIMESTAMP_UTC_MILLIS"/>
       <index name="AIRBOTSAMPLES_HUMIDITY" unique="false" columns="HUMIDITY"/>
       <index name="AIRBOTSAMPLES_PARTICLECOUNT" unique="false" columns="PARTICLE_COUNT"/>
+      <index name="AIRBOTSAMPLES_RAWPARTICLECOUNT" unique="false" columns="RAW_PARTICLE_COUNT"/>
       <index name="AIRBOTSAMPLES_TEMPERATURE" unique="false" columns="TEMPERATURE"/>
       <index name="AIRBOTSAMPLES_UPLOADSTATUS" unique="false" columns="UPLOAD_STATUS"/>
       <index name="AIRBOTSAMPLES_UPLOADTIMESTAMP" unique="false" columns="UPLOAD_TIMESTAMP_UTC_MILLIS"/>
@@ -52,6 +54,7 @@
     <schema name="AIRBOT" catalog=""/>
     <table name="AIRBOTSAMPLES" schema="AIRBOT" catalog="" type="TABLE">
       <column name="ID" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4" def="QVVUT0lOQ1JFTUVOVDogc3RhcnQgMSBpbmNyZW1lbnQgMQ==" autoIncrement="true"/>
+      <column name="RAW_PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
       <column name="PARTICLE_COUNT" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
       <column name="TEMPERATURE" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
       <column name="HUMIDITY" sqlType="INTEGER" length="10" precision="0" nullable="false" jdbcType="4"/>
@@ -63,6 +66,7 @@
       <index name="AIRBOTSAMPLES_DOWNLOADTIMESTAMP" unique="false" columns="DOWNLOAD_TIMESTAMP_UTC_MILLIS"/>
       <index name="AIRBOTSAMPLES_HUMIDITY" unique="false" columns="HUMIDITY"/>
       <index name="AIRBOTSAMPLES_PARTICLECOUNT" unique="false" columns="PARTICLE_COUNT"/>
+      <index name="AIRBOTSAMPLES_RAWPARTICLECOUNT" unique="false" columns="RAW_PARTICLE_COUNT"/>
       <index name="AIRBOTSAMPLES_TEMPERATURE" unique="false" columns="TEMPERATURE"/>
       <index name="AIRBOTSAMPLES_UPLOADSTATUS" unique="false" columns="UPLOAD_STATUS"/>
       <index name="AIRBOTSAMPLES_UPLOADTIMESTAMP" unique="false" columns="UPLOAD_TIMESTAMP_UTC_MILLIS"/>

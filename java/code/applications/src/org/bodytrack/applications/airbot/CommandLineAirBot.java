@@ -163,7 +163,7 @@ public class CommandLineAirBot extends BaseCommandLineApplication
                      else
                         {
                         final int sampleTime = sample.getSampleTime();
-                        println("Sample: [" + sampleTime + ", " + sample.getParticleCount() + ", " + sample.getTemperatureInTenthsOfADegreeF() + ", " + sample.getHumidity() + "]");
+                        println("Sample: [" + sampleTime + ", " + sample.getRawParticleCount() + ", " + sample.getParticleCount() + ", " + sample.getTemperatureInTenthsOfADegreeF() + ", " + sample.getHumidity() + "]");
 
                         // keep track of which ones we've seen to detect duplicates
                         if (sampleTimes.contains(sampleTime))
@@ -418,10 +418,11 @@ public class CommandLineAirBot extends BaseCommandLineApplication
          }
       else
          {
-         println("Sample Time:    " + dataSample.getSampleTime());
-         println("Particle Count: " + dataSample.getParticleCount());
-         println("Temperature:    " + dataSample.getTemperatureInTenthsOfADegreeF());
-         println("Humidity:       " + dataSample.getHumidity());
+         println("Sample Time:        " + dataSample.getSampleTime());
+         println("Raw Particle Count: " + dataSample.getRawParticleCount());
+         println("Particle Count:     " + dataSample.getParticleCount());
+         println("Temperature:        " + dataSample.getTemperatureInTenthsOfADegreeF());
+         println("Humidity:           " + dataSample.getHumidity());
          }
       }
 

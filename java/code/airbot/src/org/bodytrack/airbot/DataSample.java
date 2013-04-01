@@ -17,23 +17,31 @@ public final class DataSample implements AirBot.DataSample
 
    private final int sampleTimeUtcSeconds;
    private final long downloadTime = System.currentTimeMillis();
+   private final int rawParticleCount;
    private final int particleCount;
    private final int temperatureInTenthsOfDegreeF;
    private final int humidity;
 
    public DataSample(@NotNull final byte[] data)
       {
-      this(null,
-           ByteBuffer.wrap(data, 1, 4).getInt(),
-           ByteBuffer.wrap(data, 5, 4).getInt(),
-           ByteBuffer.wrap(data, 9, 2).getShort(),
-           ByteUtils.unsignedByteToInt(data[11]));
+      this(null,                                      // databaseId
+           ByteBuffer.wrap(data, 1, 4).getInt(),      // sampleTimeUtcSeconds
+           ByteBuffer.wrap(data, 12, 2).getShort(),   // rawParticleCount
+           ByteBuffer.wrap(data, 5, 4).getInt(),      // particleCount
+           ByteBuffer.wrap(data, 9, 2).getShort(),    // temperatureInTenthsOfDegreeF
+           ByteUtils.unsignedByteToInt(data[11]));    // humidity
       }
 
-   public DataSample(@Nullable final Integer databaseId, final int sampleTimeUtcSeconds, final int particleCount, final int temperatureInTenthsOfDegreeF, final int humidity)
+   public DataSample(@Nullable final Integer databaseId,
+                     final int sampleTimeUtcSeconds,
+                     final int rawParticleCount,
+                     final int particleCount,
+                     final int temperatureInTenthsOfDegreeF,
+                     final int humidity)
       {
       this.databaseId = databaseId;
       this.sampleTimeUtcSeconds = sampleTimeUtcSeconds;
+      this.rawParticleCount = rawParticleCount;
       this.particleCount = particleCount;
       this.temperatureInTenthsOfDegreeF = temperatureInTenthsOfDegreeF;
       this.humidity = humidity;
@@ -56,6 +64,12 @@ public final class DataSample implements AirBot.DataSample
    public long getDownloadTime()
       {
       return downloadTime;
+      }
+
+   @Override
+   public int getRawParticleCount()
+      {
+      return rawParticleCount;
       }
 
    @Override
@@ -85,7 +99,7 @@ public final class DataSample implements AirBot.DataSample
    @Override
    public boolean isEmpty()
       {
-      return sampleTimeUtcSeconds == 0 && particleCount == 0 && temperatureInTenthsOfDegreeF == 0 && humidity == 0;
+      return sampleTimeUtcSeconds == 0 && rawParticleCount == 0 && particleCount == 0 && temperatureInTenthsOfDegreeF == 0 && humidity == 0;
       }
 
    @NotNull
@@ -94,6 +108,8 @@ public final class DataSample implements AirBot.DataSample
       {
       final StringBuilder s = new StringBuilder();
       s.append(sampleTimeUtcSeconds);
+      s.append(COMMA);
+      s.append(rawParticleCount);
       s.append(COMMA);
       s.append(particleCount);
       s.append(COMMA);
@@ -111,6 +127,8 @@ public final class DataSample implements AirBot.DataSample
       {
       final StringBuilder s = new StringBuilder("[");
       s.append(sampleTimeUtcSeconds);
+      s.append(COMMA);
+      s.append(rawParticleCount);
       s.append(COMMA);
       s.append(particleCount);
       s.append(COMMA);
@@ -158,6 +176,7 @@ public final class DataSample implements AirBot.DataSample
       sb.append("id=").append(databaseId);
       sb.append(", sampleTime=").append(sampleTimeUtcSeconds);
       sb.append(", downloadTime=").append(downloadTime);
+      sb.append(", rawParticleCount=").append(rawParticleCount);
       sb.append(", particleCount=").append(particleCount);
       sb.append(", temperatureInTenthsOfDegreeF=").append(temperatureInTenthsOfDegreeF);
       sb.append(", humidity=").append(humidity);

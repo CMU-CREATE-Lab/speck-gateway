@@ -21,6 +21,9 @@ public interface AirBot extends CreateLabDeviceProxy
       /** The time the sample was downloaded from the device, in UTC milliseconds since the epoch. */
       long getDownloadTime();
 
+      /** The raw particle count. */
+      int getRawParticleCount();
+
       /** The particle count in particles/Liter. */
       int getParticleCount();
 

@@ -51,7 +51,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
    private static final String PROTOCOL = "jdbc:derby:";
 
    private static final String STATEMENT_NAME_INSERT_SAMPLE = "insert_sample";
-   private static final String STATEMENT_INSERT_SAMPLE = "INSERT INTO AirBotSamples (particle_count, temperature, humidity, sample_timestamp_utc_secs, download_timestamp_utc_millis) VALUES (?, ?, ?, ?, ?)";
+   private static final String STATEMENT_INSERT_SAMPLE = "INSERT INTO AirBotSamples (raw_particle_count, particle_count, temperature, humidity, sample_timestamp_utc_secs, download_timestamp_utc_millis) VALUES (?, ?, ?, ?, ?, ?)";
 
    private static final String STATEMENT_NAME_UPDATE_ALL_SAMPLES_HAVING_STATUS = "update_all_samples_having_status";
    private static final String STATEMENT_UPDATE_ALL_SAMPLES_HAVING_STATUS = "UPDATE AirBotSamples SET UPLOAD_STATUS = ? WHERE UPLOAD_STATUS = ?";
@@ -65,6 +65,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
                                                                         "       OVER () AS NUM_ROWS,\n" +
                                                                         "       AirBotSamples.id,\n" +
                                                                         "       AirBotSamples.SAMPLE_TIMESTAMP_UTC_SECS,\n" +
+                                                                        "       AirBotSamples.RAW_PARTICLE_COUNT,\n" +
                                                                         "       AirBotSamples.PARTICLE_COUNT,\n" +
                                                                         "       AirBotSamples.TEMPERATURE,\n" +
                                                                         "       AirBotSamples.HUMIDITY\n" +
@@ -224,11 +225,12 @@ final class DatabaseDataSampleStore implements DataSampleStore
             {
             try
                {
-               insertStatement.setInt(1, dataSample.getParticleCount());
-               insertStatement.setInt(2, dataSample.getTemperatureInTenthsOfADegreeF());
-               insertStatement.setInt(3, dataSample.getHumidity());
-               insertStatement.setInt(4, dataSample.getSampleTime());
-               insertStatement.setLong(5, dataSample.getDownloadTime());
+               insertStatement.setInt(1, dataSample.getRawParticleCount());
+               insertStatement.setInt(2, dataSample.getParticleCount());
+               insertStatement.setInt(3, dataSample.getTemperatureInTenthsOfADegreeF());
+               insertStatement.setInt(4, dataSample.getHumidity());
+               insertStatement.setInt(5, dataSample.getSampleTime());
+               insertStatement.setLong(6, dataSample.getDownloadTime());
                insertStatement.executeUpdate();
 
                LOG.debug("DatabaseDataSampleStore.save(): Saved data sample [" + dataSample.getSampleTime() + "] to the database.");
@@ -324,11 +326,12 @@ final class DatabaseDataSampleStore implements DataSampleStore
                   {
                   final int id = resultSet.getInt(2);
                   ids.add(id);
-                  dataSamples.add(new DataSample(id,
-                                                 resultSet.getInt(3),
-                                                 resultSet.getInt(4),
-                                                 resultSet.getInt(5),
-                                                 resultSet.getInt(6)));
+                  dataSamples.add(new DataSample(id,                         // databaseId
+                                                 resultSet.getInt(3),        // sampleTimeUtcSeconds
+                                                 resultSet.getInt(4),        // rawParticleCount
+                                                 resultSet.getInt(5),        // particleCount
+                                                 resultSet.getInt(6),        // temperatureInTenthsOfDegreeF
+                                                 resultSet.getInt(7)));      // humidity
                   }
 
                // if the update failed, then we should just return an empty DataSampleSet
@@ -578,6 +581,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
             statement = connection.createStatement();
             statement.execute("CREATE TABLE AirBotSamples (\n" +
                               "   id                            INTEGER     NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),\n" +
+                              "   raw_particle_count            INTEGER     NOT NULL,\n" +
                               "   particle_count                INTEGER     NOT NULL,\n" +
                               "   temperature                   INTEGER     NOT NULL,\n" +
                               "   humidity                      INTEGER     NOT NULL,\n" +
@@ -596,6 +600,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
 
             LOG.debug("DatabaseDataSampleStore.initializeDatabase(): Creating indeces for table AirBotSamples...");
 
+            statement.execute("CREATE INDEX AirBotSamples_RawParticleCount ON AirBotSamples (raw_particle_count)");
             statement.execute("CREATE INDEX AirBotSamples_ParticleCount ON AirBotSamples (particle_count)");
             statement.execute("CREATE INDEX AirBotSamples_Temperature ON AirBotSamples (temperature)");
             statement.execute("CREATE INDEX AirBotSamples_Humidity ON AirBotSamples (humidity)");
@@ -627,5 +632,30 @@ final class DatabaseDataSampleStore implements DataSampleStore
          LOG.error("DatabaseDataSampleStore.closeStatement(): SQLException while trying to close the statment.  Oh well.", e);
          }
       return false;
+      }
+
+    // TODO: get rid of this eventually...
+   public static void main(final String[] args) throws InitializationException
+      {
+      final DatabaseDataSampleStore store = new DatabaseDataSampleStore(
+            new AirBotConfig()
+            {
+            @NotNull
+            @Override
+            public String getId()
+               {
+               return "00343135321504100f17FAKE";
+               }
+
+            @Override
+            public int getProtocolVersion()
+               {
+               return 1;
+               }
+            });
+
+      final DataSampleSet dataSamplesToUpload = store.getDataSamplesToUpload(5);
+      System.out.println("dataSamplesToUpload.size() = " + dataSamplesToUpload.size());
+      store.shutdown();
       }
    }

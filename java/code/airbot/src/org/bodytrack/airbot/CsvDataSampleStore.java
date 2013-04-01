@@ -34,7 +34,7 @@ final class CsvDataSampleStore implements DataSampleStore
          writer = new BufferedWriter(new FileWriter(dataFile, true));
          if (!doesFileAlreadyExist)
             {
-            write("sample_timestamp_utc_secs,particle_count,temperature,humidity,download_timestamp_utc_millis");
+            write("sample_timestamp_utc_secs,raw_particle_count,particle_count,temperature,humidity,download_timestamp_utc_millis");
             }
          }
       catch (FileNotFoundException e)

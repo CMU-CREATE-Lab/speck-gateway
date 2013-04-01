@@ -67,6 +67,6 @@ final class DataSampleSetImpl implements DataSampleSet
          data.append(StringUtils.join(dataSamplesAsJson, ','));
          }
       data.append("]");
-      return "{\"channel_names\":[\"particles\",\"temperature\",\"humidity\"],\"data\":"+data+"}";
+      return "{\"channel_names\":[\"raw_particles\",\"particles\",\"temperature\",\"humidity\"],\"data\":"+data+"}";
       }
    }
