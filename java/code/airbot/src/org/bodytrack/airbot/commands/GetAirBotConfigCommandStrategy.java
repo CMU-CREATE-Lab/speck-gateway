@@ -17,8 +17,8 @@ public final class GetAirBotConfigCommandStrategy extends CreateLabHIDReturnValu
 
    private static final byte COMMAND_PREFIX = 'I';
    private static final int UNIQUE_ID_STARTING_BYTE_INDEX = 1;
-   private static final int UNIQUE_ID_ENDING_BYTE_INDEX = 11;
-   private static final int PROTOCOL_VERSION_BYTE_INDEX = 12;
+   private static final int UNIQUE_ID_ENDING_BYTE_INDEX = 10;
+   private static final int PROTOCOL_VERSION_BYTE_INDEX = 11;
 
    @Override
    protected int getSizeOfExpectedResponse()
