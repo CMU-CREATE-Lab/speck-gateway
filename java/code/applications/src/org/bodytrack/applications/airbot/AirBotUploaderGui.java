@@ -64,9 +64,15 @@ final class AirBotUploaderGui
    private final JLabel statsDownloadsRequested = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
    private final JLabel statsDownloadsSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
    private final JLabel statsDownloadsFailed = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
-   private final JLabel statsUploadsRequested = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
-   private final JLabel statsUploadsSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
-   private final JLabel statsUploadsFailed = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsSavesRequested = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsSavesSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsSavesFailed = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsFileUploadsRequested = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsFileUploadsSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsFileUploadsFailed = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsSampleUploadsRequested = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsSampleUploadsSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
+   private final JLabel statsSampleUploadsFailed = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
 
    private final Map<DataSampleManager.Statistics.Category, JLabel> statsCategoryToLabelMap = new HashMap<DataSampleManager.Statistics.Category, JLabel>(6);
 
@@ -80,9 +86,15 @@ final class AirBotUploaderGui
       statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.DOWNLOADS_REQUESTED, statsDownloadsRequested);
       statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.DOWNLOADS_SUCCESSFUL, statsDownloadsSuccessful);
       statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.DOWNLOADS_FAILED, statsDownloadsFailed);
-      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.UPLOADS_REQUESTED, statsUploadsRequested);
-      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.UPLOADS_SUCCESSFUL, statsUploadsSuccessful);
-      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.UPLOADS_FAILED, statsUploadsFailed);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.SAVES_REQUESTED, statsSavesRequested);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.SAVES_SUCCESSFUL, statsSavesSuccessful);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.SAVES_FAILED, statsSavesFailed);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.FILE_UPLOADS_REQUESTED, statsFileUploadsRequested);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.FILE_UPLOADS_SUCCESSFUL, statsFileUploadsSuccessful);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.FILE_UPLOADS_FAILED, statsFileUploadsFailed);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.SAMPLE_UPLOADS_REQUESTED, statsSampleUploadsRequested);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.SAMPLE_UPLOADS_SUCCESSFUL, statsSampleUploadsSuccessful);
+      statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.SAMPLE_UPLOADS_FAILED, statsSampleUploadsFailed);
 
       this.jFrame = jFrame;
       helper = new AirBotUploaderHelper(
@@ -420,31 +432,41 @@ final class AirBotUploaderGui
       final JLabel successfulLabel = SwingUtils.createLabel(RESOURCES.getString("label.successful"), FONT_NORMAL_BOLD);
       final JLabel failedLabel = SwingUtils.createLabel(RESOURCES.getString("label.failed"), FONT_NORMAL_BOLD);
       final JLabel downloadsFromDeviceLabel = SwingUtils.createLabel(RESOURCES.getString("label.downloads-from-device"), FONT_NORMAL_BOLD);
-      final JLabel uploadsToServerLabel = SwingUtils.createLabel(RESOURCES.getString("label.uploads-to-server"), FONT_NORMAL_BOLD);
+      final JLabel savesToComputerLabel = SwingUtils.createLabel(RESOURCES.getString("label.saves-to-computer"), FONT_NORMAL_BOLD);
+      final JLabel fileUploadsToServerLabel = SwingUtils.createLabel(RESOURCES.getString("label.file-uploads-to-server"), FONT_NORMAL_BOLD);
+      final JLabel sampleUploadsToServerLabel = SwingUtils.createLabel(RESOURCES.getString("label.sample-uploads-to-server"), FONT_NORMAL_BOLD);
 
       panelLayout.setHorizontalGroup(panelLayout.createSequentialGroup()
                                            .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                            .addComponent(emptyLabel)
                                                            .addComponent(downloadsFromDeviceLabel)
-                                                           .addComponent(uploadsToServerLabel)
+                                                           .addComponent(savesToComputerLabel)
+                                                           .addComponent(sampleUploadsToServerLabel)
+                                                           .addComponent(fileUploadsToServerLabel)
                                            )
                                            .addGap(GAP)
                                            .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                            .addComponent(requestedLabel)
                                                            .addComponent(statsDownloadsRequested)
-                                                           .addComponent(statsUploadsRequested)
+                                                           .addComponent(statsSavesRequested)
+                                                           .addComponent(statsSampleUploadsRequested)
+                                                           .addComponent(statsFileUploadsRequested)
                                            )
                                            .addGap(GAP)
                                            .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                            .addComponent(successfulLabel)
                                                            .addComponent(statsDownloadsSuccessful)
-                                                           .addComponent(statsUploadsSuccessful)
+                                                           .addComponent(statsSavesSuccessful)
+                                                           .addComponent(statsSampleUploadsSuccessful)
+                                                           .addComponent(statsFileUploadsSuccessful)
                                            )
                                            .addGap(GAP)
                                            .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                                            .addComponent(failedLabel)
                                                            .addComponent(statsDownloadsFailed)
-                                                           .addComponent(statsUploadsFailed)
+                                                           .addComponent(statsSavesFailed)
+                                                           .addComponent(statsSampleUploadsFailed)
+                                                           .addComponent(statsFileUploadsFailed)
                                            )
       );
 
@@ -464,10 +486,24 @@ final class AirBotUploaderGui
                                          )
                                          .addGap(GAP)
                                          .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                         .addComponent(uploadsToServerLabel)
-                                                         .addComponent(statsUploadsRequested)
-                                                         .addComponent(statsUploadsSuccessful)
-                                                         .addComponent(statsUploadsFailed)
+                                                         .addComponent(savesToComputerLabel)
+                                                         .addComponent(statsSavesRequested)
+                                                         .addComponent(statsSavesSuccessful)
+                                                         .addComponent(statsSavesFailed)
+                                         )
+                                         .addGap(GAP)
+                                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                         .addComponent(sampleUploadsToServerLabel)
+                                                         .addComponent(statsSampleUploadsRequested)
+                                                         .addComponent(statsSampleUploadsSuccessful)
+                                                         .addComponent(statsSampleUploadsFailed)
+                                         )
+                                         .addGap(GAP)
+                                         .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                         .addComponent(fileUploadsToServerLabel)
+                                                         .addComponent(statsFileUploadsRequested)
+                                                         .addComponent(statsFileUploadsSuccessful)
+                                                         .addComponent(statsFileUploadsFailed)
                                          )
       );
 

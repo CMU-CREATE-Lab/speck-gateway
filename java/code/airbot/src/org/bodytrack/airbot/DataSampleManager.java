@@ -27,9 +27,12 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
       {
       enum Category
          {
-            UPLOADS_REQUESTED,
-            UPLOADS_SUCCESSFUL,
-            UPLOADS_FAILED,
+            FILE_UPLOADS_REQUESTED,
+            FILE_UPLOADS_SUCCESSFUL,
+            FILE_UPLOADS_FAILED,
+            SAMPLE_UPLOADS_REQUESTED,
+            SAMPLE_UPLOADS_SUCCESSFUL,
+            SAMPLE_UPLOADS_FAILED,
             DOWNLOADS_REQUESTED,
             DOWNLOADS_SUCCESSFUL,
             DOWNLOADS_FAILED,
@@ -213,7 +216,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                {
                CONSOLE_LOG.info("Uploading data samples...");
 
-               final DataSampleSet dataSampleSet = dataSampleStore.getDataSamplesToUpload(200);
+               final DataSampleSet dataSampleSet = dataSampleStore.getDataSamplesToUpload(DataSampleSet.DEFAULT_SIZE);
 
                if (dataSampleSet.isEmpty())
                   {
@@ -238,7 +241,8 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                   dataSampleUploader.submitUploadDataSampleSetTask(dataSampleSet);
 
                   // update statistics
-                  statistics.incrementUploadsRequested();
+                  statistics.incrementFileUploadsRequested();
+                  statistics.incrementSampleUploadsRequested(dataSampleSet.size());
                   }
                }
             }
@@ -397,7 +401,8 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
          if (uploadResponse == null)
             {
             // update statistics
-            statistics.incrementUploadsFailed();
+            statistics.incrementFileUploadsFailed();
+            statistics.incrementSampleUploadsFailed(dataSampleSet.size());
 
             // If the response was null, then a problem occurred during upload, so just submit a new upload job for it.
             if (LOG.isInfoEnabled() || CONSOLE_LOG.isInfoEnabled())
@@ -417,7 +422,8 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                         dataSampleUploader.submitUploadDataSampleSetTask(dataSampleSet);
 
                         // update statistics
-                        statistics.incrementUploadsRequested();
+                        statistics.incrementFileUploadsRequested();
+                        statistics.incrementSampleUploadsRequested(dataSampleSet.size());
                         }
                      }
                   },
@@ -429,7 +435,8 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
             if (uploadResponse.wasSuccessful())
                {
                // update statistics
-               statistics.incrementUploadsSuccessful();
+               statistics.incrementFileUploadsSuccessful();
+               statistics.incrementSampleUploadsSuccessful(dataSampleSet.size());
 
                // No failures!  Tell the data store to mark the samples as uploaded
                dataSampleStore.markDataSamplesAsUploaded(dataSampleSet);
@@ -437,7 +444,8 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
             else
                {
                // update statistics
-               statistics.incrementUploadsFailed();
+               statistics.incrementFileUploadsFailed();
+               statistics.incrementSampleUploadsFailed(dataSampleSet.size());
 
                final String failureMessage = uploadResponse.getMessage();
                final DataSampleSetUploadResponse.Payload payload = uploadResponse.getPayload();
@@ -450,8 +458,8 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                CONSOLE_LOG.error("Upload failure: Failed records = " + numFailures + " and failureMessage(s) [" + failureMessage + "|" + payloadFailureMessage + "].  Samples have been flagged as failed.");
                }
 
-            // schedule another upload
-            scheduleDataSampleUpload(0, TimeUnit.SECONDS);
+            // schedule another upload (wait 15 seconds if the last set had fewer than the default size, otherwise try again right away)
+            scheduleDataSampleUpload(dataSampleSet.size() < DataSampleSet.DEFAULT_SIZE ? 15 : 0, TimeUnit.SECONDS);
             }
          }
       }
@@ -491,19 +499,34 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
             }
          }
 
-      private int incrementUploadsRequested()
+      private int incrementFileUploadsRequested()
          {
-         return incrementValueAndPublishToListeners(Category.UPLOADS_REQUESTED);
+         return incrementValueAndPublishToListeners(Category.FILE_UPLOADS_REQUESTED);
          }
 
-      private int incrementUploadsSuccessful()
+      private int incrementFileUploadsSuccessful()
          {
-         return incrementValueAndPublishToListeners(Category.UPLOADS_SUCCESSFUL);
+         return incrementValueAndPublishToListeners(Category.FILE_UPLOADS_SUCCESSFUL);
          }
 
-      private int incrementUploadsFailed()
+      private int incrementFileUploadsFailed()
          {
-         return incrementValueAndPublishToListeners(Category.UPLOADS_FAILED);
+         return incrementValueAndPublishToListeners(Category.FILE_UPLOADS_FAILED);
+         }
+
+      private int incrementSampleUploadsRequested(final int count)
+         {
+         return incrementValueAndPublishToListeners(Category.SAMPLE_UPLOADS_REQUESTED, count);
+         }
+
+      private int incrementSampleUploadsSuccessful(final int count)
+         {
+         return incrementValueAndPublishToListeners(Category.SAMPLE_UPLOADS_SUCCESSFUL, count);
+         }
+
+      private int incrementSampleUploadsFailed(final int count)
+         {
+         return incrementValueAndPublishToListeners(Category.SAMPLE_UPLOADS_FAILED, count);
          }
 
       private int incrementDownloadsRequested()
@@ -553,7 +576,12 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
 
       private int incrementValueAndPublishToListeners(final Category category)
          {
-         final int newValue = statisticsMap.get(category).incrementAndGet();
+         return incrementValueAndPublishToListeners(category, 1);
+         }
+
+      private int incrementValueAndPublishToListeners(final Category category, final int delta)
+         {
+         final int newValue = statisticsMap.get(category).addAndGet(delta);
          for (final Listener listener : listeners)
             {
             listener.handleValueChange(category, newValue);
@@ -568,15 +596,16 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
          final PrintWriter printWriter = new PrintWriter(stringWriter);
 
          printWriter.printf("\n");
-         printWriter.printf(" _________________________________________________________ \n");
-         printWriter.printf("|                                                         |\n");
-         printWriter.printf("|                         Requested   Successful   Failed |\n");
-         printWriter.printf("|                         ---------   ----------   ------ |\n");
-         printWriter.printf("| Downloads from Device      %6d       %6d   %6d |\n", statisticsMap.get(Category.DOWNLOADS_REQUESTED).get(), statisticsMap.get(Category.DOWNLOADS_SUCCESSFUL).get(), statisticsMap.get(Category.DOWNLOADS_FAILED).get());
-         printWriter.printf("| Deletes from Device        %6d       %6d   %6d |\n", statisticsMap.get(Category.DELETES_REQUESTED).get(), statisticsMap.get(Category.DELETES_SUCCESSFUL).get(), statisticsMap.get(Category.DELETES_FAILED).get());
-         printWriter.printf("| Saves to Computer          %6d       %6d   %6d |\n", statisticsMap.get(Category.SAVES_REQUESTED).get(), statisticsMap.get(Category.SAVES_SUCCESSFUL).get(), statisticsMap.get(Category.SAVES_FAILED).get());
-         printWriter.printf("| Uploads to Server          %6d       %6d   %6d |\n", statisticsMap.get(Category.UPLOADS_REQUESTED).get(), statisticsMap.get(Category.UPLOADS_SUCCESSFUL).get(), statisticsMap.get(Category.UPLOADS_FAILED).get());
-         printWriter.printf("|_________________________________________________________|\n");
+         printWriter.printf(" __________________________________________________________________ \n");
+         printWriter.printf("|                                                                  |\n");
+         printWriter.printf("|                                  Requested   Successful   Failed |\n");
+         printWriter.printf("|                                  ---------   ----------   ------ |\n");
+         printWriter.printf("| Samples Downloaded from Device      %6d       %6d   %6d |\n", statisticsMap.get(Category.DOWNLOADS_REQUESTED).get(), statisticsMap.get(Category.DOWNLOADS_SUCCESSFUL).get(), statisticsMap.get(Category.DOWNLOADS_FAILED).get());
+         printWriter.printf("| Samples Saved to Computer           %6d       %6d   %6d |\n", statisticsMap.get(Category.SAVES_REQUESTED).get(), statisticsMap.get(Category.SAVES_SUCCESSFUL).get(), statisticsMap.get(Category.SAVES_FAILED).get());
+         printWriter.printf("| Samples Deleted from Device         %6d       %6d   %6d |\n", statisticsMap.get(Category.DELETES_REQUESTED).get(), statisticsMap.get(Category.DELETES_SUCCESSFUL).get(), statisticsMap.get(Category.DELETES_FAILED).get());
+         printWriter.printf("| Samples Uploaded to Server          %6d       %6d   %6d |\n", statisticsMap.get(Category.SAMPLE_UPLOADS_REQUESTED).get(), statisticsMap.get(Category.SAMPLE_UPLOADS_SUCCESSFUL).get(), statisticsMap.get(Category.SAMPLE_UPLOADS_FAILED).get());
+         printWriter.printf("| Files Uploaded to Server            %6d       %6d   %6d |\n", statisticsMap.get(Category.FILE_UPLOADS_REQUESTED).get(), statisticsMap.get(Category.FILE_UPLOADS_SUCCESSFUL).get(), statisticsMap.get(Category.FILE_UPLOADS_FAILED).get());
+         printWriter.printf("|__________________________________________________________________|\n");
 
          return stringWriter.toString();
          }
