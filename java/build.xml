@@ -238,6 +238,7 @@
       <copy todir="${speck-gateway-webstart.dist.dir}" flatten="false">
          <fileset dir="${speck-gateway-webstart.src.dir}">
             <exclude name="index.html"/>
+            <exclude name="**/docs/zip/**"/>
             <include name="**/*"/>
          </fileset>
       </copy>
@@ -268,6 +269,36 @@
             <include name="**/*.jar"/>
          </fileset>
       </signjar>
+
+      <!-- delete existing zip, if any -->
+      <delete file="${speck-gateway-webstart.dist.dir}/${speck-gateway.zip.filename}"/>
+
+      <!-- Copy the README, using a filter to insert the version number -->
+      <copy todir="${speck-applications.dist.dir}" flatten="false">
+         <fileset dir="${speck-gateway-webstart.src.dir}/docs/zip">
+            <include name="README.txt"/>
+         </fileset>
+         <filterset>
+            <filter token="version.number" value="${speck-gateway.version-number}"/>
+         </filterset>
+      </copy>
+
+      <!-- create the zip -->
+      <zip destfile="${speck-gateway-webstart.dist.dir}/${speck-gateway.zip.filename}" update="yes" compress="true">
+         <zipfileset dir="${speck-applications.dist.dir}" includes="**/*" prefix="${speck-gateway.zip.directory_name}"/>
+         <zipfileset dir="${base.directory}" includes="LICENSE.txt" prefix="${speck-gateway.zip.directory_name}"/>
+         <zipfileset dir="${base.directory}" includes="NOTICE.txt" prefix="${speck-gateway.zip.directory_name}"/>
+         <zipfileset dir="${lib.dir}/apache-derby/" includes="LICENSE" fullpath="${speck-gateway.zip.directory_name}/licenses/APACHE_DERBY_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/commons-io/" includes="LICENSE.txt" fullpath="${speck-gateway.zip.directory_name}/licenses/COMMONS_IO_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/commons-lang/" includes="LICENSE.txt" fullpath="${speck-gateway.zip.directory_name}/licenses/COMMONS_LANG_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/HIDAPI/" includes="LICENSE.txt" fullpath="${speck-gateway.zip.directory_name}/licenses/HIDAPI_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/httpcomponents-client/" includes="LICENSE.txt" fullpath="${speck-gateway.zip.directory_name}/licenses/HTTP_COMPONENTS_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/jackson/" includes="LICENSE.txt" fullpath="${speck-gateway.zip.directory_name}/licenses/JACKSON_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/JNA/" includes="license.txt" fullpath="${speck-gateway.zip.directory_name}/licenses/JNA_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/JNAerator/" includes="LICENSE.txt" fullpath="${speck-gateway.zip.directory_name}/licenses/JNAERATOR_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/log4j/" includes="LICENSE" fullpath="${speck-gateway.zip.directory_name}/licenses/LOG4J_LICENSE.txt"/>
+         <zipfileset dir="${lib.dir}/log4j-extras/" includes="LICENSE" fullpath="${speck-gateway.zip.directory_name}/licenses/LOG4J_EXTRAS_LICENSE.txt"/>
+      </zip>
 
       <property name="dist-webstart-is-complete" value="true"/>
    </target>
