@@ -276,7 +276,7 @@
       <!-- Copy the README, using a filter to insert the version number -->
       <copy todir="${speck-applications.dist.dir}" flatten="false">
          <fileset dir="${speck-gateway-webstart.src.dir}/docs/zip">
-            <include name="README.txt"/>
+            <include name="README1.txt"/>
          </fileset>
          <filterset>
             <filter token="version.number" value="${speck-gateway.version-number}"/>
@@ -286,6 +286,7 @@
       <!-- create the zip -->
       <zip destfile="${speck-gateway-webstart.dist.dir}/${speck-gateway.zip.filename}" update="yes" compress="true">
          <zipfileset dir="${speck-applications.dist.dir}" includes="**/*" prefix="${speck-gateway.zip.directory_name}"/>
+         <zipfileset dir="${base.directory}/.." includes="README.txt" fullpath="${speck-gateway.zip.directory_name}/README2.txt"/>
          <zipfileset dir="${base.directory}" includes="LICENSE.txt" prefix="${speck-gateway.zip.directory_name}"/>
          <zipfileset dir="${base.directory}" includes="NOTICE.txt" prefix="${speck-gateway.zip.directory_name}"/>
          <zipfileset dir="${lib.dir}/apache-derby/" includes="LICENSE" fullpath="${speck-gateway.zip.directory_name}/licenses/APACHE_DERBY_LICENSE.txt"/>

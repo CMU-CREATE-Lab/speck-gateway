@@ -1,6 +1,9 @@
-=============================
-Speck Gateway (version @version.number@)
-=============================
+========================================================================================================================
+
+                                                     Speck Gateway
+                                                     version @version.number@
+
+========================================================================================================================
 
 INTRODUCTION
 ============
@@ -23,14 +26,9 @@ To run the Speck Gateway, simply double-click the speck-applications.jar file in
 If you wish, you can create an alias/shortcut to the speck-applications.jar file and place the alias/shortcut in a
 location that's easier for you to access.
 
-ADVANCED USAGE
-==============
+For more information about the gateway, different ways of running it, and more advanced options, please see the
+README2.txt file.  You can safely ignore the "DOWNLOADING THE GATEWAY APPLICATION" and "BUILDING THE GATEWAY
+APPLICATION" sections since, by downloading this zip file, you already have pre-built binaries from which to run the
+gateway.
 
-By default, the Speck Gateway stores its files under a "CREATELab" subdirectory of the user's home directory.  This is
-problematic for some users (e.g. schools with shared computers, security restrictions, etc.).  To change where files
-are stored, you can launch the Speck Gateway and supply it with the "CreateLabHomeDirectory" system property. To do
-so, open a command prompt window and navigate to the directory containing all the jars that were in the zip.  Then run
-the following command, replacing PATH_TO_DESIRED_DIRECTORY with the path to the directory in which you want files to be
-saved:
-
-   java -DCreateLabHomeDirectory=PATH_TO_DESIRED_DIRECTORY -jar speck-applications.jar
+========================================================================================================================
