@@ -8,7 +8,7 @@
       <title>Speck Gateway</title>
       <vendor>CMU CREATE Lab</vendor>
       <homepage href="http://www.cmucreatelab.org/projects/Speck"/>
-      <icon kind="default" href="images/icon512.png" width="512" height="512"/>
+      <icon kind="default" href="images/icon256.jpg" width="256" height="256"/>
       <icon kind="splash" href="images/splashScreen.png" width="600" height="400"/>
       <offline-allowed/>
       <shortcut online="true" install="true">
