@@ -536,7 +536,7 @@
     <output url="file://$PROJECT_DIR$/../IDEA_compiler_output" />
   </component>
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/java/code/airbot/src/org/bodytrack/airbot/DatabaseDataSampleStore.java" dialect="Derby" />
+    <file url="file://$PROJECT_DIR$/java/code/core/src/org/specksensor/DatabaseDataSampleStore.java" dialect="Derby" />
   </component>
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
