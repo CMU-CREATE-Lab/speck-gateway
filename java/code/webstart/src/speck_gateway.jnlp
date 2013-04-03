@@ -53,6 +53,6 @@
       <jar href="jar/jnaerator-0.9.5.jar"/>
       <jar href="jar/log4j-1.2.17.jar"/>
    </resources>
-   <application-desc main-class="org.bodytrack.applications.speck.SpeckGateway"/>
+   <application-desc main-class="org.specksensor.applications.SpeckGateway"/>
 </jnlp>
 

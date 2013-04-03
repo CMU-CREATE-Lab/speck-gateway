@@ -196,7 +196,7 @@
    <target name="dist-speck-applications" depends="dist-speck-core, build-speck-applications" description="builds speck-applications" unless="dist-speck-applications-is-complete">
       <create-dist component.name="speck-applications">
          <jar-manifest-attributes>
-            <attribute name="Main-Class" value="org.bodytrack.applications.speck.SpeckGateway"/>
+            <attribute name="Main-Class" value="org.specksensor.applications.SpeckGateway"/>
          </jar-manifest-attributes>
          <additional-files-to-copy>
             <fileset file="${speck-core.dist.dir}/${speck-core.jar.filename}"/>
