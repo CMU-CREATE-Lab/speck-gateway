@@ -526,7 +526,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AirBotUploader.iml" filepath="$PROJECT_DIR$/AirBotUploader.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SpeckGateway.iml" filepath="$PROJECT_DIR$/SpeckGateway.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
