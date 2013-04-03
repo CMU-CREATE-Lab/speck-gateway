@@ -272,7 +272,7 @@ final class SpeckGatewayCommandLine extends BaseCommandLineApplication
       println("");
       println("c         Connect to the Speck");
       println("u         Specify host and login credentials for uploads");
-      println("s         Print statistics for files downloaded, uploaded, and deleted");
+      println("s         Print statistics for samples downloaded, uploaded, and deleted");
       println("l         Set the logging level for the log file (has no effect on console logging)");
       println("d         Disconnect from the device");
       println("");
