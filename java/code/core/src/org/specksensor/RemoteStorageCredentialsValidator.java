@@ -1,10 +1,9 @@
 package org.specksensor;
 
-import java.io.UnsupportedEncodingException;
 import java.util.regex.Pattern;
 import edu.cmu.ri.createlab.util.net.HostAndPort;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -12,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class RemoteStorageCredentialsValidator
    {
-   private static final Logger LOG = Logger.getLogger(RemoteStorageCredentialsValidator.class);
    private static final Pattern DEVICE_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_]+");
 
    /** Returns <code>true</code> if the given {@link RemoteStorageCredentials} are valid; <code>false</code> otherwise. */
@@ -20,17 +18,10 @@ public final class RemoteStorageCredentialsValidator
       {
       if (remoteStorageCredentials != null && isDeviceNameValid(remoteStorageCredentials.getDeviceName()))
          {
-         try
-            {
-            // Send an empty JSON to test authenticaton
-            final DataSampleSetUploadResponse dataSampleSetUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
-                                                                                                          new StringEntity("{}"));
-            return dataSampleSetUploadResponse.wasSuccessful();
-            }
-         catch (UnsupportedEncodingException e)
-            {
-            LOG.error("RemoteStorageCredentialsValidator.isValid(): UnsupportedEncodingException while trying to create the StringEntity", e);
-            }
+         // Send an empty JSON to test authenticaton
+         final DataSampleSetUploadResponse dataSampleSetUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
+                                                                                                       new StringEntity("{}", ContentType.APPLICATION_JSON));
+         return dataSampleSetUploadResponse.wasSuccessful();
          }
       return false;
       }

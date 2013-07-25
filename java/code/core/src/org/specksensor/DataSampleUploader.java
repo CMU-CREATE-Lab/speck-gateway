@@ -118,7 +118,7 @@ public final class DataSampleUploader
       public void run()
          {
          final DataSampleSetUploadResponse dataSampleSetUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
-                                                                                                       new StringEntity(dataSampleSet.toJson(), ContentType.APPLICATION_OCTET_STREAM));
+                                                                                                       new StringEntity(dataSampleSet.toJson(), ContentType.APPLICATION_JSON));
          // notify listeners
          for (final EventListener listener : eventListeners)
             {
