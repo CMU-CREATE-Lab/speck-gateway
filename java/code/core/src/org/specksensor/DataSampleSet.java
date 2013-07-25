@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  */
 interface DataSampleSet
    {
-   int DEFAULT_SIZE = 200;
+   int DEFAULT_SIZE = 500;
 
    @NotNull
    SortedSet<Speck.DataSample> getDataSamples();
