@@ -58,8 +58,8 @@ final class SpeckGatewayGui
    private final JTextField passwordTextField = new JTextField(30);
    private final JTextField deviceNameTextField = new JTextField(30);
 
-   private final JButton fluxtreamButton = SwingUtils.createButton(RESOURCES.getString("label.begin-uploading"));
-   private final JLabel fluxtreamConnectionStatus = SwingUtils.createLabel(EMPTY_LABEL_TEXT);
+   private final JButton enableUploadsButton = SwingUtils.createButton(RESOURCES.getString("label.begin-uploading"));
+   private final JLabel datastoreServerConnectionStatus = SwingUtils.createLabel(EMPTY_LABEL_TEXT);
 
    private final JLabel statsDownloadsRequested = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
    private final JLabel statsDownloadsSuccessful = SwingUtils.createLabel(STATISTICS_VALUE_ZERO);
@@ -132,10 +132,10 @@ final class SpeckGatewayGui
                         {
                         connectionSpinner.setVisible(true);
                         connectionStatusPanel.setVisible(false);
-                        fluxtreamButton.setVisible(true);
-                        fluxtreamConnectionStatus.setText(EMPTY_LABEL_TEXT);
-                        setFluxtreamTextFieldsEnabled(true);
-                        validateFluxtreamForm();
+                        enableUploadsButton.setVisible(true);
+                        datastoreServerConnectionStatus.setText(EMPTY_LABEL_TEXT);
+                        setDatastoreServerTextFieldsEnabled(true);
+                        validateDatastoreServerForm();
                         resetStatisticsTable();
                         jFrame.pack();
                         jFrame.repaint();
@@ -151,7 +151,7 @@ final class SpeckGatewayGui
       mainPanel.setBackground(Color.WHITE);
 
       final JPanel speckPanel = createSpeckPanel();
-      final JPanel fluxtreamPanel = createFluxtreamPanel();
+      final JPanel datastoreServerPanel = createDatastoreServerPanel();
       final JPanel statisticsPanel = createStatisticsPanel();
 
       final JPanel verticalDivider = new JPanel();
@@ -176,7 +176,7 @@ final class SpeckGatewayGui
                                   .addGap(GAP)
                                   .addComponent(verticalDivider)
                                   .addGap(GAP)
-                                  .addComponent(fluxtreamPanel))
+                                  .addComponent(datastoreServerPanel))
                   .addComponent(horizontalDivider)
                   .addComponent(statisticsPanel));
 
@@ -185,7 +185,7 @@ final class SpeckGatewayGui
                   .addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                   .addComponent(speckPanel)
                                   .addComponent(verticalDivider)
-                                  .addComponent(fluxtreamPanel))
+                                  .addComponent(datastoreServerPanel))
                   .addComponent(horizontalDivider)
                   .addGap(GAP)
                   .addComponent(statisticsPanel));
@@ -274,9 +274,9 @@ final class SpeckGatewayGui
       }
 
    @NotNull
-   private JPanel createFluxtreamPanel()
+   private JPanel createDatastoreServerPanel()
       {
-      final JLabel titleLabel = SwingUtils.createLabel(RESOURCES.getString("label.fluxtream"), GUIConstants.FONT_LARGE);
+      final JLabel titleLabel = SwingUtils.createLabel(RESOURCES.getString("label.datastore-server"), GUIConstants.FONT_LARGE);
 
       final JPanel panel = new JPanel();
       panel.setBackground(Color.WHITE);
@@ -294,7 +294,7 @@ final class SpeckGatewayGui
       final JLabel deviceNameLabel = SwingUtils.createLabel(RESOURCES.getString("label.device-name"));
       final JLabel emptyLabel = SwingUtils.createLabel(EMPTY_LABEL_TEXT);
 
-      fluxtreamConnectionStatus.setBackground(Color.WHITE);
+      datastoreServerConnectionStatus.setBackground(Color.WHITE);
 
       formPanelLayout.setHorizontalGroup(formPanelLayout.createSequentialGroup()
                                                .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -309,7 +309,7 @@ final class SpeckGatewayGui
                                                                .addComponent(usernameTextField)
                                                                .addComponent(passwordTextField)
                                                                .addComponent(deviceNameTextField)
-                                                               .addComponent(fluxtreamButton))
+                                                               .addComponent(enableUploadsButton))
       );
 
       formPanelLayout.setVerticalGroup(formPanelLayout.createSequentialGroup()
@@ -331,14 +331,14 @@ final class SpeckGatewayGui
                                              .addGap(SMALL_GAP)
                                              .addGroup(formPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                                              .addComponent(emptyLabel)
-                                                             .addComponent(fluxtreamButton))
+                                                             .addComponent(enableUploadsButton))
       );
 
       panelLayout.setHorizontalGroup(
             panelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                   .addComponent(titleLabel)
                   .addComponent(formPanel)
-                  .addComponent(fluxtreamConnectionStatus)
+                  .addComponent(datastoreServerConnectionStatus)
       );
       panelLayout.setVerticalGroup(
             panelLayout.createSequentialGroup()
@@ -346,33 +346,33 @@ final class SpeckGatewayGui
                   .addGap(GAP)
                   .addComponent(formPanel)
                   .addGap(20)
-                  .addComponent(fluxtreamConnectionStatus)
+                  .addComponent(datastoreServerConnectionStatus)
                   .addGap(20)
       );
 
-      final KeyAdapter fluxtreamFormValidator =
+      final KeyAdapter datastoreServerFormValidator =
             new KeyAdapter()
             {
             @Override
             public void keyReleased(final KeyEvent keyEvent)
                {
-               validateFluxtreamForm();
+               validateDatastoreServerForm();
                }
             };
-      hostAndPortTextField.addKeyListener(fluxtreamFormValidator);
-      usernameTextField.addKeyListener(fluxtreamFormValidator);
-      passwordTextField.addKeyListener(fluxtreamFormValidator);
-      deviceNameTextField.addKeyListener(fluxtreamFormValidator);
+      hostAndPortTextField.addKeyListener(datastoreServerFormValidator);
+      usernameTextField.addKeyListener(datastoreServerFormValidator);
+      passwordTextField.addKeyListener(datastoreServerFormValidator);
+      deviceNameTextField.addKeyListener(datastoreServerFormValidator);
 
-      fluxtreamButton.addActionListener(
+      enableUploadsButton.addActionListener(
             new AbstractTimeConsumingAction(jFrame)
             {
             /** Runs in the GUI event-dispatching thread before the time-consuming action is executed. */
             @Override
             protected void executeGUIActionBefore()
                {
-               setFluxtreamTextFieldsEnabled(false);
-               fluxtreamButton.setEnabled(false);
+               setDatastoreServerTextFieldsEnabled(false);
+               enableUploadsButton.setEnabled(false);
                }
 
             /**
@@ -404,14 +404,14 @@ final class SpeckGatewayGui
                {
                if (success != null && (Boolean)success)
                   {
-                  fluxtreamButton.setVisible(false);
-                  fluxtreamConnectionStatus.setText(RESOURCES.getString("label.uploading-speck-data-files"));
+                  enableUploadsButton.setVisible(false);
+                  datastoreServerConnectionStatus.setText(RESOURCES.getString("label.uploading-speck-data-files"));
                   }
                else
                   {
-                  setFluxtreamTextFieldsEnabled(true);
-                  fluxtreamButton.setEnabled(true);
-                  fluxtreamConnectionStatus.setText(RESOURCES.getString("label.connection-failed"));
+                  setDatastoreServerTextFieldsEnabled(true);
+                  enableUploadsButton.setEnabled(true);
+                  datastoreServerConnectionStatus.setText(RESOURCES.getString("label.connection-failed"));
                   }
                }
             }
@@ -510,7 +510,7 @@ final class SpeckGatewayGui
       return panel;
       }
 
-   private void setFluxtreamTextFieldsEnabled(final boolean isEnabled)
+   private void setDatastoreServerTextFieldsEnabled(final boolean isEnabled)
       {
       hostAndPortTextField.setEnabled(isEnabled);
       usernameTextField.setEnabled(isEnabled);
@@ -518,7 +518,7 @@ final class SpeckGatewayGui
       deviceNameTextField.setEnabled(isEnabled);
       }
 
-   private void validateFluxtreamForm()
+   private void validateDatastoreServerForm()
       {
       final String hostAndPort = hostAndPortTextField.getText().trim();
       final String username = usernameTextField.getText().trim();
@@ -534,7 +534,7 @@ final class SpeckGatewayGui
 
       hostAndPortTextField.setBackground(hostAndPortTextField.getText().length() <= 0 || isHostAndPortValid ? Color.WHITE : Color.PINK);
       deviceNameTextField.setBackground(deviceName.length() <= 0 || isDeviceNameValid ? Color.WHITE : Color.PINK);
-      fluxtreamButton.setEnabled(isFormValid);
+      enableUploadsButton.setEnabled(isFormValid);
       }
 
    private void resetStatisticsTable()

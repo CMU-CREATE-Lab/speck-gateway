@@ -8,7 +8,8 @@ ABOUT
 -----
 
 The Speck Gateway is an application which downloads data samples from a Speck to the user's computer and optionally
-uploads the data samples to Fluxtream.
+uploads the data samples to a BodyTrack Datastore server such as Fluxtream (https://github.com/fluxtream/fluxtream-app)
+or a Node Datastore Server (https://github.com/BodyTrack/node-datastore-server).
 
 Data samples are stored in two forms: a local database and a CSV file.  By default, the database and CSV will be in a
 subdirectory under the user's home directory, but the location can be overridden (see below for details). The exact path
@@ -151,7 +152,7 @@ RUNNING THE GATEWAY APPLICATION
 There are actually three applications created when you build the binaries:
 
 1) The gateway application which auto-connects to the first Speck it finds, and continually downloads data samples from
-   the device, caches them locally, and then optionally uploads them to a Fluxtream server.
+   the device, caches them locally, and then optionally uploads them to a BodyTrack Datastore server.
 
 2) A command-line version of the gateway application.
 
@@ -178,8 +179,8 @@ To run the Speck Gateway, cd to the java directory and run the following shell (
    speck-gateway-gui.bat
 
 Once the gateway is running, you shouldn't need to do anything.  It will auto-connect to the first Speck it finds and
-begin downloading data samples.  You can optionally enter the host and your login for a Fluxtream server if you wish to
-upload the data samples to Fluxtream.
+begin downloading data samples.  You can optionally enter the host and your login for a BodyTrack Datastore server if
+you wish to upload the data samples.
 
 
 Running the Speck Gateway (Command Line)
