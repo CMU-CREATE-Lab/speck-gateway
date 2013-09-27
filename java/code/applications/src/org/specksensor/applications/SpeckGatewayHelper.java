@@ -9,6 +9,7 @@ import edu.cmu.ri.createlab.device.CreateLabDevicePingFailureEventListener;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.specksensor.ApiSupport;
 import org.specksensor.CommunicationException;
 import org.specksensor.DataSampleDownloader;
 import org.specksensor.DataSampleManager;
@@ -279,7 +280,14 @@ final class SpeckGatewayHelper
                   LOG.debug("SpeckGatewayCommandLine.createFakeSpeck(): " + s);
                   }
 
-               return new FakeSpeck(properties);
+               final String speckId = properties.getProperty("id");
+               if (speckId == null)
+                  {
+                  final String msg = "The 'id' property must be defined in the config file!'";
+                  logError(msg);
+                  throw new IllegalArgumentException(msg);
+                  }
+               return new PropertyFileSpeck(speckId, configFile);
                }
             catch (Exception e)
                {
@@ -295,12 +303,14 @@ final class SpeckGatewayHelper
       return null;
       }
 
-   private static final class FakeSpeck implements Speck
+   private static final class PropertyFileSpeck implements Speck
       {
       private final SpeckConfig speckConfig;
+      private final File configFile;
 
-      private FakeSpeck(@NotNull final Properties properties)
+      private PropertyFileSpeck(@NotNull final String speckId, @NotNull final File configFile)
          {
+         this.configFile = configFile;
          speckConfig =
                new SpeckConfig()
                {
@@ -309,14 +319,27 @@ final class SpeckGatewayHelper
                @Override
                public String getId()
                   {
-                  return properties.getProperty("id", "FakeSpeck");
+                  return speckId;
                   }
 
                /** Returns the Speck's protocol version. */
                @Override
                public int getProtocolVersion()
                   {
-                  return Integer.parseInt(properties.getProperty("version", "1"));
+                  return ApiSupport.DEFAULT_PROTOCOL_VERSION;
+                  }
+
+               @Override
+               public int getLoggingInterval()
+                  {
+                  return ApiSupport.DEFAULT_LOGGING_INTERVAL_SECONDS;
+                  }
+
+               @NotNull
+               @Override
+               public ApiSupport getApiSupport()
+                  {
+                  return ApiSupport.getInstance(ApiSupport.DEFAULT_PROTOCOL_VERSION);
                   }
                };
          }
@@ -357,7 +380,7 @@ final class SpeckGatewayHelper
       @Override
       public String getPortName()
          {
-         return "FakePort";
+         return configFile.getAbsolutePath();
          }
 
       @Override

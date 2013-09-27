@@ -639,25 +639,4 @@ final class DatabaseDataSampleStore implements DataSampleStore
          }
       return false;
       }
-
-   public static void main(final String[] args) throws InitializationException
-      {
-      final DatabaseDataSampleStore store = new DatabaseDataSampleStore(
-            new SpeckConfig()
-            {
-            @NotNull
-            @Override
-            public String getId()
-               {
-               return "FakeSpeck";
-               }
-
-            @Override
-            public int getProtocolVersion()
-               {
-               return 1;
-               }
-            });
-      store.shutdown();
-      }
    }

@@ -6,6 +6,7 @@ import edu.cmu.ri.createlab.util.ByteUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.specksensor.ApiSupport;
 import org.specksensor.SpeckConfig;
 
 /**
@@ -19,6 +20,7 @@ public final class GetSpeckConfigCommandStrategy extends CreateLabHIDReturnValue
    private static final int UNIQUE_ID_STARTING_BYTE_INDEX = 1;
    private static final int UNIQUE_ID_ENDING_BYTE_INDEX = 10;
    private static final int PROTOCOL_VERSION_BYTE_INDEX = 11;
+   private static final int LOGGING_INTERVAL_BYTE_INDEX = 12;
 
    @Override
    protected int getSizeOfExpectedResponse()
@@ -51,7 +53,7 @@ public final class GetSpeckConfigCommandStrategy extends CreateLabHIDReturnValue
                {
                sb.append(ByteUtils.byteToHexString(data[i]));
                }
-            return new SpeckConfigImpl(sb.toString(), data[PROTOCOL_VERSION_BYTE_INDEX]);
+            return new SpeckConfigImpl(sb.toString(), data[PROTOCOL_VERSION_BYTE_INDEX], data[LOGGING_INTERVAL_BYTE_INDEX]);
             }
          }
       LOG.error("GetSpeckConfigCommandStrategy.convertResponse(): Failure!  response = [" + response + "]");
@@ -63,11 +65,17 @@ public final class GetSpeckConfigCommandStrategy extends CreateLabHIDReturnValue
       @NotNull
       private final String id;
       private final int protocolVersion;
+      private final int loggingInterval;
 
-      private SpeckConfigImpl(@NotNull final String id, final int protocolVersion)
+      @NotNull
+      private final ApiSupport apiSupport;
+
+      private SpeckConfigImpl(@NotNull final String id, final int protocolVersion, final int loggingInterval)
          {
          this.id = id;
          this.protocolVersion = protocolVersion;
+         apiSupport = ApiSupport.getInstance(protocolVersion);
+         this.loggingInterval = apiSupport.hasMutableLoggingInterval() ? loggingInterval : ApiSupport.DEFAULT_LOGGING_INTERVAL_SECONDS;
          }
 
       @Override
@@ -84,6 +92,19 @@ public final class GetSpeckConfigCommandStrategy extends CreateLabHIDReturnValue
          }
 
       @Override
+      public int getLoggingInterval()
+         {
+         return loggingInterval;
+         }
+
+      @NotNull
+      @Override
+      public ApiSupport getApiSupport()
+         {
+         return apiSupport;
+         }
+
+      @Override
       public boolean equals(final Object o)
          {
          if (this == o)
@@ -97,7 +118,15 @@ public final class GetSpeckConfigCommandStrategy extends CreateLabHIDReturnValue
 
          final SpeckConfigImpl that = (SpeckConfigImpl)o;
 
+         if (loggingInterval != that.loggingInterval)
+            {
+            return false;
+            }
          if (protocolVersion != that.protocolVersion)
+            {
+            return false;
+            }
+         if (!apiSupport.equals(that.apiSupport))
             {
             return false;
             }
@@ -114,6 +143,8 @@ public final class GetSpeckConfigCommandStrategy extends CreateLabHIDReturnValue
          {
          int result = id.hashCode();
          result = 31 * result + protocolVersion;
+         result = 31 * result + loggingInterval;
+         result = 31 * result + apiSupport.hashCode();
          return result;
          }
 
@@ -123,6 +154,7 @@ public final class GetSpeckConfigCommandStrategy extends CreateLabHIDReturnValue
          final StringBuilder sb = new StringBuilder("SpeckConfig{");
          sb.append("id='").append(id).append('\'');
          sb.append(", protocolVersion=").append(protocolVersion);
+         sb.append(", loggingInterval=").append(loggingInterval);
          sb.append('}');
          return sb.toString();
          }

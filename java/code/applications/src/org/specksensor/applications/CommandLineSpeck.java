@@ -8,6 +8,7 @@ import java.util.Set;
 import edu.cmu.ri.createlab.device.CreateLabDevicePingFailureEventListener;
 import edu.cmu.ri.createlab.util.commandline.BaseCommandLineApplication;
 import org.jetbrains.annotations.Nullable;
+import org.specksensor.ApiSupport;
 import org.specksensor.CommunicationException;
 import org.specksensor.Speck;
 import org.specksensor.SpeckConfig;
@@ -18,6 +19,8 @@ import org.specksensor.SpeckFactory;
  */
 public final class CommandLineSpeck extends BaseCommandLineApplication
    {
+   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
    public static void main(final String[] args)
       {
       new CommandLineSpeck().run();
@@ -492,6 +495,31 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         return String.valueOf(config.getProtocolVersion());
                         }
                      });
+      registerAction("a",
+                     new GetStringAction("Speck API Support")
+                     {
+                     @Override
+                     protected String getString()
+                        {
+                        final SpeckConfig config = device.getSpeckConfig();
+                        final ApiSupport apiSupport = config.getApiSupport();
+                        final StringBuilder s = new StringBuilder(LINE_SEPARATOR);
+                        s.append("   Can mutate logging interval:  ").append(apiSupport.hasMutableLoggingInterval()).append(LINE_SEPARATOR);
+                        s.append("   Can report data sample count: ").append(apiSupport.canGetNumberOfDataSamples()).append(LINE_SEPARATOR);
+                        s.append("   Has temperature sensor:       ").append(apiSupport.hasTemperatureSensor());
+                        return s.toString();
+                        }
+                     });
+      registerAction("n",
+                     new GetStringAction("Speck Logging Interval")
+                     {
+                     @Override
+                     protected String getString()
+                        {
+                        final SpeckConfig config = device.getSpeckConfig();
+                        return String.valueOf(config.getLoggingInterval());
+                        }
+                     });
 
       registerAction(QUIT_COMMAND, quitAction);
       }
@@ -512,6 +540,8 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
       println("");
       println("i         Gets the Speck's unique ID");
       println("v         Gets the Speck's protocol version");
+      println("a         Gets the Speck's API support");
+      println("n         Gets the Speck's logging interval when disconnected (secs)");
       println("");
       println("q         Quit");
       println("");
