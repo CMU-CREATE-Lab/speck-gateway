@@ -93,6 +93,18 @@ public interface Speck extends CreateLabDeviceProxy
     */
    boolean deleteSample(final int sampleTime) throws CommunicationException;
 
+   /**
+    * Returns the number of available data samples.  Throws a {@link CommunicationException} if the number of available
+    * samples could not be read.  Throws an {@link UnsupportedOperationException} if this Speck cannot report the number
+    * of available samples.
+    *
+    * @throws CommunicationException if the number of available samples could not be read.
+    * @throws UnsupportedOperationException if this Speck cannot report the number of available samples.
+    *
+    * @see ApiSupport#canGetNumberOfDataSamples()
+    */
+   int getNumberOfAvailableSamples() throws CommunicationException, UnsupportedOperationException;
+
    /** Returns the {@link SpeckConfig configuration} for this <code>Speck</code>. */
    @NotNull
    SpeckConfig getSpeckConfig();

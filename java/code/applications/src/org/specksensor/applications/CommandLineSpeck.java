@@ -412,6 +412,33 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
             }
          };
 
+   private final Runnable getNumberOfAvailableSamplesAction =
+         new Runnable()
+         {
+         public void run()
+            {
+            if (isConnected())
+               {
+               try
+                  {
+                  println("Number of Available Samples: " + device.getNumberOfAvailableSamples());
+                  }
+               catch (CommunicationException e)
+                  {
+                  println("Failed to read the number of available data samples: " + e);
+                  }
+               catch (UnsupportedOperationException e)
+                  {
+                  println("This Speck does not support reading the number of available samples.");
+                  }
+               }
+            else
+               {
+               println("You must be connected to the Speck first.");
+               }
+            }
+         };
+
    private void printSample(@Nullable final Speck.DataSample dataSample)
       {
       if (dataSample == null || dataSample.isEmpty())
@@ -474,7 +501,7 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
       registerAction("x", deleteDataSampleAction);
       registerAction("w", wipeStorageAction);
       registerAction("w2", wipeStorageAction2);
-
+      registerAction("n", getNumberOfAvailableSamplesAction);
       registerAction("i",
                      new GetStringAction("Speck ID")
                      {
@@ -510,7 +537,7 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         return s.toString();
                         }
                      });
-      registerAction("n",
+      registerAction("l",
                      new GetStringAction("Speck Logging Interval")
                      {
                      @Override
@@ -537,11 +564,12 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
       println("x         Delete a data sample");
       println("w         Wipe Speck's storage by getting and deleting all saved samples");
       println("w2        Wipe Speck's storage by getting (but not deleting) all saved samples");
+      println("n         Gets the number of available samples");
       println("");
       println("i         Gets the Speck's unique ID");
       println("v         Gets the Speck's protocol version");
       println("a         Gets the Speck's API support");
-      println("n         Gets the Speck's logging interval when disconnected (secs)");
+      println("l         Gets the Speck's logging interval when disconnected (secs)");
       println("");
       println("q         Quit");
       println("");

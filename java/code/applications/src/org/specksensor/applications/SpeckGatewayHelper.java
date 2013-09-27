@@ -371,6 +371,12 @@ final class SpeckGatewayHelper
          }
 
       @Override
+      public int getNumberOfAvailableSamples() throws UnsupportedOperationException
+         {
+         throw new UnsupportedOperationException("This fake Speck doesn't support reading the number of available samples");
+         }
+
+      @Override
       @NotNull
       public SpeckConfig getSpeckConfig()
          {

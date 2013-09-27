@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.specksensor.commands.DeleteSampleCommandStrategy;
 import org.specksensor.commands.GetDataSampleCommandStrategy;
+import org.specksensor.commands.GetDataSampleCountCommandStrategy;
 import org.specksensor.commands.GetSpeckConfigCommandStrategy;
 
 /**
@@ -82,8 +83,10 @@ class SpeckProxy implements Speck
    private final Collection<CreateLabDevicePingFailureEventListener> createLabDevicePingFailureEventListeners = new HashSet<CreateLabDevicePingFailureEventListener>();
    private final GetDataSampleCommandStrategy getCurrentSampleCommandStrategy = GetDataSampleCommandStrategy.createGetCurrentSampleCommandStrategy();
    private final GetDataSampleCommandStrategy getHistoricSampleCommandStrategy = GetDataSampleCommandStrategy.createGetHistoricSampleCommandStrategy();
+   private final GetDataSampleCountCommandStrategy getDataSampleCountCommandStrategy = new GetDataSampleCountCommandStrategy();
    private final HIDDeviceReturnValueCommandExecutor<DataSample> getSampleCommandExecutor;
    private final HIDDeviceReturnValueCommandExecutor<Boolean> deleteSampleCommandExecutor;
+   private final HIDDeviceReturnValueCommandExecutor<Integer> getDataSampleCountCommandExecutor;
 
    @NotNull
    private final SpeckConfig speckConfig;
@@ -104,6 +107,7 @@ class SpeckProxy implements Speck
 
       getSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<DataSample>(commandQueue, commandExecutionFailureHandler);
       deleteSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Boolean>(commandQueue, commandExecutionFailureHandler);
+      getDataSampleCountCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Integer>(commandQueue, commandExecutionFailureHandler);
       final HIDDeviceReturnValueCommandExecutor<SpeckConfig> hidDeviceReturnValueCommandExecutor = new HIDDeviceReturnValueCommandExecutor<SpeckConfig>(commandQueue, commandExecutionFailureHandler);
 
       // we cache all the config values since the chances of the user reconfiguring the device while the program is
@@ -231,6 +235,21 @@ class SpeckProxy implements Speck
          throw new CommunicationException("Failed to delete a sample [" + sampleTime + "] from the Speck");
          }
       return success;
+      }
+
+   @Override
+   public int getNumberOfAvailableSamples() throws CommunicationException
+      {
+      if (speckConfig.getApiSupport().canGetNumberOfDataSamples())
+         {
+         final Integer count = getDataSampleCountCommandExecutor.execute(getDataSampleCountCommandStrategy);
+         if (count == null)
+            {
+            throw new CommunicationException("Failed to read the number of available samples from the Speck");
+            }
+         return count;
+         }
+      throw new UnsupportedOperationException("This Speck cannot report the number of available samples.");
       }
 
    @Override
