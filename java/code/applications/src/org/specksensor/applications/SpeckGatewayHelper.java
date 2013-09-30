@@ -19,6 +19,7 @@ import org.specksensor.RemoteStorageCredentials;
 import org.specksensor.RemoteStorageCredentialsValidator;
 import org.specksensor.Speck;
 import org.specksensor.SpeckConfig;
+import org.specksensor.SpeckConstants;
 import org.specksensor.SpeckFactory;
 
 /**
@@ -332,7 +333,7 @@ final class SpeckGatewayHelper
                @Override
                public int getLoggingInterval()
                   {
-                  return ApiSupport.DEFAULT_LOGGING_INTERVAL_SECONDS;
+                  return SpeckConstants.LoggingInterval.DEFAULT;
                   }
 
                @NotNull
@@ -374,6 +375,13 @@ final class SpeckGatewayHelper
       public int getNumberOfAvailableSamples() throws UnsupportedOperationException
          {
          throw new UnsupportedOperationException("This fake Speck doesn't support reading the number of available samples");
+         }
+
+      @Override
+      @NotNull
+      public SpeckConfig setLoggingInterval(final int loggingIntervalInSeconds) throws UnsupportedOperationException
+         {
+         throw new UnsupportedOperationException("This fake Speck doesn't support setting of the logging interval");
          }
 
       @Override

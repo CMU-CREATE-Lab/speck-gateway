@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import org.specksensor.commands.DeleteSampleCommandStrategy;
 import org.specksensor.commands.GetDataSampleCommandStrategy;
 import org.specksensor.commands.GetDataSampleCountCommandStrategy;
-import org.specksensor.commands.GetSpeckConfigCommandStrategy;
+import org.specksensor.commands.ReadWriteSpeckConfigCommandStrategy;
 
 /**
  * @author Chris Bartley (bartley@cmu.edu)
@@ -84,12 +84,13 @@ class SpeckProxy implements Speck
    private final GetDataSampleCommandStrategy getCurrentSampleCommandStrategy = GetDataSampleCommandStrategy.createGetCurrentSampleCommandStrategy();
    private final GetDataSampleCommandStrategy getHistoricSampleCommandStrategy = GetDataSampleCommandStrategy.createGetHistoricSampleCommandStrategy();
    private final GetDataSampleCountCommandStrategy getDataSampleCountCommandStrategy = new GetDataSampleCountCommandStrategy();
+   private final HIDDeviceReturnValueCommandExecutor<SpeckConfig> speckConfigReturnValueCommandExecutor;
    private final HIDDeviceReturnValueCommandExecutor<DataSample> getSampleCommandExecutor;
-   private final HIDDeviceReturnValueCommandExecutor<Boolean> deleteSampleCommandExecutor;
-   private final HIDDeviceReturnValueCommandExecutor<Integer> getDataSampleCountCommandExecutor;
+   private final HIDDeviceReturnValueCommandExecutor<Boolean> booleanReturnValueCommandExecutor;
+   private final HIDDeviceReturnValueCommandExecutor<Integer> integerReturnValueCommandExecutor;
 
    @NotNull
-   private final SpeckConfig speckConfig;
+   private SpeckConfig speckConfig;
 
    private SpeckProxy(final HIDCommandExecutionQueue commandQueue, final HIDDevice hidDevice) throws InitializationException
       {
@@ -106,33 +107,34 @@ class SpeckProxy implements Speck
             };
 
       getSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<DataSample>(commandQueue, commandExecutionFailureHandler);
-      deleteSampleCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Boolean>(commandQueue, commandExecutionFailureHandler);
-      getDataSampleCountCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Integer>(commandQueue, commandExecutionFailureHandler);
-      final HIDDeviceReturnValueCommandExecutor<SpeckConfig> hidDeviceReturnValueCommandExecutor = new HIDDeviceReturnValueCommandExecutor<SpeckConfig>(commandQueue, commandExecutionFailureHandler);
+      booleanReturnValueCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Boolean>(commandQueue, commandExecutionFailureHandler);
+      integerReturnValueCommandExecutor = new HIDDeviceReturnValueCommandExecutor<Integer>(commandQueue, commandExecutionFailureHandler);
+      speckConfigReturnValueCommandExecutor = new HIDDeviceReturnValueCommandExecutor<SpeckConfig>(commandQueue, commandExecutionFailureHandler);
 
-      // we cache all the config values since the chances of the user reconfiguring the device while the program is
-      // running is low and isn't supported by the devices anyway
+      // we cache the config since writes are much less common than reads
       final SpeckConfig tempSpeckConfig =
             new RetryingActionExecutor<SpeckConfig>()
             {
+            private final ReadWriteSpeckConfigCommandStrategy getSpeckConfigCommandStrategy = ReadWriteSpeckConfigCommandStrategy.createReadableSpeckConfigCommandStrategy();
+
             @Override
             @Nullable
             protected SpeckConfig executionWorkhorse(final int attemptNumber, final int maxNumberOfAttempts)
                {
-               final String msg = "Reading device ID from Speck (attempt " + attemptNumber + " of " + maxNumberOfAttempts + ")...";
+               final String msg = "Reading Speck config (attempt " + attemptNumber + " of " + maxNumberOfAttempts + ")...";
                CONSOLE_LOG.info(msg);
                if (LOG.isInfoEnabled())
                   {
                   LOG.info("SpeckProxy.executionWorkhorse(): " + msg);
                   }
-               LOG.debug("SpeckProxy.executionWorkhorse(): Reading ID...");
-               return hidDeviceReturnValueCommandExecutor.execute(new GetSpeckConfigCommandStrategy());
+               LOG.debug("SpeckProxy.executionWorkhorse(): Reading config...");
+               return speckConfigReturnValueCommandExecutor.execute(getSpeckConfigCommandStrategy);
                }
             }.execute();
 
       if (tempSpeckConfig == null)
          {
-         final String message = "Failed to read unique ID from the Speck!";
+         final String message = "Failed to read the Speck config!";
          LOG.error(message);
          CONSOLE_LOG.error(message);
          throw new InitializationException(message);
@@ -140,7 +142,7 @@ class SpeckProxy implements Speck
       else
          {
          speckConfig = tempSpeckConfig;
-         final String message = "Successfully read unique ID from the Speck.";
+         final String message = "Successfully read the Speck config.";
          LOG.info(message);
          CONSOLE_LOG.info(message);
          }
@@ -229,7 +231,7 @@ class SpeckProxy implements Speck
    @Override
    public boolean deleteSample(final int sampleTime) throws CommunicationException
       {
-      final Boolean success = deleteSampleCommandExecutor.execute(new DeleteSampleCommandStrategy(sampleTime));
+      final Boolean success = booleanReturnValueCommandExecutor.execute(new DeleteSampleCommandStrategy(sampleTime));
       if (success == null)
          {
          throw new CommunicationException("Failed to delete a sample [" + sampleTime + "] from the Speck");
@@ -242,7 +244,7 @@ class SpeckProxy implements Speck
       {
       if (speckConfig.getApiSupport().canGetNumberOfDataSamples())
          {
-         final Integer count = getDataSampleCountCommandExecutor.execute(getDataSampleCountCommandStrategy);
+         final Integer count = integerReturnValueCommandExecutor.execute(getDataSampleCountCommandStrategy);
          if (count == null)
             {
             throw new CommunicationException("Failed to read the number of available samples from the Speck");
@@ -250,6 +252,22 @@ class SpeckProxy implements Speck
          return count;
          }
       throw new UnsupportedOperationException("This Speck cannot report the number of available samples.");
+      }
+
+   @NotNull
+   public SpeckConfig setLoggingInterval(final int loggingIntervalInSeconds) throws CommunicationException, UnsupportedOperationException
+      {
+      if (speckConfig.getApiSupport().canMutateLoggingInterval())
+         {
+         final SpeckConfig newConfig = speckConfigReturnValueCommandExecutor.execute(ReadWriteSpeckConfigCommandStrategy.createWriteableSpeckConfigCommandStrategy(loggingIntervalInSeconds));
+         if (newConfig != null)
+            {
+            speckConfig = newConfig;
+            return speckConfig;
+            }
+         throw new CommunicationException("Failed to set the Specks's logging interval");
+         }
+      throw new UnsupportedOperationException("The logging interval for this Speck cannot be modified.");
       }
 
    @Override

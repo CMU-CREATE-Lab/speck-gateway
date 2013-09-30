@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 public final class ApiSupport
    {
    public static final int DEFAULT_PROTOCOL_VERSION = 1;
-   public static final int DEFAULT_LOGGING_INTERVAL_SECONDS = 1;
 
    private static final Map<Integer, ApiSupport> INSTANCES = new HashMap<Integer, ApiSupport>(2);
 
@@ -24,7 +23,7 @@ public final class ApiSupport
       {
       INSTANCES.put(1, new ApiSupport(false, false, true));
       INSTANCES.put(2, new ApiSupport(true, true, false));
-      DEFAULT = INSTANCES.get(1);
+      DEFAULT = INSTANCES.get(DEFAULT_PROTOCOL_VERSION);
       }
 
    /**
@@ -48,21 +47,21 @@ public final class ApiSupport
       return INSTANCES.containsKey(versionNumber);
       }
 
-   private boolean hasMutableLoggingInterval;
+   private boolean canMutateLoggingInterval;
    private boolean canGetNumberOfDataSamples;
    private boolean hasTemperatureSensor;
 
    // private to prevent instantiation
-   private ApiSupport(final boolean hasMutableLoggingInterval, final boolean canGetNumberOfDataSamples, final boolean hasTemperatureSensor)
+   private ApiSupport(final boolean canMutateLoggingInterval, final boolean canGetNumberOfDataSamples, final boolean hasTemperatureSensor)
       {
-      this.hasMutableLoggingInterval = hasMutableLoggingInterval;
+      this.canMutateLoggingInterval = canMutateLoggingInterval;
       this.canGetNumberOfDataSamples = canGetNumberOfDataSamples;
       this.hasTemperatureSensor = hasTemperatureSensor;
       }
 
-   public boolean hasMutableLoggingInterval()
+   public boolean canMutateLoggingInterval()
       {
-      return hasMutableLoggingInterval;
+      return canMutateLoggingInterval;
       }
 
    public boolean canGetNumberOfDataSamples()

@@ -14,6 +14,23 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class SpeckConstants
    {
+   public static final class LoggingInterval
+      {
+      /** Default logging interval in seconds. */
+      public static final int DEFAULT = 1;
+
+      /** Minimum logging interval in seconds. */
+      public static final int MIN = 1;
+
+      /** Maximum logging interval in seconds. */
+      public static final int MAX = 255;
+
+      private LoggingInterval()
+         {
+         // private to prevent instantiation
+         }
+      }
+
    public static final class UsbHidConfiguration
       {
       public static final short USB_VENDOR_ID = 0x2354;

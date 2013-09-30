@@ -12,6 +12,7 @@ import org.specksensor.ApiSupport;
 import org.specksensor.CommunicationException;
 import org.specksensor.Speck;
 import org.specksensor.SpeckConfig;
+import org.specksensor.SpeckConstants;
 import org.specksensor.SpeckFactory;
 
 /**
@@ -439,6 +440,53 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
             }
          };
 
+   private final Runnable setLoggingIntervalAction =
+         new Runnable()
+         {
+         public void run()
+            {
+            if (isConnected())
+               {
+               if (device.getSpeckConfig().getApiSupport().canMutateLoggingInterval())
+                  {
+                  final String loggingIntervalStr = readString("Logging interval when disconnected [" + SpeckConstants.LoggingInterval.MIN + "," + SpeckConstants.LoggingInterval.MAX + "] (secs): ");
+                  if (loggingIntervalStr == null || loggingIntervalStr.length() <= 0)
+                     {
+                     println("Invalid logging interval");
+                     return;
+                     }
+
+                  try
+                     {
+                     final int loggingIntervalInSeconds = Integer.parseInt(loggingIntervalStr);
+                     try
+                        {
+                        final SpeckConfig newConfig = device.setLoggingInterval(loggingIntervalInSeconds);
+                        println("The logging interval is now set to " + newConfig.getLoggingInterval() + " second(s)");
+                        }
+                     catch (CommunicationException e)
+                        {
+                        println("Failed to set the logging interval: " + e);
+                        }
+                     }
+                  catch (NumberFormatException ignored)
+                     {
+                     println("Invalid logging interval");
+                     }
+                  }
+               else
+                  {
+                  println("Sorry, this Speck does not support changing of the logging interval");
+                  }
+               }
+            else
+               {
+               println("You must be connected to the Speck first.");
+               }
+            }
+         };
+
+
    private void printSample(@Nullable final Speck.DataSample dataSample)
       {
       if (dataSample == null || dataSample.isEmpty())
@@ -531,7 +579,7 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         final SpeckConfig config = device.getSpeckConfig();
                         final ApiSupport apiSupport = config.getApiSupport();
                         final StringBuilder s = new StringBuilder(LINE_SEPARATOR);
-                        s.append("   Can mutate logging interval:  ").append(apiSupport.hasMutableLoggingInterval()).append(LINE_SEPARATOR);
+                        s.append("   Can mutate logging interval:  ").append(apiSupport.canMutateLoggingInterval()).append(LINE_SEPARATOR);
                         s.append("   Can report data sample count: ").append(apiSupport.canGetNumberOfDataSamples()).append(LINE_SEPARATOR);
                         s.append("   Has temperature sensor:       ").append(apiSupport.hasTemperatureSensor());
                         return s.toString();
@@ -547,6 +595,7 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         return String.valueOf(config.getLoggingInterval());
                         }
                      });
+      registerAction("L", setLoggingIntervalAction);
 
       registerAction(QUIT_COMMAND, quitAction);
       }
@@ -570,6 +619,7 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
       println("v         Gets the Speck's protocol version");
       println("a         Gets the Speck's API support");
       println("l         Gets the Speck's logging interval when disconnected (secs)");
+      println("L         Sets the Speck's logging interval when disconnected (secs)");
       println("");
       println("q         Quit");
       println("");

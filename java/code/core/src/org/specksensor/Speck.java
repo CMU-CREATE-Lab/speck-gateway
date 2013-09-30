@@ -95,15 +95,30 @@ public interface Speck extends CreateLabDeviceProxy
 
    /**
     * Returns the number of available data samples.  Throws a {@link CommunicationException} if the number of available
-    * samples could not be read.  Throws an {@link UnsupportedOperationException} if this Speck cannot report the number
-    * of available samples.
+    * samples could not be read due to an error.  Throws an {@link UnsupportedOperationException} if this Speck cannot
+    * report the number of available samples.
     *
-    * @throws CommunicationException if the number of available samples could not be read.
+    * @throws CommunicationException if the number of available samples could not be read due to an error.
     * @throws UnsupportedOperationException if this Speck cannot report the number of available samples.
     *
     * @see ApiSupport#canGetNumberOfDataSamples()
     */
    int getNumberOfAvailableSamples() throws CommunicationException, UnsupportedOperationException;
+
+   /**
+    * Sets the logging interval to the given interval, clamped to the range
+    * [{@link SpeckConstants.LoggingInterval#MIN}, {@link SpeckConstants.LoggingInterval#MAX}]. Returns the new
+    * {@link SpeckConfig} upon success, throws an exception otherwise.  Throws a {@link CommunicationException} if the
+    * logging interval could not be set due to an error.  Throws an {@link UnsupportedOperationException} if this Speck
+    * does not support setting of the logging interval.
+    *
+    * @throws CommunicationException if the logging intervalcould not be set due to an error.
+    * @throws UnsupportedOperationException if this Speck does not support setting of the logging interval.
+    *
+    * @see ApiSupport#canMutateLoggingInterval()
+    */
+   @NotNull
+   SpeckConfig setLoggingInterval(final int loggingIntervalInSeconds) throws CommunicationException, UnsupportedOperationException;
 
    /** Returns the {@link SpeckConfig configuration} for this <code>Speck</code>. */
    @NotNull
