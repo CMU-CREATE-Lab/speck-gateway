@@ -85,9 +85,6 @@ final class SpeckGatewayHelper
 
             // notify listener of the ping failure
             eventListener.handlePingFailureEvent();
-
-            logInfo("Now attempting to reconnect to the device...");
-            scanAndConnect();
             }
          };
 
@@ -107,7 +104,7 @@ final class SpeckGatewayHelper
       return device != null;
       }
 
-   public void scanAndConnect()
+   public Speck scanAndConnect()
       {
       if (isConnected())
          {
@@ -169,6 +166,8 @@ final class SpeckGatewayHelper
             eventListener.handleConnectionEvent(speckConfig, device.getPortName());
             }
          }
+
+      return device;
       }
 
    public boolean isDownloadDisabled()
@@ -183,26 +182,33 @@ final class SpeckGatewayHelper
 
    public boolean validateAndSetDataStorageCredentials(@NotNull final RemoteStorageCredentials remoteStorageCredentials)
       {
-      if (device != null && !areDataStorageCredentialsSet())
+      if (device != null)
          {
-         // now test the credentials
-         logInfo("Validating host and login credentials...");
-         if (RemoteStorageCredentialsValidator.isValid(remoteStorageCredentials))
+         if (!areDataStorageCredentialsSet())
             {
-            logInfo("Host and login credentials validated successfully!!");
-
-            this.remoteStorageCredentials = remoteStorageCredentials;
-            if (dataSampleManager != null && !dataSampleManager.setDataSampleUploader(new DataSampleUploader(device.getSpeckConfig(), remoteStorageCredentials)))
+            // now test the credentials
+            logInfo("Validating host and login credentials...");
+            if (RemoteStorageCredentialsValidator.isValid(remoteStorageCredentials))
                {
-               logError("Failed to set the DataSampleUploader");
-               return false;
+               logInfo("Host and login credentials validated successfully!!");
+
+               this.remoteStorageCredentials = remoteStorageCredentials;
+               if (dataSampleManager != null && !dataSampleManager.setDataSampleUploader(new DataSampleUploader(device.getSpeckConfig(), remoteStorageCredentials)))
+                  {
+                  logError("Failed to set the DataSampleUploader");
+                  return false;
+                  }
+               return true;
                }
-            return true;
+            else
+               {
+               logInfo("Invalid host and/or login credentials.");
+               }
             }
-         else
-            {
-            logInfo("Invalid host and/or login credentials.");
-            }
+         }
+      else
+         {
+         logInfo("You must be connected to a Speck before setting the data storage login credentials.");
          }
 
       return false;

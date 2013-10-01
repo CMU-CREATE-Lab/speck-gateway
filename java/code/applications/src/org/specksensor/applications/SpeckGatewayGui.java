@@ -3,6 +3,7 @@ package org.specksensor.applications;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.LayoutManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import edu.cmu.ri.createlab.device.connectivity.BaseCreateLabDeviceConnectivityManager;
 import edu.cmu.ri.createlab.userinterface.GUIConstants;
 import edu.cmu.ri.createlab.userinterface.component.Spinner;
 import edu.cmu.ri.createlab.userinterface.util.AbstractTimeConsumingAction;
@@ -27,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import org.specksensor.DataSampleManager;
 import org.specksensor.RemoteStorageCredentialsImpl;
 import org.specksensor.RemoteStorageCredentialsValidator;
+import org.specksensor.Speck;
 import org.specksensor.SpeckConfig;
 
 /**
@@ -45,6 +48,9 @@ final class SpeckGatewayGui
 
    private final Spinner connectionSpinner = new Spinner(RESOURCES.getString("label.spinner"), GUIConstants.FONT_NORMAL);
    private final JPanel connectionStatusPanel = new JPanel();
+   private final JPanel speckPanel;
+   private final JPanel datastoreServerPanel;
+   private final JPanel statisticsPanel;
 
    @NotNull
    private final SpeckGatewayHelper helper;
@@ -97,6 +103,27 @@ final class SpeckGatewayGui
       statsCategoryToLabelMap.put(DataSampleManager.Statistics.Category.SAMPLE_UPLOADS_FAILED, statsSampleUploadsFailed);
 
       this.jFrame = jFrame;
+      jFrame.setTitle(SpeckGatewayHelper.APPLICATION_NAME_AND_VERSION_NUMBER);
+
+      speckPanel = createSpeckPanel();
+      datastoreServerPanel = createDatastoreServerPanel();
+      statisticsPanel = createStatisticsPanel();
+
+      final JPanel mainPanel = new JPanel();
+      mainPanel.setBackground(Color.WHITE);
+      mainPanel.setBorder(BorderFactory.createEmptyBorder(GAP, GAP, GAP, GAP));
+      mainPanel.setLayout(createLayoutForWhenDisconnected(mainPanel));
+
+      connectionSpinner.setVisible(true);
+      connectionStatusPanel.setVisible(false);
+
+      // add the main panel to the frame, pack, paint, center on the screen, and make it visible
+      jFrame.add(mainPanel);
+      jFrame.pack();
+      jFrame.repaint();
+      jFrame.setLocationRelativeTo(null);    // center the window on the screen
+      jFrame.setVisible(true);
+
       helper = new SpeckGatewayHelper(
             new SpeckGatewayHelper.EventListener()
             {
@@ -111,6 +138,8 @@ final class SpeckGatewayGui
                         {
                         connectionSpinner.setVisible(false);
                         connectionStatusPanel.setVisible(true);
+                        mainPanel.removeAll();
+                        mainPanel.setLayout(createLayoutForWhenConnected(mainPanel));
                         connectionStatusLabelSpeckId.setText(speckConfig.getId());
                         connectionStatusLabelPortName.setText(portName);
                         helper.addStatisticsListener(statisticsListener);
@@ -132,6 +161,8 @@ final class SpeckGatewayGui
                         {
                         connectionSpinner.setVisible(true);
                         connectionStatusPanel.setVisible(false);
+                        mainPanel.removeAll();
+                        mainPanel.setLayout(createLayoutForWhenDisconnected(mainPanel));
                         enableUploadsButton.setVisible(true);
                         datastoreServerConnectionStatus.setText(EMPTY_LABEL_TEXT);
                         setDatastoreServerTextFieldsEnabled(true);
@@ -140,19 +171,47 @@ final class SpeckGatewayGui
                         jFrame.pack();
                         jFrame.repaint();
                         jFrame.setLocationRelativeTo(null);    // center the window on the screen
+
+                        // try to reconnect
+                        doBackgroundScanAndConnect();
                         }
                      });
                }
             });
 
-      jFrame.setTitle(SpeckGatewayHelper.APPLICATION_NAME_AND_VERSION_NUMBER);
+      doBackgroundScanAndConnect();
+      }
 
-      final JPanel mainPanel = new JPanel();
-      mainPanel.setBackground(Color.WHITE);
+   private void doBackgroundScanAndConnect()
+      {
+      // Kick off a connection attempt to the Speck
+      final SwingWorker sw =
+            new SwingWorker<Object, Object>()
+            {
+            @Nullable
+            @Override
+            protected Object doInBackground() throws Exception
+               {
+               final BaseCreateLabDeviceConnectivityManager<Speck> speckConnectivityManager =
+                     new BaseCreateLabDeviceConnectivityManager<Speck>()
+                     {
+                     @Override
+                     protected Speck scanForDeviceAndCreateProxy()
+                        {
+                        return helper.scanAndConnect();
+                        }
+                     };
+               speckConnectivityManager.connect();
+               return null;
+               }
+            };
+      sw.execute();
+      }
 
-      final JPanel speckPanel = createSpeckPanel();
-      final JPanel datastoreServerPanel = createDatastoreServerPanel();
-      final JPanel statisticsPanel = createStatisticsPanel();
+   private LayoutManager createLayoutForWhenConnected(@NotNull final JPanel panel)
+      {
+      datastoreServerPanel.setVisible(true);
+      statisticsPanel.setVisible(true);
 
       final JPanel verticalDivider = new JPanel();
       verticalDivider.setBackground(Color.GRAY);
@@ -165,13 +224,10 @@ final class SpeckGatewayGui
       horizontalDivider.setMaximumSize(new Dimension(4000, 1));
 
       // layout the various panels
-      final GroupLayout mainPanelLayout = new GroupLayout(mainPanel);
-      mainPanel.setLayout(mainPanelLayout);
-      mainPanel.setBorder(BorderFactory.createEmptyBorder(GAP, GAP, GAP, GAP));
-
-      mainPanelLayout.setHorizontalGroup(
-            mainPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                  .addGroup(mainPanelLayout.createSequentialGroup()
+      final GroupLayout layout = new GroupLayout(panel);
+      layout.setHorizontalGroup(
+            layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                  .addGroup(layout.createSequentialGroup()
                                   .addComponent(speckPanel)
                                   .addGap(GAP)
                                   .addComponent(verticalDivider)
@@ -180,9 +236,9 @@ final class SpeckGatewayGui
                   .addComponent(horizontalDivider)
                   .addComponent(statisticsPanel));
 
-      mainPanelLayout.setVerticalGroup(
-            mainPanelLayout.createSequentialGroup()
-                  .addGroup(mainPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+      layout.setVerticalGroup(
+            layout.createSequentialGroup()
+                  .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                   .addComponent(speckPanel)
                                   .addComponent(verticalDivider)
                                   .addComponent(datastoreServerPanel))
@@ -190,29 +246,23 @@ final class SpeckGatewayGui
                   .addGap(GAP)
                   .addComponent(statisticsPanel));
 
-      // add the main panel to the frame, pack, paint, center on the screen, and make it visible
-      jFrame.add(mainPanel);
-      jFrame.pack();
-      jFrame.repaint();
-      jFrame.setLocationRelativeTo(null);    // center the window on the screen
-      jFrame.setVisible(true);
+      return layout;
+      }
 
-      connectionSpinner.setVisible(true);
-      connectionStatusPanel.setVisible(false);
+   private LayoutManager createLayoutForWhenDisconnected(@NotNull final JPanel panel)
+      {
+      datastoreServerPanel.setVisible(false);
+      statisticsPanel.setVisible(false);
 
-      // Kick off a connection attempt to the Speck
-      final SwingWorker sw =
-            new SwingWorker<Object, Object>()
-            {
-            @Nullable
-            @Override
-            protected Object doInBackground() throws Exception
-               {
-               helper.scanAndConnect();
-               return null;
-               }
-            };
-      sw.execute();
+      final GroupLayout layout = new GroupLayout(panel);
+      layout.setHorizontalGroup(
+            layout.createSequentialGroup()
+                  .addComponent(speckPanel));
+      layout.setVerticalGroup(
+            layout.createSequentialGroup()
+                  .addComponent(speckPanel));
+
+      return layout;
       }
 
    public void disconnect()

@@ -131,83 +131,97 @@ final class SpeckGatewayCommandLine extends BaseCommandLineApplication
          {
          public void run()
             {
-            if (helper.areDataStorageCredentialsSet())
+            if (helper.isConnected())
                {
-               println("The host and login details can only be defined once per Speck connection.");
-               }
-            else
-               {
-               final String hostNameAndPortStr = readString("Host name (and optional port, colon delimited): ");
-
-               if (isNotNullAndNotEmpty(hostNameAndPortStr))
+               if (helper.areDataStorageCredentialsSet())
                   {
-                  final String hostName;
-                  final String hostPortStr;
-                  if (hostNameAndPortStr.contains(":"))
-                     {
-                     final String[] hostNameAndPort = hostNameAndPortStr.split(":");
-                     hostName = hostNameAndPort[0].trim();
-                     hostPortStr = hostNameAndPort[1].trim();
-                     }
-                  else
-                     {
-                     hostName = hostNameAndPortStr.trim();
-                     hostPortStr = "80";
-                     }
+                  println("The host and login credentials can only be defined once per Speck connection.");
+                  }
+               else
+                  {
+                  final String hostNameAndPortStr = readString("Host name (and optional port, colon delimited): ");
 
-                  int hostPort = -1;
-                  try
+                  if (isNotNullAndNotEmpty(hostNameAndPortStr))
                      {
-                     hostPort = Integer.parseInt(hostPortStr, 10);
-                     }
-                  catch (NumberFormatException ignored)
-                     {
-                     LOG.error("NumberFormatException while trying to convert port [" + hostPortStr + "] to an integer");
-                     }
-
-                  if (hostName.length() <= 0 || hostPort <= 0)
-                     {
-                     println("Invalid host name and/or port.");
-                     }
-                  else
-                     {
-                     final String usernameStr = readString("Username: ");
-                     if (isNotNullAndNotEmpty(usernameStr))
+                     final String hostName;
+                     final String hostPortStr;
+                     if (hostNameAndPortStr.contains(":"))
                         {
-                        final String username = usernameStr.trim();
+                        final String[] hostNameAndPort = hostNameAndPortStr.split(":");
+                        hostName = hostNameAndPort[0].trim();
+                        hostPortStr = hostNameAndPort[1].trim();
+                        }
+                     else
+                        {
+                        hostName = hostNameAndPortStr.trim();
+                        hostPortStr = "80";
+                        }
 
-                        final String passwordStr = readString("Password: ");
-                        if (isNotNullAndNotEmpty(passwordStr))
+                     int hostPort = -1;
+                     try
+                        {
+                        hostPort = Integer.parseInt(hostPortStr, 10);
+                        }
+                     catch (NumberFormatException ignored)
+                        {
+                        LOG.error("NumberFormatException while trying to convert port [" + hostPortStr + "] to an integer");
+                        }
+
+                     if (hostName.length() <= 0 || hostPort <= 0)
+                        {
+                        println("Invalid host name and/or port.");
+                        }
+                     else
+                        {
+                        final String usernameStr = readString("Username: ");
+                        if (isNotNullAndNotEmpty(usernameStr))
                            {
-                           final String password = passwordStr.trim();
+                           final String username = usernameStr.trim();
 
-                           final String deviceNameStr = readString("Device Name: ");
-                           if (isNotNullAndNotEmpty(deviceNameStr))
+                           final String passwordStr = readString("Password: ");
+                           if (isNotNullAndNotEmpty(passwordStr))
                               {
-                              final String deviceName = deviceNameStr.trim();
-                              final RemoteStorageCredentials remoteStorageCredentials = new RemoteStorageCredentialsImpl(hostName, hostPort, username, password, deviceName);
-                              helper.validateAndSetDataStorageCredentials(remoteStorageCredentials);
+                              final String password = passwordStr.trim();
+
+                              final String deviceNameStr = readString("Device Name: ");
+                              if (isNotNullAndNotEmpty(deviceNameStr))
+                                 {
+                                 final String deviceName = deviceNameStr.trim();
+                                 final RemoteStorageCredentials remoteStorageCredentials = new RemoteStorageCredentialsImpl(hostName, hostPort, username, password, deviceName);
+                                 if (helper.validateAndSetDataStorageCredentials(remoteStorageCredentials))
+                                    {
+                                    println("Login credentials set successfully.");
+                                    }
+                                 else
+                                    {
+                                    println("Failed to set login credentials.");
+                                    }
+                                 }
+                              else
+                                 {
+                                 println("Invalid device name.");
+                                 }
                               }
                            else
                               {
-                              println("Invalid device name.");
+                              println("Invalid password.");
                               }
                            }
                         else
                            {
-                           println("Invalid password.");
+                           println("Invalid username.");
                            }
                         }
-                     else
-                        {
-                        println("Invalid username.");
-                        }
+                     }
+                  else
+                     {
+                     println("Invalid host name and port.");
                      }
                   }
-               else
-                  {
-                  println("Invalid host name and port.");
-                  }
+               }
+            else
+               {
+               logInfo("You must be connected to a Speck before setting the data storage login credentials.");
                }
             }
          };
