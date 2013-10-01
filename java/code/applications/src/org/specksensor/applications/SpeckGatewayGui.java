@@ -140,8 +140,10 @@ final class SpeckGatewayGui
                         connectionStatusPanel.setVisible(true);
                         mainPanel.removeAll();
                         mainPanel.setLayout(createLayoutForWhenConnected(mainPanel));
+                        deviceNameTextField.setText("Speck" + speckConfig.getId());
                         connectionStatusLabelSpeckId.setText(speckConfig.getId());
                         connectionStatusLabelPortName.setText(portName);
+                        validateDatastoreServerForm();
                         helper.addStatisticsListener(statisticsListener);
                         jFrame.pack();
                         jFrame.repaint();
