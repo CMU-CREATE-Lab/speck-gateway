@@ -1,7 +1,9 @@
 package org.specksensor.commands;
 
+import java.nio.ByteBuffer;
 import edu.cmu.ri.createlab.usb.hid.CreateLabHIDReturnValueCommandStrategy;
 import edu.cmu.ri.createlab.usb.hid.HIDCommandResponse;
+import edu.cmu.ri.createlab.util.ByteUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.specksensor.DataSample;
@@ -60,7 +62,12 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
 
          if (CommandStrategyHelper.isResponseDataValid(data))
             {
-            return new DataSample(data);
+            return new DataSample(null,
+                                  ByteBuffer.wrap(data, 1, 4).getInt(),          // sampleTimeUtcSeconds
+                                  ByteBuffer.wrap(data, 12, 2).getShort(),       // rawParticleCount
+                                  ByteBuffer.wrap(data, 5, 4).getInt(),          // particleCount
+                                  ByteBuffer.wrap(data, 9, 2).getShort(),        // temperature
+                                  ByteUtils.unsignedByteToInt(data[11]));        // humidity
             }
          }
       LOG.error("GetDataSampleCommandStrategy.convertResponse(): Failure!  response = [" + response + "]");

@@ -52,6 +52,8 @@ public final class DataSampleUploader
       }
 
    @NotNull
+   private final SpeckConfig speckConfig;
+   @NotNull
    private final RemoteStorageCredentials remoteStorageCredentials;
 
    public interface EventListener
@@ -65,8 +67,9 @@ public final class DataSampleUploader
    /**
     * Constructs a <code>DataSampleUploader</code> for the given {@link RemoteStorageCredentials} and {@link RemoteStorageCredentials}.
     */
-   public DataSampleUploader(@NotNull final RemoteStorageCredentials remoteStorageCredentials)
+   public DataSampleUploader(@NotNull final SpeckConfig speckConfig, @NotNull final RemoteStorageCredentials remoteStorageCredentials)
       {
+      this.speckConfig = speckConfig;
       this.remoteStorageCredentials = remoteStorageCredentials;
 
       if (LOG.isInfoEnabled())
@@ -118,7 +121,7 @@ public final class DataSampleUploader
       public void run()
          {
          final DataSampleSetUploadResponse dataSampleSetUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
-                                                                                                       new StringEntity(dataSampleSet.toJson(), ContentType.APPLICATION_JSON));
+                                                                                                       new StringEntity(dataSampleSet.toJson(speckConfig.getApiSupport().hasTemperatureSensor()), ContentType.APPLICATION_JSON));
          // notify listeners
          for (final EventListener listener : eventListeners)
             {

@@ -118,7 +118,7 @@ final class SpeckGatewayHelper
          if (isDownloadDisabled())
             {
             logInfo("Loading config file...");
-            device = createFakeSpeck();
+            device = createPropertyFileSpeck();
             }
          else
             {
@@ -160,7 +160,7 @@ final class SpeckGatewayHelper
 
             if (remoteStorageCredentials != null)
                {
-               if (!dataSampleManager.setDataSampleUploader(new DataSampleUploader(remoteStorageCredentials)))
+               if (!dataSampleManager.setDataSampleUploader(new DataSampleUploader(speckConfig, remoteStorageCredentials)))
                   {
                   logError("Failed to set the DataSampleUploader");
                   }
@@ -183,7 +183,7 @@ final class SpeckGatewayHelper
 
    public boolean validateAndSetDataStorageCredentials(@NotNull final RemoteStorageCredentials remoteStorageCredentials)
       {
-      if (!areDataStorageCredentialsSet())
+      if (device != null && !areDataStorageCredentialsSet())
          {
          // now test the credentials
          logInfo("Validating host and login credentials...");
@@ -192,7 +192,7 @@ final class SpeckGatewayHelper
             logInfo("Host and login credentials validated successfully!!");
 
             this.remoteStorageCredentials = remoteStorageCredentials;
-            if (dataSampleManager != null && !dataSampleManager.setDataSampleUploader(new DataSampleUploader(remoteStorageCredentials)))
+            if (dataSampleManager != null && !dataSampleManager.setDataSampleUploader(new DataSampleUploader(device.getSpeckConfig(), remoteStorageCredentials)))
                {
                logError("Failed to set the DataSampleUploader");
                return false;
@@ -255,7 +255,7 @@ final class SpeckGatewayHelper
       }
 
    @Nullable
-   private Speck createFakeSpeck()
+   private Speck createPropertyFileSpeck()
       {
       if (pathToConfigFile == null || pathToConfigFile.length() < 1)
          {
@@ -288,7 +288,27 @@ final class SpeckGatewayHelper
                   logError(msg);
                   throw new IllegalArgumentException(msg);
                   }
-               return new PropertyFileSpeck(speckId, configFile);
+               final String protocolVersionStr = properties.getProperty("protocol-version");
+               if (protocolVersionStr == null)
+                  {
+                  final String msg = "The 'protocol-version' property must be defined in the config file!'";
+                  logError(msg);
+                  throw new IllegalArgumentException(msg);
+                  }
+
+               final int protocolVersion;
+               try
+                  {
+                  protocolVersion = Integer.parseInt(protocolVersionStr);
+                  }
+               catch (NumberFormatException e)
+                  {
+                  final String msg = "Invalid 'protocol-version' property: NumberFormatException while trying to convert [" + protocolVersionStr + "] into an integer";
+                  logError(msg);
+                  throw new IllegalArgumentException(msg);
+                  }
+
+               return new PropertyFileSpeck(speckId, protocolVersion, configFile);
                }
             catch (Exception e)
                {
@@ -309,9 +329,10 @@ final class SpeckGatewayHelper
       private final SpeckConfig speckConfig;
       private final File configFile;
 
-      private PropertyFileSpeck(@NotNull final String speckId, @NotNull final File configFile)
+      private PropertyFileSpeck(@NotNull final String speckId, final int protocolVersion, @NotNull final File configFile)
          {
          this.configFile = configFile;
+         final ApiSupport apiSupport = ApiSupport.getInstance(protocolVersion);
          speckConfig =
                new SpeckConfig()
                {
@@ -327,7 +348,7 @@ final class SpeckGatewayHelper
                @Override
                public int getProtocolVersion()
                   {
-                  return ApiSupport.DEFAULT_PROTOCOL_VERSION;
+                  return apiSupport.getProtocolVersion();
                   }
 
                @Override
@@ -340,7 +361,7 @@ final class SpeckGatewayHelper
                @Override
                public ApiSupport getApiSupport()
                   {
-                  return ApiSupport.getInstance(ApiSupport.DEFAULT_PROTOCOL_VERSION);
+                  return apiSupport;
                   }
                };
          }

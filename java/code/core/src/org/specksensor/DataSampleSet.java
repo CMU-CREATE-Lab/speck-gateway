@@ -19,7 +19,12 @@ interface DataSampleSet
    /** Returns the number of samples in this set. */
    int size();
 
-   /** Returns a JSON representation of this <code>DataSampleSet</code> */
+   /**
+    * Returns a JSON representation of this <code>DataSampleSet</code>.   If <code>includeTemperature</code> is
+    * <code>true</code>, the JSON will include temperature values.
+    *
+    * @see ApiSupport#hasTemperatureSensor()
+    */
    @NotNull
-   String toJson();
+   String toJson(final boolean includeTemperature);
    }

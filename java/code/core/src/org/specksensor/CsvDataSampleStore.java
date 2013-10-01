@@ -22,10 +22,14 @@ final class CsvDataSampleStore implements DataSampleStore
    private static final Logger LOG = Logger.getLogger(CsvDataSampleStore.class);
 
    @NotNull
+   private final SpeckConfig speckConfig;
+
+   @NotNull
    private BufferedWriter writer;
 
    CsvDataSampleStore(@NotNull final SpeckConfig speckConfig)
       {
+      this.speckConfig = speckConfig;
       final File dataFileDirectory = SpeckConstants.FilePaths.getDeviceDataDirectory(speckConfig);
       final File dataFile = new File(dataFileDirectory, "data_samples.csv");
       final boolean doesFileAlreadyExist = dataFile.exists();
@@ -34,7 +38,13 @@ final class CsvDataSampleStore implements DataSampleStore
          writer = new BufferedWriter(new FileWriter(dataFile, true));
          if (!doesFileAlreadyExist)
             {
-            write("sample_timestamp_utc_secs,raw_particle_count,particle_count,temperature,humidity,download_timestamp_utc_millis");
+            final StringBuilder columnHeaders = new StringBuilder("sample_timestamp_utc_secs,raw_particle_count,particle_count");
+            if (speckConfig.getApiSupport().hasTemperatureSensor())
+               {
+               columnHeaders.append(",temperature");
+               }
+            columnHeaders.append(",humidity,download_timestamp_utc_millis");
+            write(columnHeaders.toString());
             }
          }
       catch (FileNotFoundException e)
@@ -56,7 +66,7 @@ final class CsvDataSampleStore implements DataSampleStore
       LOG.debug("CsvDataSampleStore.save(): saving sample " + dataSample.getSampleTime());
       try
          {
-         write(dataSample.toCsv());
+         write(dataSample.toCsv(speckConfig.getApiSupport().hasTemperatureSensor()));
          }
       catch (IOException e)
          {

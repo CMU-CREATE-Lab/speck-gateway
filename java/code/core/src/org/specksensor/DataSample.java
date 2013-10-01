@@ -1,7 +1,5 @@
 package org.specksensor;
 
-import java.nio.ByteBuffer;
-import edu.cmu.ri.createlab.util.ByteUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,16 +19,6 @@ public final class DataSample implements Speck.DataSample
    private final int particleCount;
    private final int temperatureInTenthsOfDegreeF;
    private final int humidity;
-
-   public DataSample(@NotNull final byte[] data)
-      {
-      this(null,                                      // databaseId
-           ByteBuffer.wrap(data, 1, 4).getInt(),      // sampleTimeUtcSeconds
-           ByteBuffer.wrap(data, 12, 2).getShort(),   // rawParticleCount
-           ByteBuffer.wrap(data, 5, 4).getInt(),      // particleCount
-           ByteBuffer.wrap(data, 9, 2).getShort(),    // temperatureInTenthsOfDegreeF
-           ByteUtils.unsignedByteToInt(data[11]));    // humidity
-      }
 
    public DataSample(@Nullable final Integer databaseId,
                      final int sampleTimeUtcSeconds,
@@ -99,12 +87,16 @@ public final class DataSample implements Speck.DataSample
    @Override
    public boolean isEmpty()
       {
-      return sampleTimeUtcSeconds == 0 && rawParticleCount == 0 && particleCount == 0 && temperatureInTenthsOfDegreeF == 0 && humidity == 0;
+      return sampleTimeUtcSeconds == 0 &&
+             rawParticleCount == 0 &&
+             particleCount == 0 &&
+             temperatureInTenthsOfDegreeF == 0 &&
+             humidity == 0;
       }
 
    @NotNull
    @Override
-   public String toCsv()
+   public String toCsv(final boolean includeTemperature)
       {
       final StringBuilder s = new StringBuilder();
       s.append(sampleTimeUtcSeconds);
@@ -112,8 +104,11 @@ public final class DataSample implements Speck.DataSample
       s.append(rawParticleCount);
       s.append(COMMA);
       s.append(particleCount);
-      s.append(COMMA);
-      s.append(getTemperatureInDegreesF());
+      if (includeTemperature)
+         {
+         s.append(COMMA);
+         s.append(getTemperatureInDegreesF());
+         }
       s.append(COMMA);
       s.append(humidity);
       s.append(COMMA);
@@ -123,7 +118,7 @@ public final class DataSample implements Speck.DataSample
 
    @NotNull
    @Override
-   public String toJsonArray()
+   public String toJsonArray(final boolean includeTemperature)
       {
       final StringBuilder s = new StringBuilder("[");
       s.append(sampleTimeUtcSeconds);
@@ -131,8 +126,11 @@ public final class DataSample implements Speck.DataSample
       s.append(rawParticleCount);
       s.append(COMMA);
       s.append(particleCount);
-      s.append(COMMA);
-      s.append(getTemperatureInDegreesF());
+      if (includeTemperature)
+         {
+         s.append(COMMA);
+         s.append(getTemperatureInDegreesF());
+         }
       s.append(COMMA);
       s.append(humidity);
       s.append("]");

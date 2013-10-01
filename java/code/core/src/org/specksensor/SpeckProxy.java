@@ -89,8 +89,10 @@ class SpeckProxy implements Speck
    private final HIDDeviceReturnValueCommandExecutor<Boolean> booleanReturnValueCommandExecutor;
    private final HIDDeviceReturnValueCommandExecutor<Integer> integerReturnValueCommandExecutor;
 
+   // Using SpeckConfigWrapper here lets us pass around a reference to the
+   // wrapper, but also lets us modify the wrapped config
    @NotNull
-   private SpeckConfig speckConfig;
+   private final SpeckConfigWrapper speckConfigWrapper;
 
    private SpeckProxy(final HIDCommandExecutionQueue commandQueue, final HIDDevice hidDevice) throws InitializationException
       {
@@ -141,7 +143,7 @@ class SpeckProxy implements Speck
          }
       else
          {
-         speckConfig = tempSpeckConfig;
+         speckConfigWrapper = new SpeckConfigWrapper(tempSpeckConfig);
          final String message = "Successfully read the Speck config.";
          LOG.info(message);
          CONSOLE_LOG.info(message);
@@ -153,17 +155,6 @@ class SpeckProxy implements Speck
                                                                     DELAY_IN_SECONDS_BETWEEN_PINGS, // delay before first ping
                                                                     DELAY_IN_SECONDS_BETWEEN_PINGS, // delay between pings
                                                                     TimeUnit.SECONDS);
-      }
-
-   /** Trims the given String and returns it.  Returns <code>null</code> if the given String is <code>null</code>. */
-   @Nullable
-   private String trim(@Nullable final String s)
-      {
-      if (s != null)
-         {
-         return s.trim();
-         }
-      return null;
       }
 
    public String getPortName()
@@ -242,7 +233,7 @@ class SpeckProxy implements Speck
    @Override
    public int getNumberOfAvailableSamples() throws CommunicationException
       {
-      if (speckConfig.getApiSupport().canGetNumberOfDataSamples())
+      if (speckConfigWrapper.getApiSupport().canGetNumberOfDataSamples())
          {
          final Integer count = integerReturnValueCommandExecutor.execute(getDataSampleCountCommandStrategy);
          if (count == null)
@@ -257,13 +248,13 @@ class SpeckProxy implements Speck
    @NotNull
    public SpeckConfig setLoggingInterval(final int loggingIntervalInSeconds) throws CommunicationException, UnsupportedOperationException
       {
-      if (speckConfig.getApiSupport().canMutateLoggingInterval())
+      if (speckConfigWrapper.getApiSupport().canMutateLoggingInterval())
          {
          final SpeckConfig newConfig = speckConfigReturnValueCommandExecutor.execute(ReadWriteSpeckConfigCommandStrategy.createWriteableSpeckConfigCommandStrategy(loggingIntervalInSeconds));
          if (newConfig != null)
             {
-            speckConfig = newConfig;
-            return speckConfig;
+            speckConfigWrapper.setSpeckConfig(newConfig);
+            return speckConfigWrapper;
             }
          throw new CommunicationException("Failed to set the Specks's logging interval");
          }
@@ -274,7 +265,7 @@ class SpeckProxy implements Speck
    @NotNull
    public SpeckConfig getSpeckConfig()
       {
-      return speckConfig;
+      return speckConfigWrapper;
       }
 
    public void disconnect()
@@ -306,6 +297,48 @@ class SpeckProxy implements Speck
       catch (Exception e)
          {
          LOG.error("SpeckProxy.disconnect(): Exception while trying to shut down the SerialDeviceCommandExecutionQueue", e);
+         }
+      }
+
+   private final class SpeckConfigWrapper implements SpeckConfig
+      {
+      @NotNull
+      private SpeckConfig speckConfig;
+
+      private SpeckConfigWrapper(@NotNull final SpeckConfig speckConfig)
+         {
+         this.speckConfig = speckConfig;
+         }
+
+      private void setSpeckConfig(@NotNull final SpeckConfig speckConfig)
+         {
+         this.speckConfig = speckConfig;
+         }
+
+      @Override
+      @NotNull
+      public String getId()
+         {
+         return speckConfig.getId();
+         }
+
+      @Override
+      public int getProtocolVersion()
+         {
+         return speckConfig.getProtocolVersion();
+         }
+
+      @Override
+      public int getLoggingInterval()
+         {
+         return speckConfig.getLoggingInterval();
+         }
+
+      @Override
+      @NotNull
+      public ApiSupport getApiSupport()
+         {
+         return speckConfig.getApiSupport();
          }
       }
 
