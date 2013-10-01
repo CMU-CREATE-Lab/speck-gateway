@@ -6,12 +6,14 @@ import java.awt.Font;
 import java.awt.LayoutManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PropertyResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,6 +26,7 @@ import edu.cmu.ri.createlab.userinterface.component.Spinner;
 import edu.cmu.ri.createlab.userinterface.util.AbstractTimeConsumingAction;
 import edu.cmu.ri.createlab.userinterface.util.SwingUtils;
 import edu.cmu.ri.createlab.util.net.HostAndPort;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.specksensor.DataSampleManager;
@@ -38,6 +41,8 @@ import org.specksensor.SpeckConfig;
 @SuppressWarnings("CloneableClassWithoutClone")
 final class SpeckGatewayGui
    {
+   private static final Logger LOG = Logger.getLogger(SpeckGatewayGui.class);
+
    private static final PropertyResourceBundle RESOURCES = (PropertyResourceBundle)PropertyResourceBundle.getBundle(SpeckGatewayGui.class.getName());
 
    private static final int DEFAULT_PORT = 80;
@@ -45,6 +50,19 @@ final class SpeckGatewayGui
    private static final int GAP = 10;
    private static final String STATISTICS_VALUE_ZERO = "0";
    private static final String EMPTY_LABEL_TEXT = " ";
+
+   private static final int[] LOGGING_INTERVAL_VALUES = new int[]{1, 2, 5, 10, 20, 30, 45, 60, 120, 180, 240};
+   private static final String[] LOGGING_INTERVAL_LABELS = new String[]{"1 second",
+                                                                        "2 seconds",
+                                                                        "5 seconds",
+                                                                        "10 seconds",
+                                                                        "20 seconds",
+                                                                        "30 seconds",
+                                                                        "45 seconds",
+                                                                        "1 minute",
+                                                                        "2 minutes",
+                                                                        "3 minutes",
+                                                                        "4 minutes"};
 
    private final Spinner connectionSpinner = new Spinner(RESOURCES.getString("label.spinner"), GUIConstants.FONT_NORMAL);
    private final JPanel connectionStatusPanel = new JPanel();
@@ -64,6 +82,7 @@ final class SpeckGatewayGui
    private final JTextField passwordTextField = new JTextField(30);
    private final JTextField deviceNameTextField = new JTextField(30);
 
+   private final JComboBox loggingIntervalComboBox = new JComboBox(LOGGING_INTERVAL_LABELS);
    private final JButton enableUploadsButton = SwingUtils.createButton(RESOURCES.getString("label.begin-uploading"));
    private final JLabel datastoreServerConnectionStatus = SwingUtils.createLabel(EMPTY_LABEL_TEXT);
 
@@ -143,6 +162,11 @@ final class SpeckGatewayGui
                         deviceNameTextField.setText("Speck" + speckConfig.getId());
                         connectionStatusLabelSpeckId.setText(speckConfig.getId());
                         connectionStatusLabelPortName.setText(portName);
+
+                        final int position = Arrays.binarySearch(LOGGING_INTERVAL_VALUES, speckConfig.getLoggingInterval());
+                        final int loggingIntervalIndex = Math.max(0, Math.min(LOGGING_INTERVAL_VALUES.length - 1, position));
+
+                        loggingIntervalComboBox.setSelectedIndex(loggingIntervalIndex);
                         validateDatastoreServerForm();
                         helper.addStatisticsListener(statisticsListener);
                         jFrame.pack();
@@ -282,14 +306,58 @@ final class SpeckGatewayGui
       connectionStatusPanel.setBackground(Color.WHITE);
 
       final JLabel speckConnectionStatusLabel1 = SwingUtils.createLabel(RESOURCES.getString("label.connected-to-speck"));    // "Connected to Speck"
-      final JLabel speckConnectionStatusLabel3 = SwingUtils.createLabel(RESOURCES.getString("label.on-port"));               // on port
+      final JLabel speckConnectionStatusLabel2 = SwingUtils.createLabel(RESOURCES.getString("label.on-port"));               // on port
+      final JLabel speckConnectionStatusLabel3 = SwingUtils.createLabel(RESOURCES.getString("label.logging-interval"));      // Logging Interval
+
+      loggingIntervalComboBox.setFont(GUIConstants.FONT_NORMAL);
+      loggingIntervalComboBox.addActionListener(
+            new AbstractTimeConsumingAction(this.jFrame)
+            {
+            int selectedIndex = 0;
+
+            @Override
+            protected void executeGUIActionBefore()
+               {
+               selectedIndex = loggingIntervalComboBox.getSelectedIndex();
+               loggingIntervalComboBox.setEnabled(false);
+               }
+
+            @Override
+            protected Object executeTimeConsumingAction()
+               {
+               if (helper.isConnected())
+                  {
+                  final Speck speck = helper.getSpeck();
+                  if (speck != null)
+                     {
+                     try
+                        {
+                        speck.setLoggingInterval(LOGGING_INTERVAL_VALUES[selectedIndex]);
+                        }
+                     catch (Exception e)
+                        {
+                        LOG.error("Exception while trying to set the logging interval", e);
+                        }
+                     }
+                  }
+               return null;
+               }
+
+            @Override
+            protected void executeGUIActionAfter(final Object resultOfTimeConsumingAction)
+               {
+               loggingIntervalComboBox.setEnabled(true);
+               }
+            });
 
       speckConnectionStatusPanelLayout.setHorizontalGroup(
             speckConnectionStatusPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                   .addComponent(speckConnectionStatusLabel1)
                   .addComponent(connectionStatusLabelSpeckId)
-                  .addComponent(speckConnectionStatusLabel3)
+                  .addComponent(speckConnectionStatusLabel2)
                   .addComponent(connectionStatusLabelPortName)
+                  .addComponent(speckConnectionStatusLabel3)
+                  .addComponent(loggingIntervalComboBox)
       );
       speckConnectionStatusPanelLayout.setVerticalGroup(
             speckConnectionStatusPanelLayout.createSequentialGroup()
@@ -297,9 +365,14 @@ final class SpeckGatewayGui
                   .addGap(GAP)
                   .addComponent(connectionStatusLabelSpeckId)
                   .addGap(GAP)
-                  .addComponent(speckConnectionStatusLabel3)
+                  .addComponent(speckConnectionStatusLabel2)
                   .addGap(GAP)
                   .addComponent(connectionStatusLabelPortName)
+                  .addGap(GAP * 4)
+                  .addComponent(speckConnectionStatusLabel3)
+                  .addGap(GAP)
+                  .addComponent(loggingIntervalComboBox)
+                  .addGap(GAP)
       );
 
       final JPanel panel = new JPanel();

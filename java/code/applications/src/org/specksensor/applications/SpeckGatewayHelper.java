@@ -215,6 +215,12 @@ final class SpeckGatewayHelper
       }
 
    @Nullable
+   public Speck getSpeck()
+      {
+      return device;
+      }
+
+   @Nullable
    public String getStatistics()
       {
       if (isConnected() && dataSampleManager != null)
