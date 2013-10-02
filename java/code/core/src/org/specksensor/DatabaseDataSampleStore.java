@@ -109,26 +109,20 @@ final class DatabaseDataSampleStore implements DataSampleStore
       lock.lock();  // block until condition holds
       try
          {
-         // See whether the Derby home directory is defined.  If not, then define it.  We do this because the database
-         // will be created under the directory specified by the derby.system.home system property.
+         // Define the Derby home directory.  We do this because the database will be created under the directory
+         // specified by the derby.system.home system property.
          if (LOG.isInfoEnabled())
             {
-            LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): System.getProperty(" + DERBY_SYSTEM_HOME_PROPERTY_KEY + ") = [" + System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) + "]");
+            LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): Previous value of System.getProperty(" + DERBY_SYSTEM_HOME_PROPERTY_KEY + ") = [" + System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) + "]");
             }
-         if (System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) == null)
-            {
-            final File dataDirectory = SpeckConstants.FilePaths.getDeviceDataDirectory(speckConfig);
-            final File databaseParentDirectory = new File(dataDirectory, "database");
-            System.setProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY, databaseParentDirectory.getAbsolutePath());
-            }
-         if (LOG.isInfoEnabled())
-            {
-            LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): System.getProperty(" + DERBY_SYSTEM_HOME_PROPERTY_KEY + ") = [" + System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) + "]");
-            }
-
-         final String databaseParentDirectoryPath = System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY);
-         final File databaseParentDirectory = new File(databaseParentDirectoryPath);
+         final File dataDirectory = SpeckConstants.FilePaths.getDeviceDataDirectory(speckConfig);
+         final File databaseParentDirectory = new File(dataDirectory, "database");
          final File databaseDirectory = new File(databaseParentDirectory, DATABASE_NAME);
+         System.setProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY, databaseParentDirectory.getAbsolutePath());
+         if (LOG.isInfoEnabled())
+            {
+            LOG.info("DatabaseDataSampleStore.DatabaseDataSampleStore(): New value of System.getProperty(" + DERBY_SYSTEM_HOME_PROPERTY_KEY + ") = [" + System.getProperty(DERBY_SYSTEM_HOME_PROPERTY_KEY) + "]");
+            }
 
          // Make sure the database directory parent exists
          //noinspection ResultOfMethodCallIgnored
