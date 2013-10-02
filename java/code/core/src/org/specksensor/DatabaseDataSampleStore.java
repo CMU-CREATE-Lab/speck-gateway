@@ -56,8 +56,8 @@ final class DatabaseDataSampleStore implements DataSampleStore
    private static final String STATEMENT_NAME_UPDATE_ALL_SAMPLES_HAVING_STATUS = "update_all_samples_having_status";
    private static final String STATEMENT_UPDATE_ALL_SAMPLES_HAVING_STATUS = "UPDATE SpeckSamples SET UPLOAD_STATUS = ? WHERE UPLOAD_STATUS = ?";
 
-   private static final String STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS = "select_samples_having_status";
-   private static final String STATEMENT_SELECT_SAMPLES_HAVING_STATUS = "SELECT\n" +
+   private static final String STATEMENT_NAME_SELECT_SAMPLES_NEEDING_TO_BE_UPLOADED = "select_samples_needing_to_be_uploaded";
+   private static final String STATEMENT_SELECT_SAMPLES_NEEDING_TO_BE_UPLOADED = "SELECT\n" +
                                                                         "   *\n" +
                                                                         "FROM\n" +
                                                                         "   (SELECT\n" +
@@ -70,7 +70,10 @@ final class DatabaseDataSampleStore implements DataSampleStore
                                                                         "       SpeckSamples.TEMPERATURE,\n" +
                                                                         "       SpeckSamples.HUMIDITY\n" +
                                                                         "    FROM SpeckSamples\n" +
-                                                                        "    WHERE SpeckSamples.UPLOAD_STATUS = ?) AS TEMP\n" +
+                                                                        "    WHERE\n" +
+                                                                        "       SpeckSamples.UPLOAD_STATUS = '" + DataSampleUploadStatus.NOT_ATTEMPTED.getName() + "' OR\n" +
+                                                                        "       SpeckSamples.UPLOAD_STATUS = '" + DataSampleUploadStatus.FAILURE.getName() + "'\n" +
+                                                                        "   ) AS TEMP\n" +
                                                                         "WHERE NUM_ROWS <= ?\n";
 
    private static final String SQL_STATE_DUPLICATE_KEY = "23505";
@@ -181,7 +184,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
                // create prepared statements for insert and update
                preparedStatements.put(STATEMENT_NAME_INSERT_SAMPLE, connection.prepareStatement(STATEMENT_INSERT_SAMPLE));
                preparedStatements.put(STATEMENT_NAME_UPDATE_ALL_SAMPLES_HAVING_STATUS, connection.prepareStatement(STATEMENT_UPDATE_ALL_SAMPLES_HAVING_STATUS));
-               preparedStatements.put(STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS, connection.prepareStatement(STATEMENT_SELECT_SAMPLES_HAVING_STATUS));
+               preparedStatements.put(STATEMENT_NAME_SELECT_SAMPLES_NEEDING_TO_BE_UPLOADED, connection.prepareStatement(STATEMENT_SELECT_SAMPLES_NEEDING_TO_BE_UPLOADED));
 
                wasSetupSuccessful = true;
                }
@@ -309,14 +312,13 @@ final class DatabaseDataSampleStore implements DataSampleStore
       try
          {
          final SortedSet<Speck.DataSample> dataSamples = new TreeSet<Speck.DataSample>();
-         final PreparedStatement selectStatement = preparedStatements.get(STATEMENT_NAME_SELECT_SAMPLES_HAVING_STATUS);
+         final PreparedStatement selectStatement = preparedStatements.get(STATEMENT_NAME_SELECT_SAMPLES_NEEDING_TO_BE_UPLOADED);
          if (selectStatement != null)
             {
             final int maxNumberToGet = (maxNumberRequested < 1) ? DataSampleSet.DEFAULT_SIZE : maxNumberRequested;
             try
                {
-               selectStatement.setString(1, DataSampleUploadStatus.NOT_ATTEMPTED.getName());
-               selectStatement.setInt(2, maxNumberToGet);
+               selectStatement.setInt(1, maxNumberToGet);
 
                final ResultSet resultSet = selectStatement.executeQuery();
 
