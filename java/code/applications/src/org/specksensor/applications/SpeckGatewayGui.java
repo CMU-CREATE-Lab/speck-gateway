@@ -69,6 +69,7 @@ final class SpeckGatewayGui
    private final JPanel speckPanel;
    private final JPanel datastoreServerPanel;
    private final JPanel statisticsPanel;
+   private final JPanel loggingIntervalPanel = new JPanel();
 
    @NotNull
    private final SpeckGatewayHelper helper;
@@ -162,11 +163,15 @@ final class SpeckGatewayGui
                         deviceNameTextField.setText("Speck" + speckConfig.getId());
                         connectionStatusLabelSpeckId.setText(speckConfig.getId());
                         connectionStatusLabelPortName.setText(portName);
+                        final boolean canMutateLoggingInterval = speckConfig.getApiSupport().canMutateLoggingInterval();
+                        loggingIntervalPanel.setVisible(canMutateLoggingInterval);
+                        if (canMutateLoggingInterval)
+                           {
+                           final int position = Arrays.binarySearch(LOGGING_INTERVAL_VALUES, speckConfig.getLoggingInterval());
+                           final int loggingIntervalIndex = Math.max(0, Math.min(LOGGING_INTERVAL_VALUES.length - 1, position));
 
-                        final int position = Arrays.binarySearch(LOGGING_INTERVAL_VALUES, speckConfig.getLoggingInterval());
-                        final int loggingIntervalIndex = Math.max(0, Math.min(LOGGING_INTERVAL_VALUES.length - 1, position));
-
-                        loggingIntervalComboBox.setSelectedIndex(loggingIntervalIndex);
+                           loggingIntervalComboBox.setSelectedIndex(loggingIntervalIndex);
+                           }
                         validateDatastoreServerForm();
                         helper.addStatisticsListener(statisticsListener);
                         jFrame.pack();
@@ -350,14 +355,27 @@ final class SpeckGatewayGui
                }
             });
 
+      final GroupLayout loggingIntervalLayout = new GroupLayout(loggingIntervalPanel);
+      loggingIntervalPanel.setLayout(loggingIntervalLayout);
+      loggingIntervalLayout.setHorizontalGroup(
+            loggingIntervalLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                  .addComponent(speckConnectionStatusLabel3)
+                  .addComponent(loggingIntervalComboBox)
+      );
+      loggingIntervalLayout.setVerticalGroup(
+            loggingIntervalLayout.createSequentialGroup()
+                  .addComponent(speckConnectionStatusLabel3)
+                  .addGap(GAP)
+                  .addComponent(loggingIntervalComboBox)
+      );
+
       speckConnectionStatusPanelLayout.setHorizontalGroup(
             speckConnectionStatusPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
                   .addComponent(speckConnectionStatusLabel1)
                   .addComponent(connectionStatusLabelSpeckId)
                   .addComponent(speckConnectionStatusLabel2)
                   .addComponent(connectionStatusLabelPortName)
-                  .addComponent(speckConnectionStatusLabel3)
-                  .addComponent(loggingIntervalComboBox)
+                  .addComponent(loggingIntervalPanel)
       );
       speckConnectionStatusPanelLayout.setVerticalGroup(
             speckConnectionStatusPanelLayout.createSequentialGroup()
@@ -369,10 +387,7 @@ final class SpeckGatewayGui
                   .addGap(GAP)
                   .addComponent(connectionStatusLabelPortName)
                   .addGap(GAP * 4)
-                  .addComponent(speckConnectionStatusLabel3)
-                  .addGap(GAP)
-                  .addComponent(loggingIntervalComboBox)
-                  .addGap(GAP)
+                  .addComponent(loggingIntervalPanel)
       );
 
       final JPanel panel = new JPanel();
