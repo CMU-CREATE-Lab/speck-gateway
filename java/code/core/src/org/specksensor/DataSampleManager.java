@@ -439,7 +439,7 @@ public final class DataSampleManager implements DataSampleUploader.EventListener
                statistics.incrementSampleUploadsSuccessful(dataSampleSet.size());
 
                // No failures!  Tell the data store to mark the samples as uploaded
-               dataSampleStore.markDataSamplesAsUploaded(dataSampleSet);
+               dataSampleStore.markDataSamplesAsUploaded(dataSampleSet, uploadResponse.getTimestampUtcMillis());
                }
             else
                {

@@ -289,6 +289,7 @@ public final class DataSampleUploadHelper
       private String result;
       private String message;
       private PayloadImpl payload;
+      private final long timestampUtcMillis = System.currentTimeMillis();
 
       @SuppressWarnings("UnusedDeclaration")
       private DataSampleSetUploadResponseImpl()
@@ -299,6 +300,12 @@ public final class DataSampleUploadHelper
          {
          this.result = result;
          this.message = message;
+         }
+
+      @Override
+      public long getTimestampUtcMillis()
+         {
+         return timestampUtcMillis;
          }
 
       @Override
@@ -360,6 +367,7 @@ public final class DataSampleUploadHelper
          sb.append("{result='").append(result).append('\'');
          sb.append(", message='").append(message).append('\'');
          sb.append(", payload=").append(payload);
+         sb.append(", timestampUtcMillis=").append(timestampUtcMillis);
          sb.append('}');
          return sb.toString();
          }

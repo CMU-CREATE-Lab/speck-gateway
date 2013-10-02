@@ -101,7 +101,7 @@ final class CsvDataSampleStore implements DataSampleStore
 
    /** Not supported, does nothing. */
    @Override
-   public void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet)
+   public void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet, final long uploadTimestampUtcMillis)
       {
       // not supported
       }

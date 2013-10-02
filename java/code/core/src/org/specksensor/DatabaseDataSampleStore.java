@@ -336,7 +336,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
                   }
 
                // if the update failed, then we should just return an empty DataSampleSet
-               if (!markDataSamplesWithStatus(ids, DataSampleUploadStatus.IN_PROGRESS))
+               if (!markDataSamplesWithStatus(ids, DataSampleUploadStatus.IN_PROGRESS, null))
                   {
                   dataSamples.clear();
                   }
@@ -360,12 +360,12 @@ final class DatabaseDataSampleStore implements DataSampleStore
       }
 
    @Override
-   public void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet)
+   public void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet, final long uploadTimestampUtcMillis)
       {
       lock.lock();  // block until condition holds
       try
          {
-         markDataSamplesWithStatus(dataSampleSet, DataSampleUploadStatus.SUCCESS);
+         markDataSamplesWithStatus(dataSampleSet, DataSampleUploadStatus.SUCCESS, uploadTimestampUtcMillis);
          }
       finally
          {
@@ -379,7 +379,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
       lock.lock();  // block until condition holds
       try
          {
-         markDataSamplesWithStatus(dataSampleSet, DataSampleUploadStatus.FAILURE);
+         markDataSamplesWithStatus(dataSampleSet, DataSampleUploadStatus.FAILURE, null);
          }
       finally
          {
@@ -391,7 +391,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
     * Marks the given samples with the given status.  MUST be called from within a lock block. Returns <code>true</code>
     * upon success, <code>false</code> otherwise.
     */
-   private boolean markDataSamplesWithStatus(@NotNull final DataSampleSet dataSampleSet, @NotNull final DataSampleUploadStatus status)
+   private boolean markDataSamplesWithStatus(@NotNull final DataSampleSet dataSampleSet, @NotNull final DataSampleUploadStatus status, @Nullable final Long timestampUtcMillis)
       {
       if (!dataSampleSet.isEmpty())
          {
@@ -405,7 +405,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
                ids.add(id);
                }
             }
-         return markDataSamplesWithStatus(ids, status);
+         return markDataSamplesWithStatus(ids, status, timestampUtcMillis);
          }
       return false;
       }
@@ -414,7 +414,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
     * Marks the samples associated with the given IDs with the given status.  MUST be called from within a lock block.
     * Returns <code>true</code> upon success, <code>false</code> otherwise.
     */
-   private boolean markDataSamplesWithStatus(@NotNull final List<Integer> dataSamplesIds, @NotNull final DataSampleUploadStatus status)
+   private boolean markDataSamplesWithStatus(@NotNull final List<Integer> dataSamplesIds, @NotNull final DataSampleUploadStatus status, @Nullable final Long timestampUtcMillis)
       {
       boolean wasSuccessful = false;
       if (!dataSamplesIds.isEmpty())
@@ -423,7 +423,9 @@ final class DatabaseDataSampleStore implements DataSampleStore
          try
             {
             final String updateSql = "UPDATE SpeckSamples " +
-                                     "SET UPLOAD_STATUS='" + status.getName() + "' " +
+                                     "SET " +
+                                     "   UPLOAD_STATUS='" + status.getName() + "', " +
+                                     "   UPLOAD_TIMESTAMP_UTC_MILLIS=" + timestampUtcMillis + " " +
                                      "WHERE ID IN (" + StringUtils.join(dataSamplesIds, ",") + ")";
 
             updateStatement = connection.createStatement();

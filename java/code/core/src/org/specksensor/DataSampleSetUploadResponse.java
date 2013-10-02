@@ -23,6 +23,8 @@ public interface DataSampleSetUploadResponse
       String getFailureMessage();
       }
 
+   long getTimestampUtcMillis();
+
    boolean wasSuccessful();
 
    boolean hasPayload();

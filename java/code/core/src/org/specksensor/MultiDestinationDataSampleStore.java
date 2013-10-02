@@ -46,9 +46,9 @@ final class MultiDestinationDataSampleStore implements DataSampleStore
       }
 
    @Override
-   public void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet)
+   public void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet, final long uploadTimestampUtcMillis)
       {
-      databaseDataSampleStore.markDataSamplesAsUploaded(dataSampleSet);
+      databaseDataSampleStore.markDataSamplesAsUploaded(dataSampleSet, uploadTimestampUtcMillis);
       }
 
    @Override

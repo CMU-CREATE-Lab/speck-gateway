@@ -58,7 +58,7 @@ interface DataSampleStore
     * Marks the samples in the given {@link DataSampleSet} as having been successfully uploaded
     * ({@link DataSampleUploadStatus#SUCCESS}).
     */
-   void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet);
+   void markDataSamplesAsUploaded(@NotNull final DataSampleSet dataSampleSet, final long uploadTimestampUtcMillis);
 
    /**
     * Marks the samples in the given {@link DataSampleSet} as having failed being uploaded
