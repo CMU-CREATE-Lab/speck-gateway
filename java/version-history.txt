@@ -1,0 +1,53 @@
+SPECK GATEWAY VERSION HISTORY
+-----------------------------
+
+v1.4
+
+* Added support for reading protocol version
+* Added support for reading/writing logging interval
+* Added support for reading number of data samples available
+* Greatly improved connection handling so you can now plug the Speck in after
+  the gateway is running or unplug and replug (and without crashing!)
+* Database now stores upload timestamp for uploaded data samples
+* Uploader now retries uploading of data samples which previously failed
+* Added this version history file
+
+v1.3.1
+
+* Changed "Fluxtream" references to "Datastore Server" to make it clearer that
+  you can upload to any datastore server, not just Fluxtream
+
+v1.3
+
+* Now using application/json content type for uploads
+* Data sample set size is now 500
+* Added README
+* Improved command line menu
+
+v1.2
+
+* Changed name from AirBot to Speck
+* Now supports USB HID communication.  The serial version is officially abandoned.
+* Added support for raw particle count field
+* Unique Speck ID is now 10 bytes long
+* Added saving of data samples to a local database
+* Duplicate detection when saving to the database
+* Better statistics
+* Console logging
+* Increased data sample set size to 200
+* Temperature is now reported in degrees F in CSV and JSON
+* Updated Speck web site
+* Fixed web start icon
+* Other various improvements and bug fixes
+
+v1.1
+
+* Changed log file location (~/BodyTrack/AirBotData/logs)
+* Fixed web start installation for Windows
+* Added revision number to the version number
+
+v1.0
+
+* Initial release
+
+
