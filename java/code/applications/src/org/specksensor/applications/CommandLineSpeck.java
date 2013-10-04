@@ -500,6 +500,10 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
          println("Particle Count:     " + dataSample.getParticleCount());
          println("Temperature:        " + dataSample.getTemperatureInTenthsOfADegreeF());
          println("Humidity:           " + dataSample.getHumidity());
+         println("Is GPS Valid?:      " + dataSample.isGpsValid());
+         println("Latitude:           " + dataSample.getLatitude());
+         println("Longitude:          " + dataSample.getLongitude());
+         println("GPS Quadrant:       " + dataSample.getGpsQuadrant());
          }
       }
 

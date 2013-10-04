@@ -43,7 +43,7 @@ final class CsvDataSampleStore implements DataSampleStore
                {
                columnHeaders.append(",temperature");
                }
-            columnHeaders.append(",humidity,download_timestamp_utc_millis");
+            columnHeaders.append(",humidity,is_gps_valid,latitude,longitude,gps_quadrant,download_timestamp_utc_millis");
             write(columnHeaders.toString());
             }
          }

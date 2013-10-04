@@ -15,10 +15,10 @@ final class CommandStrategyHelper
    private static final Logger LOG = Logger.getLogger(CommandStrategyHelper.class);
 
    /** The size of the expected response, in bytes */
-   public static final int SIZE_IN_BYTES_OF_EXPECTED_RESPONSE = 15;
+   public static final int SIZE_IN_BYTES_OF_EXPECTED_RESPONSE = 31;
 
    /** Array index of the data byte array containing the checksum byte */
-   private static final int ARRAY_INDEX_OF_CHECKSUM_BYTE = 14;
+   private static final int ARRAY_INDEX_OF_CHECKSUM_BYTE = 30;
 
    static int getSizeOfExpectedResponse()
       {

@@ -329,12 +329,18 @@ final class DatabaseDataSampleStore implements DataSampleStore
                   {
                   final int id = resultSet.getInt(2);
                   ids.add(id);
-                  dataSamples.add(new DataSample(id,                         // databaseId
-                                                 resultSet.getInt(3),        // sampleTimeUtcSeconds
-                                                 resultSet.getInt(4),        // rawParticleCount
-                                                 resultSet.getInt(5),        // particleCount
-                                                 resultSet.getInt(6),        // temperatureInTenthsOfDegreeF
-                                                 resultSet.getInt(7)));      // humidity
+
+                  // TODO: change this once we're storing lat/long in the database!
+                  dataSamples.add(new DataSample(id,                          // databaseId
+                                                 resultSet.getInt(3),         // sampleTimeUtcSeconds
+                                                 resultSet.getInt(4),         // rawParticleCount
+                                                 resultSet.getInt(5),         // particleCount
+                                                 resultSet.getInt(6),         // temperatureInTenthsOfDegreeF
+                                                 resultSet.getInt(7),         // humidity
+                                                 false,                       // isGpsValid
+                                                 null,                        // latitude
+                                                 null,                        // longitude
+                                                 null));                      // gpsQuadrant
                   }
 
                // if the update failed, then we should just return an empty DataSampleSet

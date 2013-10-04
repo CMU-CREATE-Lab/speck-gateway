@@ -19,13 +19,27 @@ public final class DataSample implements Speck.DataSample
    private final int particleCount;
    private final int temperatureInTenthsOfDegreeF;
    private final int humidity;
+   private final boolean isGpsValid;
+
+   @Nullable
+   private final String latitude;
+
+   @Nullable
+   private final String longitude;
+
+   @Nullable
+   private final String gpsQuadrant;
 
    public DataSample(@Nullable final Integer databaseId,
                      final int sampleTimeUtcSeconds,
                      final int rawParticleCount,
                      final int particleCount,
                      final int temperatureInTenthsOfDegreeF,
-                     final int humidity)
+                     final int humidity,
+                     final boolean isGpsValid,
+                     @Nullable final String latitude,
+                     @Nullable final String longitude,
+                     @Nullable final String gpsQuadrant)
       {
       this.databaseId = databaseId;
       this.sampleTimeUtcSeconds = sampleTimeUtcSeconds;
@@ -33,6 +47,10 @@ public final class DataSample implements Speck.DataSample
       this.particleCount = particleCount;
       this.temperatureInTenthsOfDegreeF = temperatureInTenthsOfDegreeF;
       this.humidity = humidity;
+      this.isGpsValid = isGpsValid;
+      this.latitude = latitude;
+      this.longitude = longitude;
+      this.gpsQuadrant = gpsQuadrant;
       }
 
    @Override
@@ -85,13 +103,36 @@ public final class DataSample implements Speck.DataSample
       }
 
    @Override
+   public boolean isGpsValid()
+      {
+      return isGpsValid;
+      }
+
+   @Override
+   @Nullable
+   public String getLatitude()
+      {
+      return latitude;
+      }
+
+   @Override
+   @Nullable
+   public String getLongitude()
+      {
+      return longitude;
+      }
+
+   @Nullable
+   @Override
+   public String getGpsQuadrant()
+      {
+      return gpsQuadrant;
+      }
+
+   @Override
    public boolean isEmpty()
       {
-      return sampleTimeUtcSeconds == 0 &&
-             rawParticleCount == 0 &&
-             particleCount == 0 &&
-             temperatureInTenthsOfDegreeF == 0 &&
-             humidity == 0;
+      return sampleTimeUtcSeconds == 0;
       }
 
    @NotNull
@@ -111,6 +152,14 @@ public final class DataSample implements Speck.DataSample
          }
       s.append(COMMA);
       s.append(humidity);
+      s.append(COMMA);
+      s.append(isGpsValid);
+      s.append(COMMA);
+      s.append(latitude);
+      s.append(COMMA);
+      s.append(longitude);
+      s.append(COMMA);
+      s.append(gpsQuadrant);
       s.append(COMMA);
       s.append(downloadTime);
       return s.toString();
@@ -178,6 +227,10 @@ public final class DataSample implements Speck.DataSample
       sb.append(", particleCount=").append(particleCount);
       sb.append(", temperatureInTenthsOfDegreeF=").append(temperatureInTenthsOfDegreeF);
       sb.append(", humidity=").append(humidity);
+      sb.append(", isGpsValid=").append(isGpsValid);
+      sb.append(", latitude='").append(latitude).append('\'');
+      sb.append(", longitude='").append(longitude).append('\'');
+      sb.append(", gpsQuadrant='").append(gpsQuadrant).append('\'');
       sb.append('}');
       return sb.toString();
       }

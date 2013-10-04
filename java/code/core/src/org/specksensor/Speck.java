@@ -46,8 +46,35 @@ public interface Speck extends CreateLabDeviceProxy
       /** The humidity in percent relative humidity. */
       int getHumidity();
 
+      /** Returns <code>true</code> if the latitude/longitude should be considered valid; false otherwise. */
+      boolean isGpsValid();
+
       /**
-       * Returns <code>true</code> if this sample is all zeros, which signifies that there's currently no data
+       * Returns the GPS latitude, or <code>null</code> if the GPS data is invalid.
+       *
+       * @see #isGpsValid()
+       */
+      @Nullable
+      String getLatitude();
+
+      /**
+       * Returns the GPS longitude, or <code>null</code> if the GPS data is invalid.
+       *
+       * @see #isGpsValid()
+       */
+      @Nullable
+      String getLongitude();
+
+      /**
+       * Returns the GPS quadrant (N, S, E, W), or <code>null</code> if the GPS data is invalid.
+       *
+       * @see #isGpsValid()
+       */
+      @Nullable
+      String getGpsQuadrant();
+
+      /**
+       * Returns <code>true</code> if this sample has a time of 0, which signifies that there's currently no data
        * available; returns <code>false</code> otherwise.
        */
       boolean isEmpty();

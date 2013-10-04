@@ -34,9 +34,9 @@ public final class SpeckConstants
    public static final class UsbHidConfiguration
       {
       public static final short USB_VENDOR_ID = 0x2354;
-      public static final short USB_PRODUCT_ID = 0x3333;
+      public static final short USB_PRODUCT_ID = 0x3334;
 
-      public static final int REPORT_LENGTH_IN_BYTES = 16;
+      public static final int REPORT_LENGTH_IN_BYTES = 32;
 
       private static final int INPUT_REPORT_LENGTH_IN_BYTES = REPORT_LENGTH_IN_BYTES + 1;  // count includes the report ID
       private static final int OUTPUT_REPORT_LENGTH_IN_BYTES = REPORT_LENGTH_IN_BYTES + 1; // count includes the report ID

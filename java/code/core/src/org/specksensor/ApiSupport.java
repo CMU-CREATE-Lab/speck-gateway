@@ -21,8 +21,7 @@ public final class ApiSupport
 
    static
       {
-      INSTANCES.put(1, new ApiSupport(1, false, false, true));
-      INSTANCES.put(2, new ApiSupport(2, true, true, false));
+      INSTANCES.put(1, new ApiSupport(1, false, true, false));
       DEFAULT = INSTANCES.get(DEFAULT_PROTOCOL_VERSION);
       }
 
