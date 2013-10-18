@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import edu.cmu.ri.createlab.device.CreateLabDevicePingFailureEventListener;
 import edu.cmu.ri.createlab.util.commandline.BaseCommandLineApplication;
+import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.specksensor.ApiSupport;
 import org.specksensor.CommunicationException;
@@ -20,11 +21,22 @@ import org.specksensor.SpeckFactory;
  */
 public final class CommandLineSpeck extends BaseCommandLineApplication
    {
+   private static final Logger LOG = Logger.getLogger(CommandLineSpeck.class);
+
    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+   private static final String BOOTLOADER_SWITCH = "--bootloader";
 
    public static void main(final String[] args)
       {
-      new CommandLineSpeck().run();
+      if (args.length > 0 && BOOTLOADER_SWITCH.equals(args[0]))
+         {
+         new CommandLineSpeck().runBootloaderModeHelper();
+         }
+      else
+         {
+         new CommandLineSpeck().run();
+         }
       }
 
    private Speck device;
@@ -44,6 +56,68 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
       super(new BufferedReader(new InputStreamReader(System.in)));
 
       registerActions();
+      }
+
+   @SuppressWarnings("BusyWait")
+   private void runBootloaderModeHelper()
+      {
+      println(" -----------------------------------------------------------------");
+      println("|                                                                  |");
+      println("|                     SPECK BOOTLOADER HELPER                      |");
+      println("|                                                                  |");
+      println("| This app helps put Specks into bootloader mode.  It searches for |");
+      println("| a Speck and, once detected, will put it into bootloader mode,    |");
+      println("| disconnect, and then will search for the next Speck.             |");
+      println("|                                                                  |");
+      println("| Type ENTER at any time to quit.                                  |");
+      println("|                                                                  |");
+      println(" -----------------------------------------------------------------");
+
+      registerAction(QUIT_COMMAND, quitAction);
+
+      try
+         {
+         final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+         while (true)
+            {
+            // check whether the user typed ENTER
+            if (in.ready())
+               {
+               break;
+               }
+
+            // Try to connec to a Speck
+            device = SpeckFactory.create();
+
+            if (device != null)
+               {
+               device.addCreateLabDevicePingFailureEventListener(pingFailureEventListener);
+               println("Connected to Speck " + device.getSpeckConfig().getId());
+               if (device.getSpeckConfig().getApiSupport().canEnterBootloaderMode())
+                  {
+                  println("Putting the Speck in bootloader mode, and then disconnecting...");
+                  device.enterBootloaderMode();
+                  device = null;
+                  println("The Speck is now disconnected and in bootloader mode.  You may safely unplug the Speck now.\n");
+                  }
+               else
+                  {
+                  println("Sorry, this Speck does not support the command to enter bootloader mode.  Disconnecting...");
+                  disconnect();
+                  println("The Speck is now disconnected.  You may safely unplug the Speck now.\n");
+                  }
+               }
+            Thread.sleep(1000);
+            }
+         }
+      catch (IOException ex)
+         {
+         ex.printStackTrace();
+         }
+      catch (InterruptedException e)
+         {
+         LOG.error("InterruptedException while sleeping.  Aborting.", e);
+         }
       }
 
    private final Runnable connectToHIDDeviceAction =
@@ -511,7 +585,6 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                }
             }
          };
-
 
    private void printSample(@Nullable final Speck.DataSample dataSample)
       {
