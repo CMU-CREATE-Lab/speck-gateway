@@ -486,6 +486,32 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
             }
          };
 
+   private final Runnable enterBootloaderModeAction =
+         new Runnable()
+         {
+         public void run()
+            {
+            if (isConnected())
+               {
+               if (device.getSpeckConfig().getApiSupport().canEnterBootloaderMode())
+                  {
+                  println("Entering bootloader mode, and then disconnecting...");
+                  device.enterBootloaderMode();
+                  device = null;
+                  println("The Speck is now disconnected and in bootloader mode.");
+                  }
+               else
+                  {
+                  println("Sorry, this Speck does not support the command to enter bootloader mode.");
+                  }
+               }
+            else
+               {
+               println("You must be connected to the Speck first.");
+               }
+            }
+         };
+
 
    private void printSample(@Nullable final Speck.DataSample dataSample)
       {
@@ -581,7 +607,8 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         final StringBuilder s = new StringBuilder(LINE_SEPARATOR);
                         s.append("   Can mutate logging interval:  ").append(apiSupport.canMutateLoggingInterval()).append(LINE_SEPARATOR);
                         s.append("   Can report data sample count: ").append(apiSupport.canGetNumberOfDataSamples()).append(LINE_SEPARATOR);
-                        s.append("   Has temperature sensor:       ").append(apiSupport.hasTemperatureSensor());
+                        s.append("   Has temperature sensor:       ").append(apiSupport.hasTemperatureSensor()).append(LINE_SEPARATOR);
+                        s.append("   Can enter bootloader mode:    ").append(apiSupport.canEnterBootloaderMode());
                         return s.toString();
                         }
                      });
@@ -596,6 +623,7 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         }
                      });
       registerAction("L", setLoggingIntervalAction);
+      registerAction("B", enterBootloaderModeAction);
 
       registerAction(QUIT_COMMAND, quitAction);
       }
@@ -620,6 +648,8 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
       println("a         Gets the Speck's API support");
       println("l         Gets the Speck's logging interval when disconnected (secs)");
       println("L         Sets the Speck's logging interval when disconnected (secs)");
+      println("");
+      println("B         Puts the Speck into bootloader mode, and disconnects.");
       println("");
       println("q         Quit");
       println("");

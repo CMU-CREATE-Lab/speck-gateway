@@ -21,8 +21,8 @@ public final class ApiSupport
 
    static
       {
-      INSTANCES.put(1, new ApiSupport(1, false, false, true));
-      INSTANCES.put(2, new ApiSupport(2, true, true, false));
+      INSTANCES.put(1, new ApiSupport(1, false, false, true, false));
+      INSTANCES.put(2, new ApiSupport(2, true, true, false, true));
       DEFAULT = INSTANCES.get(DEFAULT_PROTOCOL_VERSION);
       }
 
@@ -51,14 +51,20 @@ public final class ApiSupport
    private final boolean canMutateLoggingInterval;
    private final boolean canGetNumberOfDataSamples;
    private final boolean hasTemperatureSensor;
+   private final boolean canEnterBootloaderMode;
 
    // private to prevent instantiation
-   private ApiSupport(final int protocolVersion, final boolean canMutateLoggingInterval, final boolean canGetNumberOfDataSamples, final boolean hasTemperatureSensor)
+   private ApiSupport(final int protocolVersion,
+                      final boolean canMutateLoggingInterval,
+                      final boolean canGetNumberOfDataSamples,
+                      final boolean hasTemperatureSensor,
+                      final boolean canEnterBootloaderMode)
       {
       this.protocolVersion = protocolVersion;
       this.canMutateLoggingInterval = canMutateLoggingInterval;
       this.canGetNumberOfDataSamples = canGetNumberOfDataSamples;
       this.hasTemperatureSensor = hasTemperatureSensor;
+      this.canEnterBootloaderMode = canEnterBootloaderMode;
       }
 
    public int getProtocolVersion()
@@ -81,6 +87,11 @@ public final class ApiSupport
       return hasTemperatureSensor;
       }
 
+   public boolean canEnterBootloaderMode()
+      {
+      return canEnterBootloaderMode;
+      }
+
    @Override
    public boolean equals(final Object o)
       {
@@ -95,6 +106,10 @@ public final class ApiSupport
 
       final ApiSupport that = (ApiSupport)o;
 
+      if (canEnterBootloaderMode != that.canEnterBootloaderMode)
+         {
+         return false;
+         }
       if (canGetNumberOfDataSamples != that.canGetNumberOfDataSamples)
          {
          return false;
@@ -122,6 +137,7 @@ public final class ApiSupport
       result = 31 * result + (canMutateLoggingInterval ? 1 : 0);
       result = 31 * result + (canGetNumberOfDataSamples ? 1 : 0);
       result = 31 * result + (hasTemperatureSensor ? 1 : 0);
+      result = 31 * result + (canEnterBootloaderMode ? 1 : 0);
       return result;
       }
    }

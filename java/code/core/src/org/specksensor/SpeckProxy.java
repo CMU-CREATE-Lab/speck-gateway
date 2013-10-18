@@ -13,6 +13,7 @@ import edu.cmu.ri.createlab.usb.hid.HIDCommandExecutionQueue;
 import edu.cmu.ri.createlab.usb.hid.HIDConnectionException;
 import edu.cmu.ri.createlab.usb.hid.HIDDevice;
 import edu.cmu.ri.createlab.usb.hid.HIDDeviceFactory;
+import edu.cmu.ri.createlab.usb.hid.HIDDeviceNoReturnValueCommandExecutor;
 import edu.cmu.ri.createlab.usb.hid.HIDDeviceNotFoundException;
 import edu.cmu.ri.createlab.usb.hid.HIDDeviceReturnValueCommandExecutor;
 import edu.cmu.ri.createlab.util.commandexecution.CommandExecutionFailureHandler;
@@ -21,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.specksensor.commands.DeleteSampleCommandStrategy;
+import org.specksensor.commands.EnterBootloaderModeCommandStrategy;
 import org.specksensor.commands.GetDataSampleCommandStrategy;
 import org.specksensor.commands.GetDataSampleCountCommandStrategy;
 import org.specksensor.commands.ReadWriteSpeckConfigCommandStrategy;
@@ -259,6 +261,31 @@ class SpeckProxy implements Speck
          throw new CommunicationException("Failed to set the Specks's logging interval");
          }
       throw new UnsupportedOperationException("The logging interval for this Speck cannot be modified.");
+      }
+
+   @Override
+   public void enterBootloaderMode() throws UnsupportedOperationException
+      {
+      if (!speckConfigWrapper.getApiSupport().canEnterBootloaderMode())
+         {
+         throw new UnsupportedOperationException("This Speck does not support the command to enter bootloader mode.");
+         }
+
+      LOG.debug("SpeckProxy.enterBootloaderMode(): Pausing the pinger...");
+      pinger.setPaused(true);
+      LOG.debug("SpeckProxy.enterBootloaderMode(): Executing the command to enter bootloader mode...");
+      final HIDDeviceNoReturnValueCommandExecutor noReturnValueCommandExecutor = new HIDDeviceNoReturnValueCommandExecutor(commandQueue,
+                                                                                                                           new CommandExecutionFailureHandler()
+                                                                                                                           {
+                                                                                                                           @Override
+                                                                                                                           public void handleExecutionFailure()
+                                                                                                                              {
+                                                                                                                              LOG.debug("SpeckProxy.handleExecutionFailure(): failure detected after executing command to enter bootloader mode.");
+                                                                                                                              }
+                                                                                                                           });
+
+      LOG.debug("SpeckProxy.enterBootloaderMode(): execute returned [" + noReturnValueCommandExecutor.execute(new EnterBootloaderModeCommandStrategy()) + "], disconnecting...");
+      disconnect();
       }
 
    @Override
