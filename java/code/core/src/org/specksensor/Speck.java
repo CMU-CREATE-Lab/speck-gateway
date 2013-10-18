@@ -164,6 +164,13 @@ public interface Speck extends CreateLabDeviceProxy
    @NotNull
    SpeckConfig setLoggingInterval(final int loggingIntervalInSeconds) throws CommunicationException, UnsupportedOperationException;
 
+   /**
+    * Puts the Speck in bootloader mode, and forces a disconnect.
+    *
+    * @throws UnsupportedOperationException if this Speck does not support the command to put it into bootloader mode.
+    */
+   void enterBootloaderMode();
+
    /** Returns the {@link SpeckConfig configuration} for this <code>Speck</code>. */
    @NotNull
    SpeckConfig getSpeckConfig();

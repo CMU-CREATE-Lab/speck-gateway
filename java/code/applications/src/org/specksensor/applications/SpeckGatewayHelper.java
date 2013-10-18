@@ -382,14 +382,14 @@ final class SpeckGatewayHelper
       @Override
       public DataSample getSample() throws CommunicationException
          {
-         throw new CommunicationException("This fake Speck doesn't support DataSample retrieval");
+         throw new CommunicationException("The PropertyFileSpeck doesn't support DataSample retrieval");
          }
 
       @NotNull
       @Override
       public DataSample getCurrentSample() throws CommunicationException
          {
-         throw new CommunicationException("This fake Speck doesn't support DataSample retrieval");
+         throw new CommunicationException("The PropertyFileSpeck doesn't support DataSample retrieval");
          }
 
       @Override
@@ -407,14 +407,20 @@ final class SpeckGatewayHelper
       @Override
       public int getNumberOfAvailableSamples() throws UnsupportedOperationException
          {
-         throw new UnsupportedOperationException("This fake Speck doesn't support reading the number of available samples");
+         throw new UnsupportedOperationException("The PropertyFileSpeck doesn't support reading the number of available samples");
          }
 
       @Override
       @NotNull
       public SpeckConfig setLoggingInterval(final int loggingIntervalInSeconds) throws UnsupportedOperationException
          {
-         throw new UnsupportedOperationException("This fake Speck doesn't support setting of the logging interval");
+         throw new UnsupportedOperationException("The PropertyFileSpeck doesn't support setting of the logging interval");
+         }
+
+      @Override
+      public void enterBootloaderMode() throws UnsupportedOperationException
+         {
+         throw new UnsupportedOperationException("The PropertyFileSpeck doesn't support entering bootloader mode");
          }
 
       @Override
