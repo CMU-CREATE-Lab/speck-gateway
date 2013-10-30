@@ -26,12 +26,34 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
    private static final String BOOTLOADER_SWITCH = "--bootloader";
+   private static final String SET_INTERVAL_SWITCH = "--set-interval=";
 
    public static void main(final String[] args)
       {
       if (args.length > 0 && BOOTLOADER_SWITCH.equals(args[0]))
          {
          new CommandLineSpeck().runBootloaderModeHelper();
+         }
+      else if (args.length > 0 && args[0].startsWith(SET_INTERVAL_SWITCH))
+         {
+         final String[] argParts = args[0].split("=");
+         if (argParts.length >= 2)
+            {
+            try
+               {
+               new CommandLineSpeck().runSetIntervalHelper(Integer.parseInt(argParts[1]));
+               }
+            catch (NumberFormatException ignored)
+               {
+               println("ERROR: Invalid logging interval [" + argParts[1] + "].  Aborting.");
+               System.exit(0);
+               }
+            }
+         else
+            {
+            println("ERROR: No logging interval specified.  Aborting.");
+            System.exit(0);
+            }
          }
       else
          {
@@ -86,7 +108,7 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                break;
                }
 
-            // Try to connec to a Speck
+            // Try to connect to a Speck
             device = SpeckFactory.create();
 
             if (device != null)
@@ -103,6 +125,87 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                else
                   {
                   println("Sorry, this Speck does not support the command to enter bootloader mode.  Disconnecting...");
+                  disconnect();
+                  println("The Speck is now disconnected.  You may safely unplug the Speck now.\n");
+                  }
+               }
+            Thread.sleep(1000);
+            }
+         }
+      catch (IOException ex)
+         {
+         ex.printStackTrace();
+         }
+      catch (InterruptedException e)
+         {
+         LOG.error("InterruptedException while sleeping.  Aborting.", e);
+         }
+      }
+
+   @SuppressWarnings("BusyWait")
+   private void runSetIntervalHelper(final int newLoggingInterval)
+      {
+      println(" -----------------------------------------------------------------");
+      println("|                                                                  |");
+      println("|                  SPECK LOGGING INTERVAL HELPER                   |");
+      println("|                                                                  |");
+      println("| This app helps set the logging interval for multiple Specks. It  |");
+      println("| searches for a Speck and, once detected, will set its logging    |");
+      println("| interval, disconnect, and then will search for the next Speck.   |");
+      println("|                                                                  |");
+      println("| Type ENTER at any time to quit.                                  |");
+      println("|                                                                  |");
+      println(" -----------------------------------------------------------------");
+
+      registerAction(QUIT_COMMAND, quitAction);
+
+      try
+         {
+         final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+         while (true)
+            {
+            // check whether the user typed ENTER
+            if (in.ready())
+               {
+               break;
+               }
+
+            // Try to connect to a Speck
+            device = SpeckFactory.create();
+
+            if (device != null)
+               {
+               device.addCreateLabDevicePingFailureEventListener(pingFailureEventListener);
+               println("Connected to Speck " + device.getSpeckConfig().getId());
+               if (device.getSpeckConfig().getApiSupport().canMutateLoggingInterval())
+                  {
+                  final int currentLoggingInterval = device.getSpeckConfig().getLoggingInterval();
+                  if (currentLoggingInterval == newLoggingInterval)
+                     {
+                     println("This Speck's logging interval is already set to " + currentLoggingInterval + ", so no change is necessary.  Disconnecting...");
+                     disconnect();
+                     println("The Speck is now disconnected.  You may safely unplug the Speck now.\n");
+                     }
+                  else
+                     {
+                     println("Changing this Speck's logging interval from " + currentLoggingInterval + " to " + newLoggingInterval + "...");
+                     try
+                        {
+                        final SpeckConfig newSpeckConfig = device.setLoggingInterval(newLoggingInterval);
+                        println("The Speck's logging interval is now set to " + newSpeckConfig.getLoggingInterval() + ". Disconnecting...");
+                        disconnect();
+                        println("The Speck is now disconnected.  You may safely unplug the Speck now.\n");
+                        }
+                     catch (CommunicationException e)
+                        {
+                        LOG.error("CommunicationException while trying to set the logging interval.", e);
+                        println("Failed to set the Speck's logging interval due to a CommunicationException.  You may safely unplug the Speck now.\n");
+                        }
+                     }
+                  }
+               else
+                  {
+                  println("Sorry, this Speck does not support the command to set the logging interval.  Disconnecting...");
                   disconnect();
                   println("The Speck is now disconnected.  You may safely unplug the Speck now.\n");
                   }
