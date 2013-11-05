@@ -82,10 +82,10 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
 
          if (CommandStrategyHelper.isResponseDataValid(data))
             {
-            final String latitude = String.valueOf(ByteBuffer.wrap(data, 13, 4).getInt()) +
+            final String latitude = StringUtils.leftPad(String.valueOf(ByteBuffer.wrap(data, 13, 4).getInt()), LENGTH_OF_LAT_LONG_DECIMAL_PART, '0') +
                                     "." +
                                     StringUtils.leftPad(String.valueOf(ByteBuffer.wrap(data, 17, 4).getInt()), LENGTH_OF_LAT_LONG_DECIMAL_PART, '0');
-            final String longitude = String.valueOf(ByteBuffer.wrap(data, 21, 4).getInt()) +
+            final String longitude = StringUtils.leftPad(String.valueOf(ByteBuffer.wrap(data, 21, 4).getInt()), LENGTH_OF_LAT_LONG_DECIMAL_PART, '0') +
                                      "." +
                                      StringUtils.leftPad(String.valueOf(ByteBuffer.wrap(data, 25, 4).getInt()), LENGTH_OF_LAT_LONG_DECIMAL_PART, '0');
 
