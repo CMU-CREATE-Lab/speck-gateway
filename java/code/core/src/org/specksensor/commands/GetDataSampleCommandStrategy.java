@@ -7,6 +7,7 @@ import java.util.Map;
 import edu.cmu.ri.createlab.usb.hid.CreateLabHIDReturnValueCommandStrategy;
 import edu.cmu.ri.createlab.usb.hid.HIDCommandResponse;
 import edu.cmu.ri.createlab.util.ByteUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.specksensor.DataSample;
@@ -21,6 +22,8 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
 
    private static final byte HISTORIC_SAMPLE_COMMAND_PREFIX = 'G';
    private static final byte CURRENT_SAMPLE_COMMAND_PREFIX = 'S';
+
+   private static final int LENGTH_OF_LAT_LONG_DECIMAL_PART = 4;
 
    private static final byte IS_GPS_VALID = (byte)'T';
 
@@ -81,10 +84,10 @@ public final class GetDataSampleCommandStrategy extends CreateLabHIDReturnValueC
             {
             final String latitude = String.valueOf(ByteBuffer.wrap(data, 13, 4).getInt()) +
                                     "." +
-                                    String.valueOf(ByteBuffer.wrap(data, 17, 4).getInt());
+                                    StringUtils.leftPad(String.valueOf(ByteBuffer.wrap(data, 17, 4).getInt()), LENGTH_OF_LAT_LONG_DECIMAL_PART, '0');
             final String longitude = String.valueOf(ByteBuffer.wrap(data, 21, 4).getInt()) +
                                      "." +
-                                     String.valueOf(ByteBuffer.wrap(data, 25, 4).getInt());
+                                     StringUtils.leftPad(String.valueOf(ByteBuffer.wrap(data, 25, 4).getInt()), LENGTH_OF_LAT_LONG_DECIMAL_PART, '0');
 
             return new DataSample(null,
                                   ByteBuffer.wrap(data, 1, 4).getInt(),          // sampleTimeUtcSeconds
