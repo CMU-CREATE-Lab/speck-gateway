@@ -40,8 +40,8 @@
     <module2copyright />
   </component>
   <component name="DataSourceManagerImpl" format="xml" hash="149491878">
-    <data-source source="LOCAL" name="Production Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="3ff4c361-ca66-4b38-a2b3-28a73899fa9c">
-      <identifier-quote-string>&quot;</identifier-quote-string>
+    <data-source source="LOCAL" name="Production Data Source" uuid="3ff4c361-ca66-4b38-a2b3-28a73899fa9c">
+      <driver-ref>derby.embedded</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
       <jdbc-url>jdbc:derby:$USER_HOME$/CREATELab/Speck/Speck00343135321504100f17/database/db</jdbc-url>
@@ -56,8 +56,8 @@
         </library>
       </libraries>
     </data-source>
-    <data-source source="LOCAL" name="Data Source" product="Apache Derby" version="10.9.1.0 - (1344872)" jdbc-version="4.1" driver-name="Apache Derby Embedded JDBC Driver" driver-version="10.9.1.0 - (1344872)" uuid="7693384e-3d0e-4676-a9f0-9dc85f1a89cd">
-      <identifier-quote-string>&quot;</identifier-quote-string>
+    <data-source source="LOCAL" name="Data Source" uuid="7693384e-3d0e-4676-a9f0-9dc85f1a89cd">
+      <driver-ref>derby.embedded</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.apache.derby.jdbc.EmbeddedDriver</jdbc-driver>
       <jdbc-url>jdbc:derby:jar:($PROJECT_DIR$/etc/database/sample-db.jar)sample-db</jdbc-url>
@@ -213,6 +213,8 @@
         <inspection_tool class="LocalCanBeFinal" enabled="true" level="WARNING" enabled_by_default="true">
           <option name="REPORT_VARIABLES" value="true" />
           <option name="REPORT_PARAMETERS" value="true" />
+          <option name="REPORT_CATCH_PARAMETERS" value="true" />
+          <option name="REPORT_FOREACH_PARAMETERS" value="true" />
         </inspection_tool>
         <inspection_tool class="LocalVariableHidingMemberVariable" enabled="true" level="WARNING" enabled_by_default="true">
           <option name="m_ignoreInvisibleFields" value="true" />
@@ -353,10 +355,10 @@
         </inspection_tool>
         <inspection_tool class="UtilityClassWithPublicConstructor" enabled="true" level="WARNING" enabled_by_default="true" />
         <inspection_tool class="UtilityClassWithoutPrivateConstructor" enabled="true" level="WARNING" enabled_by_default="true">
-          <option name="ignoreClassesWithOnlyMain" value="false" />
           <option name="ignorableAnnotations">
             <value />
           </option>
+          <option name="ignoreClassesWithOnlyMain" value="false" />
         </inspection_tool>
         <inspection_tool class="VolatileArrayField" enabled="true" level="WARNING" enabled_by_default="true" />
         <inspection_tool class="VolatileLongOrDoubleField" enabled="true" level="WARNING" enabled_by_default="true" />
@@ -529,7 +531,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SpeckGateway.iml" filepath="$PROJECT_DIR$/SpeckGateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GpsSpeckGateway.iml" filepath="$PROJECT_DIR$/GpsSpeckGateway.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
