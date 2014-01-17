@@ -1,11 +1,14 @@
 package org.specksensor.applications;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.LayoutManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,16 +17,21 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
 import edu.cmu.ri.createlab.device.connectivity.BaseCreateLabDeviceConnectivityManager;
 import edu.cmu.ri.createlab.userinterface.GUIConstants;
 import edu.cmu.ri.createlab.userinterface.component.Spinner;
 import edu.cmu.ri.createlab.userinterface.util.AbstractTimeConsumingAction;
+import edu.cmu.ri.createlab.userinterface.util.ImageUtils;
 import edu.cmu.ri.createlab.userinterface.util.SwingUtils;
 import edu.cmu.ri.createlab.util.StandardVersionNumber;
 import edu.cmu.ri.createlab.util.net.HostAndPort;
@@ -65,17 +73,21 @@ final class SpeckGatewayGui
                                                                         "3 minutes",
                                                                         "4 minutes"};
 
+   private static final Font FONT_NORMAL_BOLD = new Font(GUIConstants.FONT_NAME, Font.BOLD, GUIConstants.FONT_NORMAL.getSize());
+
    private final Spinner connectionSpinner = new Spinner(RESOURCES.getString("label.spinner"), GUIConstants.FONT_NORMAL);
+   private final JPanel softwareUpdatePanel = new JPanel();
    private final JPanel connectionStatusPanel = new JPanel();
    private final JPanel speckPanel;
    private final JPanel datastoreServerPanel;
    private final JPanel statisticsPanel;
    private final JPanel loggingIntervalPanel = new JPanel();
+   private final JLabel alertIcon = new JLabel(ImageUtils.createImageIcon("/org/specksensor/applications/alert-icon.png"));
+   private final JLabel infoIcon = new JLabel(ImageUtils.createImageIcon("/org/specksensor/applications/info-icon.png"));
 
    @NotNull
    private final SpeckGatewayHelper helper;
 
-   private final Font FONT_NORMAL_BOLD = new Font(GUIConstants.FONT_NAME, Font.BOLD, GUIConstants.FONT_NORMAL.getSize());
    private final JLabel connectionStatusLabelSpeckId = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
 
    private final JTextField hostAndPortTextField = new JTextField(30);
@@ -136,6 +148,63 @@ final class SpeckGatewayGui
 
       connectionSpinner.setVisible(true);
       connectionStatusPanel.setVisible(false);
+      softwareUpdatePanel.setVisible(false);
+      softwareUpdatePanel.setBackground(Color.WHITE);
+
+      final UpdateChecker updateChecker = new UpdateChecker(StandardVersionNumber.parse(SpeckGatewayHelper.VERSION_NUMBER));
+      updateChecker.addUpdateCheckResultListener(
+            new UpdateChecker.UpdateCheckResultListener()
+            {
+            @Override
+            public void handleUpdateCheckResult(final boolean wasCheckSuccessful,
+                                                final boolean isUpdateAvailable,
+                                                @Nullable final StandardVersionNumber versionNumberOfUpdate)
+               {
+               // Make sure this happens in the Swing thread...
+               SwingUtilities.invokeLater(
+                     new Runnable()
+                     {
+                     @Override
+                     public void run()
+                        {
+                        final String text;
+                        final JLabel icon;
+                        if (wasCheckSuccessful)
+                           {
+                           if (isUpdateAvailable && versionNumberOfUpdate != null)
+                              {
+                              text = MessageFormat.format(RESOURCES.getString("label.update-available"),
+                                                          SpeckGatewayHelper.VERSION_NUMBER,
+                                                          versionNumberOfUpdate.toString());
+                              icon = infoIcon;
+                              }
+                           else
+                              {
+                              text = null;
+                              icon = null;
+                              }
+                           }
+                        else
+                           {
+                           text = RESOURCES.getString("label.update-check-failed");
+                           icon = alertIcon;
+                           }
+
+                        // only show the panel if an update is available, or if the update check failed
+                        if (text != null)
+                           {
+                           setSoftwareUpdateContent(new HtmlPane(text), icon);
+                           }
+                        softwareUpdatePanel.setVisible(text != null);
+
+                        jFrame.pack();
+                        jFrame.repaint();
+                        }
+                     });
+               }
+            });
+      // initiate the update check
+      updateChecker.checkForUpdate();
 
       // add the main panel to the frame, pack, paint, center on the screen, and make it visible
       jFrame.add(mainPanel);
@@ -172,34 +241,6 @@ final class SpeckGatewayGui
                            loggingIntervalComboBox.setSelectedIndex(loggingIntervalIndex);
                            }
                         validateDatastoreServerForm();
-
-                        final UpdateChecker updateChecker = new UpdateChecker(StandardVersionNumber.parse(SpeckGatewayHelper.VERSION_NUMBER));
-                        updateChecker.addUpdateCheckResultListener(
-                              new UpdateChecker.UpdateCheckResultListener()
-                              {
-                              @Override
-                              public void handleUpdateCheckResult(final boolean wasCheckSuccessful,
-                                                                  final boolean isUpdateAvailable,
-                                                                  @Nullable final StandardVersionNumber versionNumberOfUpdate)
-                                 {
-                                 // Make sure this happens in the Swing thread...
-                                 SwingUtilities.invokeLater(
-                                       new Runnable()
-                                       {
-                                       @Override
-                                       public void run()
-                                          {
-                                          if (wasCheckSuccessful && isUpdateAvailable)
-                                             {
-                                             // TODO: show a panel with the Update Available notice and instructions.
-                                             jFrame.setTitle(SpeckGatewayHelper.APPLICATION_NAME_AND_VERSION_NUMBER + " - " + RESOURCES.getString("label.update-available"));
-                                             }
-                                          }
-                                       });
-                                 }
-                              });
-                        // initiate the update check
-                        updateChecker.checkForUpdate();
 
                         helper.addStatisticsListener(statisticsListener);
                         jFrame.pack();
@@ -286,6 +327,7 @@ final class SpeckGatewayGui
       final GroupLayout layout = new GroupLayout(panel);
       layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                  .addComponent(softwareUpdatePanel)
                   .addGroup(layout.createSequentialGroup()
                                   .addComponent(speckPanel)
                                   .addGap(GAP)
@@ -297,6 +339,7 @@ final class SpeckGatewayGui
 
       layout.setVerticalGroup(
             layout.createSequentialGroup()
+                  .addComponent(softwareUpdatePanel)
                   .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                   .addComponent(speckPanel)
                                   .addComponent(verticalDivider)
@@ -327,6 +370,55 @@ final class SpeckGatewayGui
    public void disconnect()
       {
       helper.disconnect();
+      }
+
+   private void setSoftwareUpdateContent(@NotNull final Component content, @NotNull final JLabel icon)
+      {
+      softwareUpdatePanel.removeAll();
+      softwareUpdatePanel.setFont(GUIConstants.FONT_NORMAL);
+
+      icon.setBackground(Color.WHITE);
+
+      final JPanel contentPanel = new JPanel();
+      final GroupLayout contentPanelLayout = new GroupLayout(contentPanel);
+      contentPanel.setLayout(contentPanelLayout);
+      contentPanel.setBackground(Color.WHITE);
+
+      contentPanelLayout.setHorizontalGroup(
+            contentPanelLayout.createSequentialGroup()
+                  .addComponent(icon)
+                  .addGap(GAP)
+                  .addComponent(content)
+
+      );
+      contentPanelLayout.setVerticalGroup(
+            contentPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                  .addComponent(icon)
+                  .addComponent(content)
+      );
+
+      contentPanel.setMaximumSize(new Dimension(contentPanel.getPreferredSize().width,
+                                                Math.max(contentPanel.getPreferredSize().height,
+                                                         icon.getPreferredSize().height)));
+      final JPanel horizontalDivider = new JPanel();
+      horizontalDivider.setBackground(Color.GRAY);
+      horizontalDivider.setMinimumSize(new Dimension(10, 1));
+      horizontalDivider.setMaximumSize(new Dimension(4000, 1));
+
+      final GroupLayout softwareUpdatePanelLayout = new GroupLayout(softwareUpdatePanel);
+      softwareUpdatePanel.setLayout(softwareUpdatePanelLayout);
+      softwareUpdatePanelLayout.setHorizontalGroup(
+            softwareUpdatePanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                  .addComponent(contentPanel)
+                  .addComponent(horizontalDivider)
+
+      );
+      softwareUpdatePanelLayout.setVerticalGroup(
+            softwareUpdatePanelLayout.createSequentialGroup()
+                  .addComponent(contentPanel)
+                  .addGap(GAP)
+                  .addComponent(horizontalDivider)
+      );
       }
 
    @NotNull
@@ -741,6 +833,35 @@ final class SpeckGatewayGui
                   }
                }
          );
+         }
+      }
+
+   private static final class HtmlPane extends JEditorPane
+      {
+      private HtmlPane(@Nullable final String htmlContent)
+         {
+         super("text/html", htmlContent);
+         this.setEditable(false);
+         ((HTMLDocument)this.getDocument()).getStyleSheet().addRule("body{font-family:Verdana, Arial, sans-serif; font-size:11pt;}");
+         this.setBackground(Color.WHITE);
+         this.addHyperlinkListener(
+               new HyperlinkListener()
+               {
+               public void hyperlinkUpdate(final HyperlinkEvent event)
+                  {
+                  try
+                     {
+                     if (HyperlinkEvent.EventType.ACTIVATED.equals(event.getEventType()))
+                        {
+                        Desktop.getDesktop().browse(event.getURL().toURI());
+                        }
+                     }
+                  catch (Exception e)
+                     {
+                     LOG.debug("SpeckGatewayGui.HtmlPane.hyperlinkUpdate(): Exception while trying to launch the link in the browser.", e);
+                     }
+                  }
+               });
          }
       }
    }
