@@ -76,7 +76,6 @@ final class SpeckGatewayGui
 
    private final Font FONT_NORMAL_BOLD = new Font(GUIConstants.FONT_NAME, Font.BOLD, GUIConstants.FONT_NORMAL.getSize());
    private final JLabel connectionStatusLabelSpeckId = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
-   private final JLabel connectionStatusLabelPortName = SwingUtils.createLabel(EMPTY_LABEL_TEXT, FONT_NORMAL_BOLD);
 
    private final JTextField hostAndPortTextField = new JTextField(30);
    private final JTextField usernameTextField = new JTextField(30);
@@ -162,7 +161,6 @@ final class SpeckGatewayGui
                         mainPanel.setLayout(createLayoutForWhenConnected(mainPanel));
                         deviceNameTextField.setText("Speck" + speckConfig.getId());
                         connectionStatusLabelSpeckId.setText(speckConfig.getId());
-                        connectionStatusLabelPortName.setText(portName);
                         final boolean canMutateLoggingInterval = speckConfig.getApiSupport().canMutateLoggingInterval();
                         loggingIntervalPanel.setVisible(canMutateLoggingInterval);
                         if (canMutateLoggingInterval)
@@ -302,10 +300,10 @@ final class SpeckGatewayGui
       final GroupLayout speckConnectionStatusPanelLayout = new GroupLayout(connectionStatusPanel);
       connectionStatusPanel.setLayout(speckConnectionStatusPanelLayout);
       connectionStatusPanel.setBackground(Color.WHITE);
+      loggingIntervalPanel.setBackground(Color.WHITE);
 
-      final JLabel speckConnectionStatusLabel1 = SwingUtils.createLabel(RESOURCES.getString("label.connected-to-speck"));    // "Connected to Speck"
-      final JLabel speckConnectionStatusLabel2 = SwingUtils.createLabel(RESOURCES.getString("label.on-port"));               // on port
-      final JLabel speckConnectionStatusLabel3 = SwingUtils.createLabel(RESOURCES.getString("label.logging-interval"));      // Logging Interval
+      final JLabel connectionStatusLabel = SwingUtils.createLabel(RESOURCES.getString("label.connected-to-speck"));  // "Connected to Speck"
+      final JLabel loggingIntervalLabel = SwingUtils.createLabel(RESOURCES.getString("label.logging-interval"));     // Logging Interval
 
       loggingIntervalComboBox.setFont(GUIConstants.FONT_NORMAL);
       loggingIntervalComboBox.addActionListener(
@@ -348,37 +346,40 @@ final class SpeckGatewayGui
                }
             });
 
+
+      // Put the logging interval in its own panel, so we can optionally show/hide it
+      // depending on whether logging interval mutation is supported by this Speck.
       final GroupLayout loggingIntervalLayout = new GroupLayout(loggingIntervalPanel);
       loggingIntervalPanel.setLayout(loggingIntervalLayout);
       loggingIntervalLayout.setHorizontalGroup(
             loggingIntervalLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                  .addComponent(speckConnectionStatusLabel3)
+                  .addComponent(loggingIntervalLabel)
                   .addComponent(loggingIntervalComboBox)
       );
       loggingIntervalLayout.setVerticalGroup(
             loggingIntervalLayout.createSequentialGroup()
-                  .addComponent(speckConnectionStatusLabel3)
+                  .addComponent(loggingIntervalLabel)
                   .addGap(GAP)
                   .addComponent(loggingIntervalComboBox)
       );
 
+      // Must set the max size for the combo box!  Otherwise, resizing the window
+      // causes the layout to stretch out all weird around the combo box. Setting
+      // the max size to the preferred size prevents it from resizing at all, which
+      // is what I want.
+      loggingIntervalComboBox.setMaximumSize(loggingIntervalComboBox.getPreferredSize());
+
       speckConnectionStatusPanelLayout.setHorizontalGroup(
             speckConnectionStatusPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                  .addComponent(speckConnectionStatusLabel1)
+                  .addComponent(connectionStatusLabel)
                   .addComponent(connectionStatusLabelSpeckId)
-                  .addComponent(speckConnectionStatusLabel2)
-                  .addComponent(connectionStatusLabelPortName)
                   .addComponent(loggingIntervalPanel)
       );
       speckConnectionStatusPanelLayout.setVerticalGroup(
             speckConnectionStatusPanelLayout.createSequentialGroup()
-                  .addComponent(speckConnectionStatusLabel1)
+                  .addComponent(connectionStatusLabel)
                   .addGap(GAP)
                   .addComponent(connectionStatusLabelSpeckId)
-                  .addGap(GAP)
-                  .addComponent(speckConnectionStatusLabel2)
-                  .addGap(GAP)
-                  .addComponent(connectionStatusLabelPortName)
                   .addGap(GAP * 4)
                   .addComponent(loggingIntervalPanel)
       );
