@@ -25,6 +25,7 @@ import edu.cmu.ri.createlab.userinterface.GUIConstants;
 import edu.cmu.ri.createlab.userinterface.component.Spinner;
 import edu.cmu.ri.createlab.userinterface.util.AbstractTimeConsumingAction;
 import edu.cmu.ri.createlab.userinterface.util.SwingUtils;
+import edu.cmu.ri.createlab.util.StandardVersionNumber;
 import edu.cmu.ri.createlab.util.net.HostAndPort;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -171,6 +172,35 @@ final class SpeckGatewayGui
                            loggingIntervalComboBox.setSelectedIndex(loggingIntervalIndex);
                            }
                         validateDatastoreServerForm();
+
+                        final UpdateChecker updateChecker = new UpdateChecker(StandardVersionNumber.parse(SpeckGatewayHelper.VERSION_NUMBER));
+                        updateChecker.addUpdateCheckResultListener(
+                              new UpdateChecker.UpdateCheckResultListener()
+                              {
+                              @Override
+                              public void handleUpdateCheckResult(final boolean wasCheckSuccessful,
+                                                                  final boolean isUpdateAvailable,
+                                                                  @Nullable final StandardVersionNumber versionNumberOfUpdate)
+                                 {
+                                 // Make sure this happens in the Swing thread...
+                                 SwingUtilities.invokeLater(
+                                       new Runnable()
+                                       {
+                                       @Override
+                                       public void run()
+                                          {
+                                          if (wasCheckSuccessful && isUpdateAvailable)
+                                             {
+                                             // TODO: show a panel with the Update Available notice and instructions.
+                                             jFrame.setTitle(SpeckGatewayHelper.APPLICATION_NAME_AND_VERSION_NUMBER + " - " + RESOURCES.getString("label.update-available"));
+                                             }
+                                          }
+                                       });
+                                 }
+                              });
+                        // initiate the update check
+                        updateChecker.checkForUpdate();
+
                         helper.addStatisticsListener(statisticsListener);
                         jFrame.pack();
                         jFrame.repaint();
@@ -345,7 +375,6 @@ final class SpeckGatewayGui
                loggingIntervalComboBox.setEnabled(true);
                }
             });
-
 
       // Put the logging interval in its own panel, so we can optionally show/hide it
       // depending on whether logging interval mutation is supported by this Speck.
