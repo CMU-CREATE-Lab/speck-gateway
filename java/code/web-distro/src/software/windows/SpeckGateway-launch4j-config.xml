@@ -3,7 +3,7 @@
    <headerType>gui</headerType>
    <jar>@speck-applications.jar@</jar>
    <outfile>@speck-gateway.exe@</outfile>
-   <errTitle>You must have Java installed to run the Speck Gateway</errTitle>
+   <errTitle>You must have Java installed to run the @app.pretty-name@</errTitle>
    <cmdLine></cmdLine>
    <chdir></chdir>
    <priority>normal</priority>
