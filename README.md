@@ -184,14 +184,24 @@ This section discusses some useful tips for running the Speck Gateway from the c
 
 The gateway application supports the following command line options:
 
-`--logging-level=<level>`
-Sets the logging level for the log file.  Has no effect on the console logging.  Valid values are `trace`, `debug`, and `info`.
-
-`--command-line`
-The command line version will be used instead of the GUI version.
-
-`--config=<path>`
-Specify a path to a local config file, must be used in conjunction with the `--command-line` switch. No connection to a device will be attempted (and thus no files will be downloaded). Instead, the gateway will obtain the Speck ID (and thus which database to look in for samples to upload) from this config file.  This is useful for times when you want to upload previously-downloaded samples and/or you don't have the Speck to plug in.
+<table>
+  <tr>
+    <th>Option</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>`--logging-level=<level>`</td>
+    <td>Sets the logging level for the log file.  Has no effect on the console logging.  Valid values are `trace`, `debug`, and `info`.</td>
+  </tr>
+  <tr>
+    <td>`--command-line`</td>
+    <td>The command line version will be used instead of the GUI version.</td>
+  </tr>
+  <tr>
+    <td>`--config=<path>`</td>
+    <td>Specify a path to a local config file, must be used in conjunction with the `--command-line` switch. No connection to a device will be attempted (and thus no files will be downloaded). Instead, the gateway will obtain the Speck ID (and thus which database to look in for samples to upload) from this config file.  This is useful for times when you want to upload previously-downloaded samples and/or you don't have the Speck to plug in.</td>
+  </tr>
+</table>
 
 ### Change the Logging Level
 
