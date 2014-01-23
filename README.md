@@ -5,7 +5,7 @@ About
 
 The Speck Gateway is an application which downloads data samples from a Speck to the user's computer and optionally uploads the data samples to a server for storage, visualization, etc.
 
-Prerequisites [prerequisites_section]
+Prerequisites
 -------------
 
 ### Hardware
@@ -26,7 +26,7 @@ Downloading
 We offer two pre-built versions of the Speck Gateway:
 
 * Downloadable, standalone applications for Mac OS and Windows
-* A downloadable zip file for Linux users or users having special installation configuration needs (see the *[Advanced Use Cases][advanced_use_cases]* section below)
+* A downloadable zip file for Linux users or users having special installation configuration needs (see the *Advanced Use Cases* section below)
 
 Download the software at: <http://specksensor.org/software/>
 
@@ -42,7 +42,7 @@ Do the following to install the Speck Gateway application:
 Running
 -------
 
-First, make sure you have Java SE 6 or later installed.  See the *[Prerequisites][prerequisites_section]* section above for details.  If Java is
+First, make sure you have Java SE 6 or later installed.  See the *Prerequisites* section above for details.  If Java is
 already installed, do the following to run the Speck Gateway application:
 
 * **Mac OS**: double-click the Speck Gateway application in your Applications folder.
@@ -69,7 +69,7 @@ Downloaded data samples are stored in two forms: a local database and a CSV file
 
 In that directory you'll find a `data_samples.csv` file as well as a database directory.  The database is an Apache Derby database.  It's not really meant for manual editing, but it certainly can be if you wish.  Just use the Derby `ij` tool and manipulate it like a normal SQL database.
 
-Advanced Use Cases [advanced_use_cases]
+Advanced Use Cases
 ------------------
 
 Some users may have more complex installation needs which can currently only be satisfied with the zip file version of the software.  Other users may prefer to build the application from source.  The following sections cover those use cases.  Users whose needs are met with the standalone applications discussed above may safely ignore the rest of this document.
@@ -80,7 +80,7 @@ The Zip file version of the software is available for download at: <http://speck
 
 After downloading and unzipping, the simplest way to run the software is to simply double-click the `speck-applications.jar` Jar file. Doing so will run the Speck Gateway, and it will behave exactly the same as the pre-built, standalone applications discussed above.
 
-Other ways of running the software are discussed below in the *[Running][section_running]* section.  See the *[Tips and Tricks][tips_and_tricks_section]* section below for advanced configuration options.
+Other ways of running the software are discussed below in the *Running* section.  See the *Tips and Tricks* section below for advanced configuration options.
 
 ### Building from Source
 
@@ -143,11 +143,11 @@ BUILD SUCCESSFUL
 Total time: 3 seconds
 ```
 
-The binaries are now built and you're ready to run the application.  See the *[Running][section_running]* section below for details. See the *[Tips and Tricks][tips_and_tricks_section]* section below for advanced configuration options.
+The binaries are now built and you're ready to run the application.  See the *Running* section below for details. See the *Tips and Tricks* section below for advanced configuration options.
 
 Note that doing the above will simply create all the Java binaries (Jar files) required for running the code.  It won't create the standalone application versions of the software such as we provide for Mac OS and Windows.  Details for creating the standalone applications are beyond the scope of this document.
 
-### Running [section_running]
+### Running
 
 There are actually three applications created when you build the binaries or work with the jars from the Zip file version:
 
@@ -175,7 +175,7 @@ To run the command line client, `cd` to the `java` directory and run the `comman
 
 The command line client has a menu which lists the various commands you can run to interact with the device.
 
-Tips and Tricks [tips_and_tricks_section]
+Tips and Tricks
 ---------------
 
 This section discusses some useful tips for running the Speck Gateway from the command line (either from the jars provided in the Zip file version, or from binaries created by building from source).
@@ -184,14 +184,14 @@ This section discusses some useful tips for running the Speck Gateway from the c
 
 The gateway application supports the following command line options:
 
-`--logging-level=<level>`
-: Sets the logging level for the log file.  Has no effect on the console logging.  Valid values are `trace`, `debug`, and `info`.
-
-`--command-line`
-: The command line version will be used instead of the GUI version
-
-`--config=<path>`
-: Specify a path to a local config file, must be used in conjunction with the `--command-line` switch. No connection to a device will be attempted (and thus no files will be downloaded). Instead, the gateway will obtain the Speck ID (and thus which database to look in for samples to upload) from this config file.  This is useful for times when you want to upload previously-downloaded samples and/or you don't have the Speck to plug in.
+<dl>
+  <dt>`--logging-level=<level>`</dt>
+  <dd>Sets the logging level for the log file.  Has no effect on the console logging.  Valid values are `trace`, `debug`, and `info`.</dd>
+  <dt>`--command-line`</dt>
+  <dd>The command line version will be used instead of the GUI version</dd>
+  <dt>`--config=<path>`</dt>
+  <dd>Specify a path to a local config file, must be used in conjunction with the `--command-line` switch. No connection to a device will be attempted (and thus no files will be downloaded). Instead, the gateway will obtain the Speck ID (and thus which database to look in for samples to upload) from this config file.  This is useful for times when you want to upload previously-downloaded samples and/or you don't have the Speck to plug in.</dd>
+</dl>
 
 ### Change the Logging Level
 
