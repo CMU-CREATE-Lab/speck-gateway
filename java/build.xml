@@ -106,6 +106,8 @@
       <format property="build.timestamp" pattern="yyyy-MM-dd hh:mm:ss a z"/>
    </tstamp>
 
+   <property environment="env"/>
+
    <!-- get the svn repository url and revision -->
    <property name="speck-gateway.version-number" value="${speck-gateway.version-number.major}.${speck-gateway.version-number.minor}.${speck-gateway.version-number.revision}"/>
    <echo level="info">Speck Gatway Version Number: ${speck-gateway.version-number}</echo>
@@ -114,7 +116,7 @@
 
    <target name="clean" depends="clean-speck-core,
                                  clean-speck-applications,
-                                 clean-speck-gateway-webstart" description="clean up everything"/>
+                                 clean-speck-gateway-web-distro" description="clean up everything"/>
 
    <target name="clean-speck-core" description="clean up speck-core">
       <delete dir="${speck-core.build.dir}"/>
@@ -126,10 +128,10 @@
       <delete dir="${speck-applications.dist.dir}"/>
    </target>
 
-   <target name="clean-speck-gateway-webstart" description="clean up speck-gateway-webstart">
-      <delete dir="${speck-gateway-webstart.dist.dir}"/>
+   <target name="clean-speck-gateway-web-distro" description="clean up speck-gateway-web-distro">
+      <delete dir="${speck-gateway-web-distro.dist.dir}"/>
    </target>
-   
+
    <target name="build" depends="build-speck-core, build-speck-applications" description="builds the source code" unless="build-is-complete">
       <property name="build-is-complete" value="true"/>
    </target>
@@ -230,63 +232,83 @@
       <property name="dist-speck-applications-is-complete" value="true"/>
    </target>
 
-   <target name="dist-webstart" depends="dist" description="Creates the Java Web Start application" unless="dist-webstart-is-complete">
+   <target name="dist-web-distro" depends="clean, dist" description="Creates the web distribution" unless="dist-web-distro-is-complete">
+      <!-- Make sure LAUNCH4J_HOME is defined, then load the taskdef -->
+      <fail unless="env.LAUNCH4J_HOME" message="The 'dist-web-distro' task requires the LAUNCH4J_HOME environment variable to be defined! Aborting."/>
+      <echo level="info">Launch4J Home: ${env.LAUNCH4J_HOME}</echo>
+      <taskdef name="launch4j"
+               classname="net.sf.launch4j.ant.Launch4jTask"
+               classpath="${env.LAUNCH4J_HOME}/launch4j.jar:${env.LAUNCH4J_HOME}/lib/xstream.jar"/>
 
-      <mkdir dir="${speck-gateway-webstart.dist.dir}"/>
+      <mkdir dir="${speck-gateway-web-distro.dist.dir}"/>
+      <mkdir dir="${speck-gateway-web-distro.dist.dir}/software"/>
+      <mkdir dir="${speck-gateway-web-distro.dist.dir}/software/mac"/>
+      <mkdir dir="${speck-gateway-web-distro.dist.dir}/software/windows"/>
 
-      <!-- copy all the web content and jars we need -->
-      <copy todir="${speck-gateway-webstart.dist.dir}" flatten="false">
-         <fileset dir="${speck-gateway-webstart.src.dir}">
+      <!-- copy all the web content we need (excluding stuff that needs special token filtering) -->
+      <copy todir="${speck-gateway-web-distro.dist.dir}" flatten="false">
+         <fileset dir="${speck-gateway-web-distro.src.dir}">
             <exclude name="index.html"/>
-            <exclude name="**/docs/zip/**"/>
+            <exclude name="**/software/**"/>
             <include name="**/*"/>
          </fileset>
       </copy>
-      <copy todir="${speck-gateway-webstart.dist.dir}" flatten="false">
-         <fileset dir="${speck-gateway-webstart.src.dir}">
+      <copy file="${base.directory}/../README.pdf"
+            tofile="${speck-gateway-web-distro.dist.dir}/software/docs/gps_speck_gateway.pdf"
+            flatten="false"/>
+
+      <!-- copy the items that need token filtering -->
+      <copy todir="${speck-gateway-web-distro.dist.dir}" flatten="false">
+         <fileset dir="${speck-gateway-web-distro.src.dir}">
             <include name="index.html"/>
+            <include name="software/index.html"/>
          </fileset>
          <filterset>
             <filter token="version.number" value="${speck-gateway.version-number}"/>
          </filterset>
       </copy>
-      <copy todir="${speck-gateway-webstart.dist.dir}/jar" flatten="true">
-         <fileset dir="${speck-applications.dist.dir}">
-            <include name="**/*.jar"/>
+      <copy file="${speck-gateway-web-distro.src.dir}/software/version-number.txt"
+            tofile="${speck-gateway-web-distro.dist.dir}/software/gps-speck-version-number.txt" flatten="false">
+         <filterset>
+            <filter token="version.number" value="${speck-gateway.version-number}"/>
+         </filterset>
+      </copy>
+      <copy tofile="${speck-gateway-web-distro.dist.dir}/software/windows/GpsSpeckGateway-launch4j-config.xml" flatten="false">
+         <fileset dir="${speck-gateway-web-distro.src.dir}/software/windows">
+            <include name="GpsSpeckGateway-launch4j-config.xml"/>
          </fileset>
-         <fileset file="${hidapi-webstart.native1}"/>
-         <fileset file="${hidapi-webstart.native2}"/>
+         <filterset>
+            <filter token="version.number" value="${speck-gateway.version-number}"/>
+            <filter token="version.number.four-digit" value="${speck-gateway.version-number}.0"/>
+            <filter token="icon.path" value="${speck-gateway-web-distro.src.dir}/software/windows/gps_speck_icon_256.ico"/>
+            <filter token="speck-applications.jar" value="${speck-gateway-web-distro.dist.dir}/software/windows/speck-applications.jar"/>
+            <filter token="speck-gateway.exe" value="${speck-gateway-web-distro.dist.dir}/software/windows/GpsSpeckGateway.exe"/>
+            <filter token="app.pretty-name" value="GPS Speck Gateway"/>
+            <filter token="app.exe-name" value="GpsSpeckGateway.exe"/>
+            <filter token="jre.options" value=""/>
+         </filterset>
+      </copy>
+      <copy todir="${speck-gateway-web-distro.dist.dir}/software/windows" flatten="false">
+         <fileset dir="${speck-gateway-web-distro.src.dir}/software/windows">
+            <include name="GpsSpeckGateway.aip"/>
+         </fileset>
+         <filterset>
+            <filter token="version.number" value="${speck-gateway.version-number}"/>
+            <filter token="app.pretty-name" value="GPS Speck Gateway"/>
+            <filter token="app.exe-name" value="GpsSpeckGateway.exe"/>
+            <filter token="icon.filename" value="gps_speck_icon_256.ico"/>
+         </filterset>
       </copy>
 
-      <!-- Sign all the jars -->
-      <signjar
-            alias="${keystore.alias}"
-            keystore="${keystore.location}"
-            storepass="${keystore.password}"
-            keypass="${keystore.private-key.password}"
-            lazy="false">
-         <fileset dir="${speck-gateway-webstart.dist.dir}">
-            <include name="**/*.jar"/>
-         </fileset>
-      </signjar>
+      <!-- ZIP FILE BEGIN ========================================================================================== -->
 
       <!-- delete existing zip, if any -->
-      <delete file="${speck-gateway-webstart.dist.dir}/${speck-gateway.zip.filename}"/>
-
-      <!-- Copy the README, using a filter to insert the version number -->
-      <copy todir="${speck-applications.dist.dir}" flatten="false">
-         <fileset dir="${speck-gateway-webstart.src.dir}/docs/zip">
-            <include name="README1.txt"/>
-         </fileset>
-         <filterset>
-            <filter token="version.number" value="${speck-gateway.version-number}"/>
-         </filterset>
-      </copy>
+      <delete file="${speck-gateway-web-distro.dist.dir}/software/${speck-gateway.zip.filename}"/>
 
       <!-- create the zip -->
-      <zip destfile="${speck-gateway-webstart.dist.dir}/${speck-gateway.zip.filename}" update="yes" compress="true">
+      <zip destfile="${speck-gateway-web-distro.dist.dir}/software/${speck-gateway.zip.filename}" update="yes" compress="true">
          <zipfileset dir="${speck-applications.dist.dir}" includes="**/*" prefix="${speck-gateway.zip.directory_name}"/>
-         <zipfileset dir="${base.directory}/.." includes="README.txt" fullpath="${speck-gateway.zip.directory_name}/README2.txt"/>
+         <zipfileset dir="${base.directory}/.." includes="README.pdf" fullpath="${speck-gateway.zip.directory_name}/README.pdf"/>
          <zipfileset dir="${base.directory}" includes="LICENSE.txt" prefix="${speck-gateway.zip.directory_name}"/>
          <zipfileset dir="${base.directory}" includes="NOTICE.txt" prefix="${speck-gateway.zip.directory_name}"/>
          <zipfileset dir="${lib.dir}/apache-derby/" includes="LICENSE" fullpath="${speck-gateway.zip.directory_name}/licenses/APACHE_DERBY_LICENSE.txt"/>
@@ -301,7 +323,94 @@
          <zipfileset dir="${lib.dir}/log4j-extras/" includes="LICENSE" fullpath="${speck-gateway.zip.directory_name}/licenses/LOG4J_EXTRAS_LICENSE.txt"/>
       </zip>
 
-      <property name="dist-webstart-is-complete" value="true"/>
+      <!-- ZIP FILE END ============================================================================================ -->
+
+      <!-- WINDOWS EXE BEGIN ======================================================================================= -->
+
+      <!-- copy in all the jars and such, but exclude the Mac and Linux native libs and the README which we don't need for the .exe -->
+      <copy todir="${speck-gateway-web-distro.dist.dir}/software/windows" flatten="true">
+         <fileset dir="${speck-applications.dist.dir}">
+            <exclude name="**/*.dylib"/>
+            <exclude name="**/*.jnilib"/>
+            <exclude name="**/*.so"/>
+            <exclude name="**/README*"/>
+            <include name="**/*"/>
+         </fileset>
+         <fileset dir="${base.directory}">
+            <include name="LICENSE.txt"/>
+            <include name="NOTICE.txt"/>
+         </fileset>
+         <fileset dir="${base.directory}/..">
+            <include name="README.pdf"/>
+         </fileset>
+      </copy>
+
+      <!-- Copy third-party licenses -->
+      <mkdir dir="${speck-gateway-web-distro.dist.dir}/software/windows/licenses"/>
+      <copy file="${lib.dir}/apache-derby/LICENSE" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/APACHE_DERBY_LICENSE.txt"/>
+      <copy file="${lib.dir}/commons-io/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/COMMONS_IO_LICENSE.txt"/>
+      <copy file="${lib.dir}/commons-lang/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/COMMONS_LANG_LICENSE.txt"/>
+      <copy file="${lib.dir}/HIDAPI/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/HIDAPI_LICENSE.txt"/>
+      <copy file="${lib.dir}/httpcomponents-client/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/HTTP_COMPONENTS_LICENSE.txt"/>
+      <copy file="${lib.dir}/jackson/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/JACKSON_LICENSE.txt"/>
+      <copy file="${lib.dir}/JNA/license.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/JNA_LICENSE.txt"/>
+      <copy file="${lib.dir}/JNAerator/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/JNAERATOR_LICENSE.txt"/>
+      <copy file="${lib.dir}/log4j/LICENSE" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/LOG4J_LICENSE.txt"/>
+      <copy file="${lib.dir}/log4j-extras/LICENSE" tofile="${speck-gateway-web-distro.dist.dir}/software/windows/licenses/LOG4J_EXTRAS_LICENSE.txt"/>
+
+      <!-- copy the icon files -->
+      <copy file="${speck-gateway-web-distro.src.dir}/software/windows/gps_speck_icon_256.ico" todir="${speck-gateway-web-distro.dist.dir}/software/windows/"/>
+
+      <!-- create the .exe -->
+      <launch4j configFile="${speck-gateway-web-distro.dist.dir}/software/windows/GpsSpeckGateway-launch4j-config.xml"/>
+
+      <!-- WINDOWS EXE END ========================================================================================= -->
+
+      <!-- MAC APP BEGIN =========================================================================================== -->
+
+      <create-mac-application creator.code="GSpk"
+                              app.pretty-name="GPS Speck Gateway"
+                              app.pretty-name-no-spaces="GpsSpeckGateway"
+                              version.number="${speck-gateway.version-number}"
+                              main.class="org.specksensor.applications.SpeckGateway"
+                              bundle.identifier="org.specksensor.applications.gateway.gpsspeck"
+                              signing.identity="${macos.signing.identity}"
+                              iconset.file="gpsspeck.iconset"
+                              icns.file="gpsspeck.icns"
+                              jre.options=""/>
+
+      <!-- MAC APP END ============================================================================================= -->
+
+      <property name="dist-web-distro-is-complete" value="true"/>
+   </target>
+
+   <target name="create-windows-msi" description="Creates the .msi installer for Windows" unless="create-windows-msi-is-complete">
+      <condition property="isWindows">
+         <os family="windows"/>
+      </condition>
+
+      <fail unless="isWindows" message="The 'create-windows-msi' task can only be executed on Windows. Aborting."/>
+      <fail unless="env.ADVANCED_INSTALLER_HOME" message="The 'create-windows-msi' task requires the ADVANCED_INSTALLER_HOME environment variable to be defined! Aborting."/>
+      <echo level="info">Now executing 'create-windows-msi': [${env.ADVANCED_INSTALLER_HOME}]</echo>
+
+      <exec executable="${env.ADVANCED_INSTALLER_HOME}/bin/x86/AdvancedInstaller.com"
+            dir="${speck-gateway-web-distro.dist.dir}/software/windows/">
+         <arg line="/build"/>
+         <!-- MUST use backslashes here! -->
+         <arg line="${speck-gateway-web-distro.dist.dir}\software\windows\GpsSpeckGateway.aip"/>
+      </exec>
+
+      <copy file="${speck-gateway-web-distro.dist.dir}/software/windows/GpsSpeckGateway-SetupFiles/GpsSpeckGateway.msi"
+            todir="${speck-gateway-web-distro.dist.dir}/software/windows"/>
+
+      <delete includeemptydirs="true">
+         <fileset dir="${speck-gateway-web-distro.dist.dir}/software/windows/">
+            <exclude name="GpsSpeckGateway.msi"/>
+            <include name="**/*"/>
+         </fileset>
+      </delete>
+
+      <property name="create-windows-msi-is-complete" value="true"/>
    </target>
 
    <!-- ============================================================================================================ -->
@@ -395,6 +504,119 @@
                <jar-manifest-attributes/>
             </manifest>
          </jar>
+
+      </sequential>
+   </macrodef>
+
+   <macrodef name="create-mac-application">
+      <attribute name="creator.code"/>
+      <attribute name="app.pretty-name"/>
+      <attribute name="app.pretty-name-no-spaces"/>
+      <attribute name="version.number"/>
+      <attribute name="main.class"/>
+      <attribute name="bundle.identifier"/>
+      <attribute name="signing.identity"/>
+      <attribute name="iconset.file"/>
+      <attribute name="icns.file"/>
+      <attribute name="jre.options"/>
+
+      <sequential>
+         <!-- Create the directory structure-->
+         <mkdir dir="${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app/Contents/MacOS"/>
+         <mkdir dir="${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app/Contents/Resources/Java"/>
+
+         <!-- Copy the JavaApplicationStub and make it executable -->
+         <copy file="/System/Library/Frameworks/JavaVM.framework/Versions/Current/Resources/MacOS/JavaApplicationStub"
+               todir="${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app/Contents/MacOS"/>
+         <chmod file="${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app/Contents/MacOS/JavaApplicationStub" perm="755"/>
+
+         <!-- Copy the Info.plist and PkgInfo files, with appropriate token filtering -->
+         <copy todir="${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app/Contents" flatten="false">
+            <fileset dir="${speck-gateway-web-distro.src.dir}/software/mac">
+               <include name="Info.plist"/>
+               <include name="PkgInfo"/>
+            </fileset>
+            <filterset>
+               <filter token="creator.code" value="@{creator.code}"/>
+               <filter token="app.pretty-name" value="@{app.pretty-name}"/>
+               <filter token="version.number" value="@{version.number}"/>
+               <filter token="main.class" value="@{main.class}"/>
+               <filter token="bundle.identifier" value="@{bundle.identifier}"/>
+               <filter token="icns.file" value="@{icns.file}"/>
+               <filter token="jre.options" value="@{jre.options}"/>
+            </filterset>
+         </copy>
+
+         <!-- Copy the icons -->
+         <copy todir="${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app/Contents/Resources" flatten="false">
+            <fileset dir="${speck-gateway-web-distro.src.dir}/software/mac">
+               <include name="@{iconset.file}/**/*"/>
+            </fileset>
+         </copy>
+
+         <!-- Convert the folder of icons into an icns file -->
+         <exec executable="/usr/bin/iconutil">
+            <arg line="-c icns '${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app/Contents/Resources/@{iconset.file}'"/>
+         </exec>
+
+         <!-- copy in all the jars and such, but exclude the Windows and Linux native libs and the README which we don't need for the app -->
+         <copy todir="${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app/Contents/Resources/Java" flatten="true">
+            <fileset dir="${speck-applications.dist.dir}">
+               <exclude name="**/*.dll"/>
+               <exclude name="**/*.so"/>
+               <exclude name="**/README*"/>
+               <include name="**/*"/>
+            </fileset>
+            <fileset dir="${base.directory}">
+               <include name="LICENSE.txt"/>
+            </fileset>
+         </copy>
+
+         <!-- copy the license, Apache notice, and the README -->
+         <copy todir="${speck-gateway-web-distro.dist.dir}/software/mac/" flatten="true">
+            <fileset dir="${base.directory}">
+               <include name="LICENSE.txt"/>
+               <include name="NOTICE.txt"/>
+            </fileset>
+            <fileset dir="${base.directory}/..">
+               <include name="README.pdf"/>
+            </fileset>
+         </copy>
+
+         <!-- Copy third-party licenses -->
+         <copy file="${lib.dir}/apache-derby/LICENSE" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/APACHE_DERBY_LICENSE.txt"/>
+         <copy file="${lib.dir}/commons-io/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/COMMONS_IO_LICENSE.txt"/>
+         <copy file="${lib.dir}/commons-lang/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/COMMONS_LANG_LICENSE.txt"/>
+         <copy file="${lib.dir}/HIDAPI/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/HIDAPI_LICENSE.txt"/>
+         <copy file="${lib.dir}/httpcomponents-client/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/HTTP_COMPONENTS_LICENSE.txt"/>
+         <copy file="${lib.dir}/jackson/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/JACKSON_LICENSE.txt"/>
+         <copy file="${lib.dir}/JNA/license.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/JNA_LICENSE.txt"/>
+         <copy file="${lib.dir}/JNAerator/LICENSE.txt" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/JNAERATOR_LICENSE.txt"/>
+         <copy file="${lib.dir}/log4j/LICENSE" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/LOG4J_LICENSE.txt"/>
+         <copy file="${lib.dir}/log4j-extras/LICENSE" tofile="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses/LOG4J_EXTRAS_LICENSE.txt"/>
+
+         <!-- Set the bundle bit -->
+         <exec executable="/usr/bin/SetFile">
+            <arg line="-a B '${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app'"/>
+         </exec>
+
+         <!-- Sign the app! -->
+         <exec executable="/usr/bin/codesign">
+            <arg line="-s '@{signing.identity}' -f '${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app'"/>
+         </exec>
+
+         <!-- Create a disk image -->
+         <echo level="info">Creating disk image: ${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name-no-spaces}.dmg</echo>
+         <exec executable="/usr/bin/hdiutil">
+            <arg line="create -fs HFS+ -volname '@{app.pretty-name}' -srcfolder '${speck-gateway-web-distro.dist.dir}/software/mac/' '${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name-no-spaces}.dmg' "/>
+         </exec>
+
+         <!-- Cleanup -->
+         <delete dir="${speck-gateway-web-distro.dist.dir}/software/mac/@{app.pretty-name}.app"/>
+         <delete dir="${speck-gateway-web-distro.dist.dir}/software/mac/Licenses"/>
+         <delete file="${speck-gateway-web-distro.dist.dir}/software/mac/LICENSE.txt"/>
+         <delete file="${speck-gateway-web-distro.dist.dir}/software/mac/NOTICE.txt"/>
+         <delete file="${speck-gateway-web-distro.dist.dir}/software/mac/README.pdf"/>
 
       </sequential>
    </macrodef>
