@@ -110,7 +110,7 @@
 
    <!-- get the svn repository url and revision -->
    <property name="speck-gateway.version-number" value="${speck-gateway.version-number.major}.${speck-gateway.version-number.minor}.${speck-gateway.version-number.revision}"/>
-   <echo level="info">Speck Gatway Version Number: ${speck-gateway.version-number}</echo>
+   <echo level="info">Speck Gateway Version Number: ${speck-gateway.version-number}</echo>
 
    <target name="all" depends="clean, dist" description="clean, then build everything"/>
 

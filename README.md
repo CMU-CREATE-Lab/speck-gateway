@@ -98,7 +98,7 @@ $ cd speck-gateway
 $ cd java
 $ ant
 Buildfile: /Users/chris/Documents/Work/Projects/SpeckGateway/speck-gateway/java/build.xml
-     [echo] Speck Gatway Version Number: 2.0.0
+     [echo] Speck Gateway Version Number: 2.0.0
 
 clean-speck-core:
    [delete] Deleting directory /Users/chris/Documents/Work/Projects/SpeckGateway/speck-gateway/java/code/core/build
