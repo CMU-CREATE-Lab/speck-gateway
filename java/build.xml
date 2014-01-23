@@ -410,6 +410,14 @@
          </fileset>
       </delete>
 
+      <!-- zip up the .msi -->
+      <zip destfile="${speck-gateway-web-distro.dist.dir}/software/windows/GpsSpeckGateway.zip" update="no" compress="true">
+         <zipfileset dir="${speck-gateway-web-distro.dist.dir}/software/windows" includes="GpsSpeckGateway.msi" prefix="${speck-gateway.zip.directory_name}"/>
+      </zip>
+
+      <!-- delete the .msi -->
+      <delete file="${speck-gateway-web-distro.dist.dir}/software/windows/GpsSpeckGateway.msi"/>
+
       <property name="create-windows-msi-is-complete" value="true"/>
    </target>
 
