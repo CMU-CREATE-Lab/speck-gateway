@@ -36,8 +36,8 @@ Installing
 Do the following to install the Speck Gateway application:
 
 * **Mac OS**: you will have downloaded a disk image file (.dmg).  Double-click it to mount and open the disk image. Once it is open, simply drag the Speck Gateway application to your computer's Applications folder.  Once it has copied, you may eject the disk image.
-* **Windows**: you will have downloaded an installer file (.msi).  Double-click to open it and follow the installation wizard steps to install the Speck Gateway application.
-* **Linux**: you will have downloaded a Zip file (.zip).  Unzip the zip file to your preferred location.
+* **Windows**: you will have downloaded Zip file (.zip) containing the installer file (.msi).  Extract the zip and then double-click `SpeckGateway.msi` to run the installer.  Follow the installation wizard steps to install the Speck Gateway application.
+* **Linux**: you will have downloaded a Zip file (.zip).  Extract the zip file to your preferred location.
 
 Running
 -------
