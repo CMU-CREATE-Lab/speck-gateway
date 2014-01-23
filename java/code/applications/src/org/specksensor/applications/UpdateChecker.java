@@ -122,7 +122,7 @@ public final class UpdateChecker
          // Taken from http://hc.apache.org/httpcomponents-client-4.3.x/tutorial/html/fluent.html
          versionNumber = Request.Get(CURRENT_VERSION_NUMBER_URL)
                .setCacheControl("no-cache")
-               .userAgent(USER_AGENT)    // TODO!
+               .userAgent(USER_AGENT)
                .connectTimeout(TIMEOUT_MILLIS)
                .socketTimeout(TIMEOUT_MILLIS)
                .execute().handleResponse(

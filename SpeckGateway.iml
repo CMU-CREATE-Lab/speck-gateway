@@ -9,7 +9,7 @@
       <excludeFolder url="file://$MODULE_DIR$/java/code/applications/dist" />
       <excludeFolder url="file://$MODULE_DIR$/java/code/core/build" />
       <excludeFolder url="file://$MODULE_DIR$/java/code/core/dist" />
-      <excludeFolder url="file://$MODULE_DIR$/java/code/webstart/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/java/code/web-distro/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
