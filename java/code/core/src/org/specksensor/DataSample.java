@@ -192,7 +192,7 @@ public final class DataSample implements Speck.DataSample
          }
       if (this.sampleTimeUtcSeconds > dataSample.getSampleTime())
          {
-         return -1;
+         return 1;
          }
 
       return 0;
