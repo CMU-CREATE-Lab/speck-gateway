@@ -9,7 +9,7 @@ v2.1.0
 
 v2.0.0
 
-* Dumped Java Web Start.  App is now distributed as a native app for Mac, Windows, and Linux.  Java 6+ still required.
+* Dumped Java Web Start.  App is now distributed as a native app for Mac and Windows.  Java 6+ still required.
 * Added update checker
 * No longer displaying port in the GUI
 * Upgraded some third party libraries.
