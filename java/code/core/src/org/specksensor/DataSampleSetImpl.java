@@ -54,7 +54,7 @@ final class DataSampleSetImpl implements DataSampleSet
 
    @NotNull
    @Override
-   public String toJson(final boolean includeTemperature)
+   public String toJson(@NotNull final ApiSupport apiSupport)
       {
       final StringBuilder data = new StringBuilder("[");
       if (!isEmpty())
@@ -62,13 +62,21 @@ final class DataSampleSetImpl implements DataSampleSet
          final List<String> dataSamplesAsJson = new ArrayList<String>(dataSamples.size());
          for (final Speck.DataSample dataSample : dataSamples)
             {
-            dataSamplesAsJson.add(dataSample.toJsonArray(includeTemperature));
+            dataSamplesAsJson.add(dataSample.toJsonArray(apiSupport));
             }
          data.append(StringUtils.join(dataSamplesAsJson, ','));
          }
       data.append("]");
-      final StringBuilder channelNames = new StringBuilder("{\"channel_names\":[\"raw_particles\",\"particles\"");
-      if (includeTemperature)
+      final StringBuilder channelNames = new StringBuilder("{\"channel_names\":[\"raw_particles\"");
+      if (apiSupport.hasParticleCount())
+         {
+         channelNames.append(",\"particle_count\"");
+         }
+      if (apiSupport.hasParticleConcentration())
+         {
+         channelNames.append(",\"particle_concentration\"");
+         }
+      if (apiSupport.hasTemperatureSensor())
          {
          channelNames.append(",\"temperature\"");
          }

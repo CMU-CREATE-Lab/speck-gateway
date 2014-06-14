@@ -20,7 +20,10 @@ public final class ReadWriteSpeckConfigCommandStrategy extends CreateLabHIDRetur
    private static final byte COMMAND_PREFIX = 'I';
    private static final int UNIQUE_ID_STARTING_BYTE_INDEX = 1;
    private static final int UNIQUE_ID_ENDING_BYTE_INDEX = 10;
+   private static final int UNIQUE_ID_ENDING_BYTE_INDEX_EXTENDED_ID = 8;
    private static final int PROTOCOL_VERSION_BYTE_INDEX = 11;
+   private static final int HARDWARE_VERSION_BYTE_INDEX = 10;
+   private static final int FIRMWARE_VERSION_BYTE_INDEX = 13;
    private static final int LOGGING_INTERVAL_BYTE_INDEX_WHEN_READING = 12;
    private static final int LOGGING_INTERVAL_BYTE_INDEX_WHEN_WRITING = 5;
    private final int loggingIntervalInSeconds;
@@ -98,12 +101,21 @@ public final class ReadWriteSpeckConfigCommandStrategy extends CreateLabHIDRetur
 
          if (CommandStrategyHelper.isResponseDataValid(data))
             {
+            final ApiSupport apiSupport = ApiSupport.getInstance(data[PROTOCOL_VERSION_BYTE_INDEX]);
+
+            final int uniqueIdEndingByteIndex = apiSupport.hasExtendedId() ? UNIQUE_ID_ENDING_BYTE_INDEX_EXTENDED_ID : UNIQUE_ID_ENDING_BYTE_INDEX;
             final StringBuilder sb = new StringBuilder();
-            for (int i = UNIQUE_ID_STARTING_BYTE_INDEX; i <= UNIQUE_ID_ENDING_BYTE_INDEX; i++)
+            for (int i = UNIQUE_ID_STARTING_BYTE_INDEX; i <= uniqueIdEndingByteIndex; i++)
                {
                sb.append(ByteUtils.byteToHexString(data[i]));
                }
-            return new SpeckConfigImpl(sb.toString(), data[PROTOCOL_VERSION_BYTE_INDEX], ByteUtils.unsignedByteToInt(data[LOGGING_INTERVAL_BYTE_INDEX_WHEN_READING]));
+
+            return new SpeckConfigImpl(sb.toString(),
+                                       apiSupport,
+                                       ByteUtils.unsignedByteToInt(data[HARDWARE_VERSION_BYTE_INDEX]),
+                                       ByteUtils.unsignedByteToInt(data[FIRMWARE_VERSION_BYTE_INDEX]),
+                                       ByteUtils.unsignedByteToInt(data[LOGGING_INTERVAL_BYTE_INDEX_WHEN_READING])
+            );
             }
          }
       LOG.error("ReadWriteSpeckConfigCommandStrategy.convertResponse(): Failure!  response = [" + response + "]");
@@ -115,16 +127,32 @@ public final class ReadWriteSpeckConfigCommandStrategy extends CreateLabHIDRetur
       @NotNull
       private final String id;
       private final int protocolVersion;
+      private final int hardwareVersion;
+      private final int firmwareVersion;
       private final int loggingInterval;
 
       @NotNull
       private final ApiSupport apiSupport;
 
-      private SpeckConfigImpl(@NotNull final String id, final int protocolVersion, final int loggingInterval)
+      private SpeckConfigImpl(@NotNull final String id,
+                              @NotNull final ApiSupport apiSupport,
+                              final int hardwareVersion,
+                              final int firmwareVersion,
+                              final int loggingInterval)
          {
          this.id = id;
-         this.protocolVersion = protocolVersion;
-         apiSupport = ApiSupport.getInstance(protocolVersion);
+         this.protocolVersion = apiSupport.getProtocolVersion();
+         this.apiSupport = apiSupport;
+         if (getApiSupport().hasDeviceVersionInfo())
+            {
+            this.hardwareVersion = hardwareVersion;
+            this.firmwareVersion = firmwareVersion;
+            }
+         else
+            {
+            this.hardwareVersion = SpeckConfig.UNKNOWN_VERSION;
+            this.firmwareVersion = SpeckConfig.UNKNOWN_VERSION;
+            }
          this.loggingInterval = apiSupport.canMutateLoggingInterval() ? loggingInterval : SpeckConstants.LoggingInterval.DEFAULT;
          }
 
@@ -139,6 +167,18 @@ public final class ReadWriteSpeckConfigCommandStrategy extends CreateLabHIDRetur
       public int getProtocolVersion()
          {
          return protocolVersion;
+         }
+
+      @Override
+      public int getHardwareVersion()
+         {
+         return hardwareVersion;
+         }
+
+      @Override
+      public int getFirmwareVersion()
+         {
+         return firmwareVersion;
          }
 
       @Override
@@ -168,6 +208,14 @@ public final class ReadWriteSpeckConfigCommandStrategy extends CreateLabHIDRetur
 
          final SpeckConfigImpl that = (SpeckConfigImpl)o;
 
+         if (firmwareVersion != that.firmwareVersion)
+            {
+            return false;
+            }
+         if (hardwareVersion != that.hardwareVersion)
+            {
+            return false;
+            }
          if (loggingInterval != that.loggingInterval)
             {
             return false;
@@ -193,6 +241,8 @@ public final class ReadWriteSpeckConfigCommandStrategy extends CreateLabHIDRetur
          {
          int result = id.hashCode();
          result = 31 * result + protocolVersion;
+         result = 31 * result + hardwareVersion;
+         result = 31 * result + firmwareVersion;
          result = 31 * result + loggingInterval;
          result = 31 * result + apiSupport.hashCode();
          return result;
@@ -204,6 +254,8 @@ public final class ReadWriteSpeckConfigCommandStrategy extends CreateLabHIDRetur
          final StringBuilder sb = new StringBuilder("SpeckConfig{");
          sb.append("id='").append(id).append('\'');
          sb.append(", protocolVersion=").append(protocolVersion);
+         sb.append(", hardwareVersion=").append(hardwareVersion);
+         sb.append(", firmwareVersion=").append(firmwareVersion);
          sb.append(", loggingInterval=").append(loggingInterval);
          sb.append('}');
          return sb.toString();

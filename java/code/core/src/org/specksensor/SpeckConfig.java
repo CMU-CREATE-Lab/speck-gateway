@@ -7,12 +7,26 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface SpeckConfig
    {
+   int UNKNOWN_VERSION = -1;
+
    /** Returns the Speck's unique ID. */
    @NotNull
    String getId();
 
    /** Returns the Speck's protocol version. */
    int getProtocolVersion();
+
+   /**
+    * Returns the Speck's hardware version. Not supported in all Specks.  Returns {@link #UNKNOWN_VERSION} if
+    * unsupported.
+    */
+   int getHardwareVersion();
+
+   /**
+    * Returns the Speck's firmware version. Not supported in all Specks.  Returns {@link #UNKNOWN_VERSION} if
+    * unsupported.
+    */
+   int getFirmwareVersion();
 
    /**
     * Returns the number of seconds between data samples when the Speck is NOT connected to the Speck Gateway. The Speck

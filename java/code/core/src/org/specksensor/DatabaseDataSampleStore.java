@@ -58,23 +58,23 @@ final class DatabaseDataSampleStore implements DataSampleStore
 
    private static final String STATEMENT_NAME_SELECT_SAMPLES_NEEDING_TO_BE_UPLOADED = "select_samples_needing_to_be_uploaded";
    private static final String STATEMENT_SELECT_SAMPLES_NEEDING_TO_BE_UPLOADED = "SELECT\n" +
-                                                                        "   *\n" +
-                                                                        "FROM\n" +
-                                                                        "   (SELECT\n" +
-                                                                        "       ROW_NUMBER()\n" +
-                                                                        "       OVER () AS NUM_ROWS,\n" +
-                                                                        "       SpeckSamples.id,\n" +
-                                                                        "       SpeckSamples.SAMPLE_TIMESTAMP_UTC_SECS,\n" +
-                                                                        "       SpeckSamples.RAW_PARTICLE_COUNT,\n" +
-                                                                        "       SpeckSamples.PARTICLE_COUNT,\n" +
-                                                                        "       SpeckSamples.TEMPERATURE,\n" +
-                                                                        "       SpeckSamples.HUMIDITY\n" +
-                                                                        "    FROM SpeckSamples\n" +
-                                                                        "    WHERE\n" +
-                                                                        "       SpeckSamples.UPLOAD_STATUS = '" + DataSampleUploadStatus.NOT_ATTEMPTED.getName() + "' OR\n" +
-                                                                        "       SpeckSamples.UPLOAD_STATUS = '" + DataSampleUploadStatus.FAILURE.getName() + "'\n" +
-                                                                        "   ) AS TEMP\n" +
-                                                                        "WHERE NUM_ROWS <= ?\n";
+                                                                                 "   *\n" +
+                                                                                 "FROM\n" +
+                                                                                 "   (SELECT\n" +
+                                                                                 "       ROW_NUMBER()\n" +
+                                                                                 "       OVER () AS NUM_ROWS,\n" +
+                                                                                 "       SpeckSamples.id,\n" +
+                                                                                 "       SpeckSamples.SAMPLE_TIMESTAMP_UTC_SECS,\n" +
+                                                                                 "       SpeckSamples.RAW_PARTICLE_COUNT,\n" +
+                                                                                 "       SpeckSamples.PARTICLE_COUNT,\n" +
+                                                                                 "       SpeckSamples.TEMPERATURE,\n" +
+                                                                                 "       SpeckSamples.HUMIDITY\n" +
+                                                                                 "    FROM SpeckSamples\n" +
+                                                                                 "    WHERE\n" +
+                                                                                 "       SpeckSamples.UPLOAD_STATUS = '" + DataSampleUploadStatus.NOT_ATTEMPTED.getName() + "' OR\n" +
+                                                                                 "       SpeckSamples.UPLOAD_STATUS = '" + DataSampleUploadStatus.FAILURE.getName() + "'\n" +
+                                                                                 "   ) AS TEMP\n" +
+                                                                                 "WHERE NUM_ROWS <= ?\n";
 
    private static final String SQL_STATE_DUPLICATE_KEY = "23505";
    private static final int SQL_ERROR_CODE_DUPLICATE_KEY = 30000;
@@ -229,7 +229,7 @@ final class DatabaseDataSampleStore implements DataSampleStore
             try
                {
                insertStatement.setInt(1, dataSample.getRawParticleCount());
-               insertStatement.setInt(2, dataSample.getParticleCount());
+               insertStatement.setInt(2, dataSample.getParticleCountOrConcentration());
                insertStatement.setInt(3, dataSample.getTemperatureInTenthsOfADegreeF());
                insertStatement.setInt(4, dataSample.getHumidity());
                insertStatement.setInt(5, dataSample.getSampleTime());

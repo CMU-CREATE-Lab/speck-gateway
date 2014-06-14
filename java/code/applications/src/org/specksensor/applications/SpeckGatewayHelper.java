@@ -364,6 +364,18 @@ final class SpeckGatewayHelper
                   }
 
                @Override
+               public int getHardwareVersion()
+                  {
+                  return UNKNOWN_VERSION;
+                  }
+
+               @Override
+               public int getFirmwareVersion()
+                  {
+                  return UNKNOWN_VERSION;
+                  }
+
+               @Override
                public int getLoggingInterval()
                   {
                   return SpeckConstants.LoggingInterval.DEFAULT;

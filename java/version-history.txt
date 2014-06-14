@@ -1,6 +1,19 @@
 SPECK GATEWAY VERSION HISTORY
 -----------------------------
 
+v2.1.0
+
+* Added support for protocol version 3
+* No longer including download time in the CSV
+* Bugfixes
+
+v2.0.0
+
+* Dumped Java Web Start.  App is now distributed as a native app for Mac, Windows, and Linux.  Java 6+ still required.
+* Added update checker
+* No longer displaying port in the GUI
+* Upgraded some third party libraries.
+
 v1.4
 
 * Added support for reading protocol version

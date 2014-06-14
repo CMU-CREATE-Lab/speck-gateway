@@ -16,21 +16,21 @@ public final class DataSample implements Speck.DataSample
    private final int sampleTimeUtcSeconds;
    private final long downloadTime = System.currentTimeMillis();
    private final int rawParticleCount;
-   private final int particleCount;
+   private final int particleCountOrConcentration;
    private final int temperatureInTenthsOfDegreeF;
    private final int humidity;
 
    public DataSample(@Nullable final Integer databaseId,
                      final int sampleTimeUtcSeconds,
                      final int rawParticleCount,
-                     final int particleCount,
+                     final int particleCountOrConcentration,
                      final int temperatureInTenthsOfDegreeF,
                      final int humidity)
       {
       this.databaseId = databaseId;
       this.sampleTimeUtcSeconds = sampleTimeUtcSeconds;
       this.rawParticleCount = rawParticleCount;
-      this.particleCount = particleCount;
+      this.particleCountOrConcentration = particleCountOrConcentration;
       this.temperatureInTenthsOfDegreeF = temperatureInTenthsOfDegreeF;
       this.humidity = humidity;
       }
@@ -61,9 +61,15 @@ public final class DataSample implements Speck.DataSample
       }
 
    @Override
-   public int getParticleCount()
+   public int getParticleCountOrConcentration()
       {
-      return particleCount;
+      return particleCountOrConcentration;
+      }
+
+   @Override
+   public double getParticleConcentration()
+      {
+      return getParticleCountOrConcentration() / 10.0;
       }
 
    @Override
@@ -89,51 +95,49 @@ public final class DataSample implements Speck.DataSample
       {
       return sampleTimeUtcSeconds == 0 &&
              rawParticleCount == 0 &&
-             particleCount == 0 &&
+             particleCountOrConcentration == 0 &&
              temperatureInTenthsOfDegreeF == 0 &&
              humidity == 0;
       }
 
    @NotNull
    @Override
-   public String toCsv(final boolean includeTemperature)
+   public String toCsv(@NotNull final ApiSupport apiSupport)
+      {
+      return buildExportString(apiSupport);
+      }
+
+   @NotNull
+   @Override
+   public String toJsonArray(@NotNull final ApiSupport apiSupport)
+      {
+      return "[" + buildExportString(apiSupport) + "]";
+      }
+
+   @NotNull
+   private String buildExportString(@NotNull final ApiSupport apiSupport)
       {
       final StringBuilder s = new StringBuilder();
       s.append(sampleTimeUtcSeconds);
       s.append(COMMA);
       s.append(rawParticleCount);
-      s.append(COMMA);
-      s.append(particleCount);
-      if (includeTemperature)
+      if (apiSupport.hasParticleCount())
+         {
+         s.append(COMMA);
+         s.append(particleCountOrConcentration);
+         }
+      if (apiSupport.hasParticleConcentration())
+         {
+         s.append(COMMA);
+         s.append(getParticleConcentration());
+         }
+      if (apiSupport.hasTemperatureSensor())
          {
          s.append(COMMA);
          s.append(getTemperatureInDegreesF());
          }
       s.append(COMMA);
       s.append(humidity);
-      s.append(COMMA);
-      s.append(downloadTime);
-      return s.toString();
-      }
-
-   @NotNull
-   @Override
-   public String toJsonArray(final boolean includeTemperature)
-      {
-      final StringBuilder s = new StringBuilder("[");
-      s.append(sampleTimeUtcSeconds);
-      s.append(COMMA);
-      s.append(rawParticleCount);
-      s.append(COMMA);
-      s.append(particleCount);
-      if (includeTemperature)
-         {
-         s.append(COMMA);
-         s.append(getTemperatureInDegreesF());
-         }
-      s.append(COMMA);
-      s.append(humidity);
-      s.append("]");
       return s.toString();
       }
 
@@ -175,7 +179,7 @@ public final class DataSample implements Speck.DataSample
       sb.append(", sampleTime=").append(sampleTimeUtcSeconds);
       sb.append(", downloadTime=").append(downloadTime);
       sb.append(", rawParticleCount=").append(rawParticleCount);
-      sb.append(", particleCount=").append(particleCount);
+      sb.append(", particleCountOrConcentration=").append(particleCountOrConcentration);
       sb.append(", temperatureInTenthsOfDegreeF=").append(temperatureInTenthsOfDegreeF);
       sb.append(", humidity=").append(humidity);
       sb.append('}');

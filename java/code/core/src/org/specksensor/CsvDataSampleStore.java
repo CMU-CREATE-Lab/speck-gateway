@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,13 +39,7 @@ final class CsvDataSampleStore implements DataSampleStore
          writer = new BufferedWriter(new FileWriter(dataFile, true));
          if (!doesFileAlreadyExist)
             {
-            final StringBuilder columnHeaders = new StringBuilder("sample_timestamp_utc_secs,raw_particle_count,particle_count");
-            if (speckConfig.getApiSupport().hasTemperatureSensor())
-               {
-               columnHeaders.append(",temperature");
-               }
-            columnHeaders.append(",humidity,download_timestamp_utc_millis");
-            write(columnHeaders.toString());
+            write(StringUtils.join(speckConfig.getApiSupport().getDataSampleFieldNames(), ','));
             }
          }
       catch (FileNotFoundException e)
@@ -66,7 +61,7 @@ final class CsvDataSampleStore implements DataSampleStore
       LOG.debug("CsvDataSampleStore.save(): saving sample " + dataSample.getSampleTime());
       try
          {
-         write(dataSample.toCsv(speckConfig.getApiSupport().hasTemperatureSensor()));
+         write(dataSample.toCsv(speckConfig.getApiSupport()));
          }
       catch (IOException e)
          {

@@ -24,8 +24,25 @@ public interface Speck extends CreateLabDeviceProxy
       /** The raw particle count. */
       int getRawParticleCount();
 
-      /** The particle count in particles/Liter. */
-      int getParticleCount();
+      /**
+       * The particle count in particles/Liter or the concentration in 0.1 * ug/m^3.  Specks prior to protocol version 3
+       * report particle count. Protocol version 3 and later report concentration.
+       *
+       * @see ApiSupport#hasParticleCount()
+       * @see ApiSupport#hasParticleConcentration()
+       */
+      int getParticleCountOrConcentration();
+
+      /**
+       * Returns the particle concentration in ug/m^3. This is merely a helper method which devices the value returned
+       * from {@link #getParticleCountOrConcentration} by 10.  Note that this method only has use for Specks using
+       * protocol version 3 or later since Speck prior to protocol 3 report particle count, not concentration.
+       *
+       * @see #getParticleCountOrConcentration()
+       * @see ApiSupport#hasParticleCount()
+       * @see ApiSupport#hasParticleConcentration()
+       */
+      double getParticleConcentration();
 
       /**
        * The temperature in degrees F.  For Specks which don't support temperature, this will probably be 0, but it's
@@ -53,25 +70,26 @@ public interface Speck extends CreateLabDeviceProxy
       boolean isEmpty();
 
       /**
-       * Returns this data sample as a {@link String} containing values separated by commas.  If
-       * <code>includeTemperature</code> is <code>true</code>, values are returned in this order: <code>sample time,
-       * particle count, temperature, humidity, download time</code>; if <code>false</code>, the temperature field is
-       * not included.
+       * Returns this data sample as a {@link String} containing values separated by commas.  Fields returned depend on
+       * the {@link ApiSupport}.  For example, the temperature field will only be included for Specks which record
+       * temperature, and particle concentration will only be included for Specks which record particle concentration
+       * instead of particle count.
        *
-       * @see ApiSupport#hasTemperatureSensor()
+       * @see ApiSupport
        */
       @NotNull
-      String toCsv(final boolean includeTemperature);
+      String toCsv(@NotNull final ApiSupport apiSupport);
 
       /**
-       * Returns this data sample as a JSON array {@link String}. The array does not include the download time.  If
-       * <code>includeTemperature</code> is <code>true</code>, values are returned in this order: <code>sample time,
-       * particle count, temperature, humidity</code>; if <code>false</code>, the temperature field is not included.
+       * Returns this data sample as a JSON array {@link String}. The array does not include the download time.  Fields
+       * returned depend on the {@link ApiSupport}.  For example, the temperature field will only be included for Specks
+       * which record temperature, and particle concentration will only be included for Specks which record particle
+       * concentration instead of particle count.
        *
-       * @see ApiSupport#hasTemperatureSensor()
+       * @see ApiSupport
        */
       @NotNull
-      String toJsonArray(final boolean includeTemperature);
+      String toJsonArray(@NotNull final ApiSupport apiSupport);
       }
 
    /**

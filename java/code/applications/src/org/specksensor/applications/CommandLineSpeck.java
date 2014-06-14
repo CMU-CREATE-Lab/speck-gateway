@@ -325,6 +325,8 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
 
                try
                   {
+                  final boolean hasConcentration = device.getSpeckConfig().getApiSupport().hasParticleConcentration();
+
                   final Set<Integer> sampleTimes = new HashSet<Integer>();
                   boolean shouldQuit = false;
                   while (!shouldQuit)
@@ -344,7 +346,12 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                      else
                         {
                         final int sampleTime = sample.getSampleTime();
-                        println("Sample: [" + sampleTime + ", " + sample.getRawParticleCount() + ", " + sample.getParticleCount() + ", " + sample.getTemperatureInTenthsOfADegreeF() + ", " + sample.getHumidity() + "]");
+                        println("Sample: [" +
+                                sampleTime + ", " +
+                                sample.getRawParticleCount() + ", " +
+                                (hasConcentration ? String.valueOf(sample.getParticleConcentration()) : String.valueOf(sample.getParticleCountOrConcentration())) + ", " +
+                                sample.getTemperatureInTenthsOfADegreeF() + ", " +
+                                sample.getHumidity() + "]");
 
                         // keep track of which ones we've seen to detect duplicates
                         if (sampleTimes.contains(sampleTime))
@@ -697,11 +704,18 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
          }
       else
          {
-         println("Sample Time:        " + dataSample.getSampleTime());
-         println("Raw Particle Count: " + dataSample.getRawParticleCount());
-         println("Particle Count:     " + dataSample.getParticleCount());
-         println("Temperature:        " + dataSample.getTemperatureInTenthsOfADegreeF());
-         println("Humidity:           " + dataSample.getHumidity());
+         println("Sample Time:                     " + dataSample.getSampleTime());
+         println("Raw Particle Count:              " + dataSample.getRawParticleCount());
+         if (device.getSpeckConfig().getApiSupport().hasParticleCount())
+            {
+            println("Particle Count (particles/L):    " + dataSample.getParticleCountOrConcentration());
+            }
+         if (device.getSpeckConfig().getApiSupport().hasParticleConcentration())
+            {
+            println("Particle Concentration (ug/m^3): " + (dataSample.getParticleConcentration()));
+            }
+         println("Temperature:                     " + dataSample.getTemperatureInTenthsOfADegreeF());
+         println("Humidity:                        " + dataSample.getHumidity());
          }
       }
 
@@ -762,7 +776,7 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         return config.getId();
                         }
                      });
-      registerAction("v",
+      registerAction("p",
                      new GetStringAction("Speck Protocol Version")
                      {
                      @Override
@@ -770,6 +784,26 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         {
                         final SpeckConfig config = device.getSpeckConfig();
                         return String.valueOf(config.getProtocolVersion());
+                        }
+                     });
+      registerAction("h",
+                     new GetStringAction("Speck Hardware Version")
+                     {
+                     @Override
+                     protected String getString()
+                        {
+                        final SpeckConfig config = device.getSpeckConfig();
+                        return config.getApiSupport().hasDeviceVersionInfo() ? String.valueOf(config.getHardwareVersion()) : "unknown";
+                        }
+                     });
+      registerAction("f",
+                     new GetStringAction("Speck Firmware Version")
+                     {
+                     @Override
+                     protected String getString()
+                        {
+                        final SpeckConfig config = device.getSpeckConfig();
+                        return config.getApiSupport().hasDeviceVersionInfo() ? String.valueOf(config.getFirmwareVersion()) : "unknown";
                         }
                      });
       registerAction("a",
@@ -784,6 +818,9 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
                         s.append("   Can mutate logging interval:  ").append(apiSupport.canMutateLoggingInterval()).append(LINE_SEPARATOR);
                         s.append("   Can report data sample count: ").append(apiSupport.canGetNumberOfDataSamples()).append(LINE_SEPARATOR);
                         s.append("   Has temperature sensor:       ").append(apiSupport.hasTemperatureSensor()).append(LINE_SEPARATOR);
+                        s.append("   Has particle count:           ").append(apiSupport.hasParticleCount()).append(LINE_SEPARATOR);
+                        s.append("   Has particle concentration:   ").append(apiSupport.hasParticleConcentration()).append(LINE_SEPARATOR);
+                        s.append("   Has device version info:      ").append(apiSupport.hasDeviceVersionInfo()).append(LINE_SEPARATOR);
                         s.append("   Can enter bootloader mode:    ").append(apiSupport.canEnterBootloaderMode());
                         return s.toString();
                         }
@@ -820,7 +857,9 @@ public final class CommandLineSpeck extends BaseCommandLineApplication
       println("n         Gets the number of available samples");
       println("");
       println("i         Gets the Speck's unique ID");
-      println("v         Gets the Speck's protocol version");
+      println("p         Gets the Speck's protocol version");
+      println("h         Gets the Speck's hardware version");
+      println("f         Gets the Speck's firmware version");
       println("a         Gets the Speck's API support");
       println("l         Gets the Speck's logging interval when disconnected (secs)");
       println("L         Sets the Speck's logging interval when disconnected (secs)");

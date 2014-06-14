@@ -121,7 +121,7 @@ public final class DataSampleUploader
       public void run()
          {
          final DataSampleSetUploadResponse dataSampleSetUploadResponse = DataSampleUploadHelper.upload(remoteStorageCredentials,
-                                                                                                       new StringEntity(dataSampleSet.toJson(speckConfig.getApiSupport().hasTemperatureSensor()), ContentType.APPLICATION_JSON));
+                                                                                                       new StringEntity(dataSampleSet.toJson(speckConfig.getApiSupport()), ContentType.APPLICATION_JSON));
          // notify listeners
          for (final EventListener listener : eventListeners)
             {

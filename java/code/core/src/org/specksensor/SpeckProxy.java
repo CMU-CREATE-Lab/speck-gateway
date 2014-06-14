@@ -25,6 +25,7 @@ import org.specksensor.commands.DeleteSampleCommandStrategy;
 import org.specksensor.commands.EnterBootloaderModeCommandStrategy;
 import org.specksensor.commands.GetDataSampleCommandStrategy;
 import org.specksensor.commands.GetDataSampleCountCommandStrategy;
+import org.specksensor.commands.ReadExtendedSpeckConfigCommandStrategy;
 import org.specksensor.commands.ReadWriteSpeckConfigCommandStrategy;
 
 /**
@@ -145,7 +146,47 @@ class SpeckProxy implements Speck
          }
       else
          {
-         speckConfigWrapper = new SpeckConfigWrapper(tempSpeckConfig);
+
+         // if we got a valid SpeckConfig, we now need to check whether we need to get the extended config
+         if (tempSpeckConfig.getApiSupport().hasExtendedId())
+            {
+            final SpeckConfig tempExtendedSpeckConfig =
+                  new RetryingActionExecutor<SpeckConfig>()
+                  {
+                  private final ReadExtendedSpeckConfigCommandStrategy getExtendedSpeckConfigCommandStrategy = new ReadExtendedSpeckConfigCommandStrategy(tempSpeckConfig);
+
+                  @Override
+                  @Nullable
+                  protected SpeckConfig executionWorkhorse(final int attemptNumber, final int maxNumberOfAttempts)
+                     {
+                     final String msg = "Reading extended Speck config (attempt " + attemptNumber + " of " + maxNumberOfAttempts + ")...";
+                     CONSOLE_LOG.info(msg);
+                     if (LOG.isInfoEnabled())
+                        {
+                        LOG.info("SpeckProxy.executionWorkhorse(): " + msg);
+                        }
+                     LOG.debug("SpeckProxy.executionWorkhorse(): Reading extended config...");
+                     return speckConfigReturnValueCommandExecutor.execute(getExtendedSpeckConfigCommandStrategy);
+                     }
+                  }.execute();
+
+            if (tempExtendedSpeckConfig == null)
+               {
+               final String message = "Failed to read the extended Speck config!";
+               LOG.error(message);
+               CONSOLE_LOG.error(message);
+               throw new InitializationException(message);
+               }
+            else
+               {
+               speckConfigWrapper = new SpeckConfigWrapper(tempExtendedSpeckConfig);
+               }
+            }
+         else
+            {
+            speckConfigWrapper = new SpeckConfigWrapper(tempSpeckConfig);
+            }
+
          final String message = "Successfully read the Speck config.";
          LOG.info(message);
          CONSOLE_LOG.info(message);
@@ -255,7 +296,23 @@ class SpeckProxy implements Speck
          final SpeckConfig newConfig = speckConfigReturnValueCommandExecutor.execute(ReadWriteSpeckConfigCommandStrategy.createWriteableSpeckConfigCommandStrategy(loggingIntervalInSeconds));
          if (newConfig != null)
             {
-            speckConfigWrapper.setSpeckConfig(newConfig);
+            // get the extended config, if necessary
+            if (newConfig.getApiSupport().hasExtendedId())
+               {
+               final SpeckConfig extendedSpeckConfig = speckConfigReturnValueCommandExecutor.execute(new ReadExtendedSpeckConfigCommandStrategy(newConfig));
+               if (extendedSpeckConfig != null)
+                  {
+                  speckConfigWrapper.setSpeckConfig(extendedSpeckConfig);
+                  }
+               else
+                  {
+                  throw new CommunicationException("Failed to set the Specks's logging interval");
+                  }
+               }
+            else
+               {
+               speckConfigWrapper.setSpeckConfig(newConfig);
+               }
             return speckConfigWrapper;
             }
          throw new CommunicationException("Failed to set the Specks's logging interval");
@@ -353,6 +410,18 @@ class SpeckProxy implements Speck
       public int getProtocolVersion()
          {
          return speckConfig.getProtocolVersion();
+         }
+
+      @Override
+      public int getHardwareVersion()
+         {
+         return speckConfig.getHardwareVersion();
+         }
+
+      @Override
+      public int getFirmwareVersion()
+         {
+         return speckConfig.getFirmwareVersion();
          }
 
       @Override
