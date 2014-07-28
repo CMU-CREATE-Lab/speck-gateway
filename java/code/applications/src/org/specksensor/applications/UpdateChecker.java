@@ -147,7 +147,10 @@ public final class UpdateChecker
                         final InputStream contentStream = entity.getContent();
                         final StringWriter writer = new StringWriter();
                         IOUtils.copy(contentStream, writer);
-                        return writer.toString();
+                        final String versionNumber = writer.toString();
+                        final String trimmedVersionNumber = versionNumber == null ? "" : versionNumber.trim();
+                        LOG.debug("UpdateChecker.handleResponse(): found version number [" + trimmedVersionNumber + "]");
+                        return trimmedVersionNumber;
                         }
                      });
          }
