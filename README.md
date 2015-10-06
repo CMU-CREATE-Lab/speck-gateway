@@ -5,6 +5,8 @@ About
 
 The Speck Gateway is an application which downloads data samples from a Speck to the user's computer and optionally uploads the data samples to a server for storage, visualization, etc.
 
+This application will *only* work with the older, black Specks which don't have Wi-Fi built in.  Users of the new, white-colored Specks with Wi-Fi must instead use the new [Speck Chrome app](http://www.specksensor.com/support/software/). The new Speck Chrome app now supports both the older and newer Specks, and thus all user are encouraged to use it instead.  This Speck Gateway application is now considered legacy software, and will not be receiving updates.
+
 Prerequisites
 -------------
 
@@ -28,7 +30,7 @@ We offer two pre-built versions of the Speck Gateway:
 * Downloadable, standalone applications for Mac OS and Windows
 * A downloadable zip file for Linux users or users having special installation configuration needs (see the *Advanced Use Cases* section below)
 
-Download the software at: <http://specksensor.org/software/>
+Download the software at: <http://www.specksensor.com/support/legacy-software/>
 
 Installing
 ----------
@@ -76,7 +78,7 @@ Some users may have more complex installation needs which can currently only be 
 
 ### Using the Zip File Version
 
-The Zip file version of the software is available for download at: <http://specksensor.org/software/speck-gateway.zip>
+The Zip file version of the software is available for download at: <http://www.specksensor.com/support/legacy-software/speck-gateway.zip>
 
 After downloading and unzipping, the simplest way to run the software is to simply double-click the `speck-applications.jar` Jar file. Doing so will run the Speck Gateway, and it will behave exactly the same as the pre-built, standalone applications discussed above.
 
